@@ -1,0 +1,216 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Primary Colors - Democratic Trust Palette */
+  --color-primary: #0b63ce; /* blue-600 */
+  --color-primary-50: #eff6ff; /* blue-50 */
+  --color-primary-100: #dbeafe; /* blue-100 */
+  --color-primary-200: #bfdbfe; /* blue-200 */
+  --color-primary-300: #93c5fd; /* blue-300 */
+  --color-primary-400: #60a5fa; /* blue-400 */
+  --color-primary-500: #3b82f6; /* blue-500 */
+  --color-primary-600: #0b63ce; /* custom institutional trust */
+  --color-primary-700: #1d4ed8; /* blue-700 */
+  --color-primary-800: #1e40af; /* blue-800 */
+  --color-primary-900: #1e3a8a; /* blue-900 */
+
+  /* Secondary Colors */
+  --color-secondary: #1e40af; /* blue-800 */
+  --color-secondary-50: #eff6ff; /* blue-50 */
+  --color-secondary-100: #dbeafe; /* blue-100 */
+  --color-secondary-200: #bfdbfe; /* blue-200 */
+  --color-secondary-300: #93c5fd; /* blue-300 */
+  --color-secondary-400: #60a5fa; /* blue-400 */
+  --color-secondary-500: #3b82f6; /* blue-500 */
+  --color-secondary-600: #2563eb; /* blue-600 */
+  --color-secondary-700: #1d4ed8; /* blue-700 */
+  --color-secondary-800: #1e40af; /* blue-800 */
+  --color-secondary-900: #1e3a8a; /* blue-900 */
+
+  /* Accent Colors */
+  --color-accent: #f59e0b; /* amber-500 */
+  --color-accent-50: #fffbeb; /* amber-50 */
+  --color-accent-100: #fef3c7; /* amber-100 */
+  --color-accent-200: #fde68a; /* amber-200 */
+  --color-accent-300: #fcd34d; /* amber-300 */
+  --color-accent-400: #fbbf24; /* amber-400 */
+  --color-accent-500: #f59e0b; /* amber-500 */
+  --color-accent-600: #d97706; /* amber-600 */
+  --color-accent-700: #b45309; /* amber-700 */
+  --color-accent-800: #92400e; /* amber-800 */
+  --color-accent-900: #78350f; /* amber-900 */
+
+  /* Background Colors */
+  --color-background: #fefefe; /* gray-50 */
+  --color-surface: #f8fafc; /* slate-50 */
+
+  /* Text Colors */
+  --color-text-primary: #1f2937; /* gray-800 */
+  --color-text-secondary: #6b7280; /* gray-500 */
+
+  /* Semantic Colors */
+  --color-success: #00a86b; /* emerald-600 */
+  --color-success-50: #ecfdf5; /* emerald-50 */
+  --color-success-100: #d1fae5; /* emerald-100 */
+  --color-success-200: #a7f3d0; /* emerald-200 */
+  --color-success-300: #6ee7b7; /* emerald-300 */
+  --color-success-400: #34d399; /* emerald-400 */
+  --color-success-500: #10b981; /* emerald-500 */
+  --color-success-600: #00a86b; /* custom success green */
+  --color-success-700: #047857; /* emerald-700 */
+  --color-success-800: #065f46; /* emerald-800 */
+  --color-success-900: #064e3b; /* emerald-900 */
+
+  --color-warning: #f59e0b; /* amber-500 */
+  --color-warning-50: #fffbeb; /* amber-50 */
+  --color-warning-100: #fef3c7; /* amber-100 */
+  --color-warning-200: #fde68a; /* amber-200 */
+  --color-warning-300: #fcd34d; /* amber-300 */
+  --color-warning-400: #fbbf24; /* amber-400 */
+  --color-warning-500: #f59e0b; /* amber-500 */
+  --color-warning-600: #d97706; /* amber-600 */
+  --color-warning-700: #b45309; /* amber-700 */
+  --color-warning-800: #92400e; /* amber-800 */
+  --color-warning-900: #78350f; /* amber-900 */
+
+  --color-error: #dc2626; /* red-600 */
+  --color-error-50: #fef2f2; /* red-50 */
+  --color-error-100: #fee2e2; /* red-100 */
+  --color-error-200: #fecaca; /* red-200 */
+  --color-error-300: #fca5a5; /* red-300 */
+  --color-error-400: #f87171; /* red-400 */
+  --color-error-500: #ef4444; /* red-500 */
+  --color-error-600: #dc2626; /* red-600 */
+  --color-error-700: #b91c1c; /* red-700 */
+  --color-error-800: #991b1b; /* red-800 */
+  --color-error-900: #7f1d1d; /* red-900 */
+
+  /* Border Colors */
+  --color-border: #e5e7eb; /* gray-200 */
+  --color-border-light: #f3f4f6; /* gray-100 */
+  --color-border-dark: #d1d5db; /* gray-300 */
+
+  /* Shadow Variables */
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-primary-cta: 0 4px 12px rgba(11, 99, 206, 0.15);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-modal: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+
+  /* Animation Variables */
+  --transition-fast: 200ms ease-out;
+  --transition-normal: 300ms ease-out;
+}
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 ease-out;
+    box-shadow: var(--shadow-primary-cta);
+  }
+  
+  .btn-primary:hover {
+    @apply bg-primary-700 transform -translate-y-0.5;
+    box-shadow: 0 6px 16px rgba(11, 99, 206, 0.2);
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 ease-out;
+    box-shadow: var(--shadow-subtle);
+  }
+
+  .btn-secondary:hover {
+    @apply bg-secondary-700 transform -translate-y-0.5;
+  }
+
+  .card {
+    @apply bg-white rounded-lg p-6 transition-all duration-300 ease-out;
+    box-shadow: var(--shadow-card);
+  }
+
+  .card:hover {
+    box-shadow: var(--shadow-modal);
+  }
+
+  .form-input {
+    @apply w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-200 focus:border-primary transition-all duration-300 ease-out;
+  }
+
+  .status-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border-2;
+  }
+
+  .status-success {
+    @apply bg-success-50 text-success-700 border-success-200;
+  }
+
+  .status-warning {
+    @apply bg-warning-50 text-warning-700 border-warning-200;
+  }
+
+  .status-error {
+    @apply bg-error-50 text-error-700 border-error-200;
+  }
+
+  .progress-bar {
+    @apply w-full bg-gray-200 rounded-full h-2 overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full bg-primary transition-all duration-500 ease-out;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .transition-fast {
+    transition: all var(--transition-fast);
+  }
+
+  .transition-normal {
+    transition: all var(--transition-normal);
+  }
+
+  .shadow-subtle {
+    box-shadow: var(--shadow-subtle);
+  }
+
+  .shadow-primary-cta {
+    box-shadow: var(--shadow-primary-cta);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-modal {
+    box-shadow: var(--shadow-modal);
+  }
+}

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Registration - GrievMitra</title>
+  <link rel="stylesheet" href="../css/main.css" />
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <main class="max-w-4xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center mb-8">Create Your Account</h1>
+
+    <!-- Citizen Form -->
+    <form id="publicForm" class="bg-white p-6 rounded-xl shadow mb-6">
+      <h2 class="text-xl font-semibold mb-4">Citizen Registration</h2>
+      <input type="text" name="name" placeholder="Full Name" class="w-full border p-3 mb-3 rounded" required />
+      <input type="email" name="email" placeholder="Email" class="w-full border p-3 mb-3 rounded" required />
+      <input type="password" id="public-password" name="password" placeholder="Password" class="w-full border p-3 mb-3 rounded" required />
+      <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded">Register</button>
+    </form>
+
+    <!-- Admin Form -->
+    <form id="adminForm" class="bg-white p-6 rounded-xl shadow mb-6">
+      <h2 class="text-xl font-semibold mb-4">Admin Registration</h2>
+      <input type="text" name="username" placeholder="Employee ID / Username" class="w-full border p-3 mb-3 rounded" required />
+      <input type="email" name="email" placeholder="Official Email" class="w-full border p-3 mb-3 rounded" required />
+      <input type="password" name="password" placeholder="Password" class="w-full border p-3 mb-3 rounded" required />
+      <select name="department" class="w-full border p-3 mb-3 rounded" required>
+        <option value="">Select Department</option>
+        <option value="municipal">Municipal Corporation</option>
+        <option value="police">Police</option>
+        <option value="health">Health</option>
+        <option value="education">Education</option>
+      </select>
+      <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded">Register as Admin</button>
+    </form>
+
+    <!-- Leader Form -->
+    <form id="leaderForm" class="bg-white p-6 rounded-xl shadow mb-6">
+      <h2 class="text-xl font-semibold mb-4">Community Leader Registration</h2>
+      <input type="text" name="name" placeholder="Full Name" class="w-full border p-3 mb-3 rounded" required />
+      <input type="email" name="email" placeholder="Email" class="w-full border p-3 mb-3 rounded" required />
+      <input type="password" name="password" placeholder="Password" class="w-full border p-3 mb-3 rounded" required />
+      <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded">Register as Leader</button>
+    </form>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div class="bg-white p-6 rounded-xl text-center w-96">
+        <h2 id="successTitle" class="text-xl font-bold mb-3"></h2>
+        <p id="successMessage" class="mb-6"></p>
+        <button onclick="goToLogin()" class="bg-blue-600 text-white px-6 py-2 rounded">Go to Login</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- <script>
+    
+  let currentStep = 1;
+  let selectedRegistrationType = null;
+
+  // Registration type selection
+  document.querySelectorAll('.registration-type-card').forEach(card => {
+    card.addEventListener('click', function() {
+      const type = this.dataset.type;
+      selectRegistrationType(type);
+    });
+  });
+
+  function selectRegistrationType(type) {
+    selectedRegistrationType = type;
+    document.querySelectorAll('.registration-form').forEach(f => f.classList.add('hidden'));
+    document.querySelectorAll('.registration-type-card > div').forEach(c => {
+      c.classList.remove('border-primary', 'border-success', 'border-accent');
+      c.classList.add('border-border');
+    });
+    const selectedCard = document.querySelector(`[data-type="${type}"] > div`);
+    if (type === 'public') {
+      selectedCard.classList.add('border-success');
+      document.getElementById('publicRegistrationForm').classList.remove('hidden');
+    } else if (type === 'admin') {
+      selectedCard.classList.add('border-primary');
+      document.getElementById('adminRegistrationForm').classList.remove('hidden');
+    } else if (type === 'leader') {
+      selectedCard.classList.add('border-accent');
+      document.getElementById('leaderRegistrationForm').classList.remove('hidden');
+    }
+  }
+
+  // Step navigation
+  function nextStep(step) {
+    if (validateStep(step)) {
+      document.querySelector(`[data-step="${step}"]`).classList.add('hidden');
+      currentStep = step + 1;
+      document.querySelector(`[data-step="${currentStep}"]`).classList.remove('hidden');
+      updateStepIndicators();
+    }
+  }
+
+  function prevStep(step) {
+    document.querySelector(`[data-step="${step}"]`).classList.add('hidden');
+    currentStep = step - 1;
+    document.querySelector(`[data-step="${currentStep}"]`).classList.remove('hidden');
+    updateStepIndicators();
+  }
+
+  function updateStepIndicators() {
+    document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
+      if (index + 1 <= currentStep) indicator.classList.add('active');
+      else indicator.classList.remove('active');
+    });
+    const stepLabels = ['Personal Information', 'Location & Authentication', 'Terms & Verification'];
+    document.querySelector('.step-label').textContent = stepLabels[currentStep - 1];
+  }
+
+  function validateStep(step) {
+    const currentStepElement = document.querySelector(`[data-step="${step}"]`);
+    const requiredFields = currentStepElement.querySelectorAll('[required]');
+    let isValid = true;
+    requiredFields.forEach(f => {
+      if (!f.value.trim()) {
+        f.classList.add('border-red-500');
+        isValid = false;
+      } else f.classList.remove('border-red-500');
+    });
+    if (step === 2) {
+      const pass = document.getElementById('public-password').value;
+      const confirm = document.getElementById('public-confirmPassword').value;
+      if (pass !== confirm) {
+        alert('Passwords do not match');
+        isValid = false;
+      }
+    }
+    return isValid;
+  }
+
+  // ✅ FORM SUBMISSION WITH BACKEND FETCH
+  document.getElementById('publicForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await handleRegistration('citizen', this);
+  });
+  document.getElementById('adminForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await handleRegistration('admin', this);
+  });
+  document.getElementById('leaderForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await handleRegistration('leader', this);
+  });
+
+  async function handleRegistration(role, formEl) {
+    const submitBtn = formEl.querySelector('button[type="submit"]');
+    submitBtn.textContent = 'Creating Account...';
+    submitBtn.disabled = true;
+
+    const formData = {};
+    new FormData(formEl).forEach((val, key) => formData[key] = val);
+
+    try {
+      const res = await fetch(`http://localhost:5000/auth/register/${role}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+      if (data.success) {
+        showSuccessModal("Registration Successful!", "You can now login.");
+      } else {
+        alert("Error: " + data.message);
+      }
+    } catch (err) {
+      alert("Server error. Try again.");
+    }
+
+    submitBtn.textContent = 'Submit';
+    submitBtn.disabled = false;
+  }
+
+  function showSuccessModal(title, message) {
+    document.getElementById('successTitle').textContent = title;
+    document.getElementById('successMessage').textContent = message;
+    document.getElementById('successModal').classList.remove('hidden');
+  }
+  function goToLogin() { window.location.href = 'login_screen.html'; }
+  function goToHome() { window.location.href = 'homepage.html'; }
+
+  // Password strength checker
+  document.getElementById('public-password')?.addEventListener('input', e => {
+    checkPasswordStrength(e.target.value);
+  });
+
+
+  </script> -->
+  <script>
+  // -----------------------------
+  // FORM SUBMISSION HANDLER
+  // -----------------------------
+  async function handleRegistration(role, formEl) {
+    const submitBtn = formEl.querySelector('button[type="submit"]');
+    submitBtn.textContent = 'Creating Account...';
+    submitBtn.disabled = true;
+
+    const formData = {};
+    new FormData(formEl).forEach((val, key) => formData[key] = val);
+
+    // Add role to formData
+    formData.role = role;
+
+    // Handle admin name field
+    if (role === 'admin' && formData.username) {
+      formData.name = formData.username; // backend expects 'name'
+    }
+
+    try {
+      const res = await fetch(`http://localhost:5000/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        showSuccessModal("Registration Successful!", "You can now login.");
+        formEl.reset();
+      } else {
+        alert("Error: " + (data.error || "Unknown error"));
+      }
+    } catch (err) {
+      alert("Server error. Try again.");
+      console.error(err);
+    }
+
+    submitBtn.textContent = 'Register';
+    submitBtn.disabled = false;
+  }
+
+  // Attach event listeners for all forms
+  document.getElementById('publicForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await handleRegistration('citizen', this);
+  });
+
+  document.getElementById('adminForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await handleRegistration('admin', this);
+  });
+
+  document.getElementById('leaderForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await handleRegistration('leader', this);
+  });
+
+  // -----------------------------
+  // SUCCESS MODAL
+  // -----------------------------
+  function showSuccessModal(title, message) {
+    document.getElementById('successTitle').textContent = title;
+    document.getElementById('successMessage').textContent = message;
+    document.getElementById('successModal').classList.remove('hidden');
+  }
+
+  function goToLogin() { window.location.href = 'login_screen.html'; }
+
+</script>
+
+</body>
+</html>

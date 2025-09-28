@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Submit Grievance - GrievMitra Portal</title>
+    <meta name="description" content="Submit your grievance through our comprehensive multi-step wizard. Get AI-powered suggestions, real-time validation, and immediate acknowledgment with tracking ID." />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fgrievmitra7175back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body class="bg-background">
+    <!-- Navigation Header -->
+    <header class="bg-white shadow-subtle sticky top-0 z-50">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-10 w-10 text-primary" viewBox="0 0 40 40" fill="currentColor">
+                            <path d="M20 4C11.163 4 4 11.163 4 20s7.163 16 16 16 16-7.163 16-16S28.837 4 20 4zm0 28c-6.627 0-12-5.373-12-12S13.373 8 20 8s12 5.373 12 12-5.373 12-12 12z"/>
+                            <path d="M20 12c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8zm0 12c-2.206 0-4-1.794-4-4s1.794-4 4-4 4 1.794 4 4-1.794 4-4 4z"/>
+                            <circle cx="20" cy="20" r="2" fill="white"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h1 class="text-xl font-bold text-primary">GrievMitra</h1>
+                        <p class="text-xs text-text-secondary">Portal</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="homepage.html" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">Home</a>
+                        <a href="submit_grievance.html" class="text-primary font-semibold px-3 py-2 rounded-md text-sm">Submit Grievance</a>
+                        <a href="track_grievance.html" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">Track Status</a>
+                        <a href="transparency_dashboard.html" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">Transparency</a>
+                        <a href="about_griev_mitra.html" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">About</a>
+                        <a href="admin_dashboard.html" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors">Admin</a>
+                    </div>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button type="button" class="text-text-secondary hover:text-primary p-2" onclick="toggleMobileMenu()">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation Menu -->
+            <div id="mobile-menu" class="md:hidden hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-border">
+                    <a href="homepage.html" class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">Home</a>
+                    <a href="submit_grievance.html" class="text-primary font-semibold block px-3 py-2 rounded-md text-base">Submit Grievance</a>
+                    <a href="track_grievance.html" class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">Track Status</a>
+                    <a href="transparency_dashboard.html" class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">Transparency</a>
+                    <a href="about_griev_mitra.html" class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">About</a>
+                    <a href="admin_dashboard.html" class="bg-primary text-white block px-3 py-2 rounded-md text-base font-medium">Admin</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Progress Indicator -->
+    <section class="bg-white border-b border-border">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between mb-4">
+                <h1 class="text-2xl font-bold text-text-primary">Submit New Grievance</h1>
+                <div class="text-sm text-text-secondary">
+                    Step <span id="current-step">1</span> of 4
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill" style="width: 25%"></div>
+            </div>
+            <div class="flex justify-between mt-2 text-xs text-text-secondary">
+                <span class="font-medium text-primary">Category</span>
+                <span>Details</span>
+                <span>Location</span>
+                <span>Review</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step 1: Category Selection -->
+        <div id="step-1" class="step-content">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-text-primary mb-4">What type of issue would you like to report?</h2>
+                <p class="text-lg text-text-secondary max-w-2xl mx-auto">
+                    Select the category that best describes your grievance. This helps us route your complaint to the right department for faster resolution.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Infrastructure Category -->
+                <div class="category-card card cursor-pointer hover:shadow-modal transition-all duration-300 group" data-category="infrastructure">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-200 transition-colors">
+                            <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-text-primary mb-2">Infrastructure</h3>
+                        <p class="text-text-secondary text-sm">Roads, bridges, water supply, electricity, drainage issues</p>
+                        <div class="mt-3 text-xs text-success font-medium">Avg. Resolution: 5-7 days</div>
+                    </div>
+                </div>
+
+                <!-- Public Services Category -->
+                <div class="category-card card cursor-pointer hover:shadow-modal transition-all duration-300 group" data-category="public-services">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-secondary-200 transition-colors">
+                            <svg class="w-8 h-8 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-text-primary mb-2">Public Services</h3>
+                        <p class="text-text-secondary text-sm">Healthcare, education, transport, documentation services</p>
+                        <div class="mt-3 text-xs text-success font-medium">Avg. Resolution: 3-5 days</div>
+                    </div>
+                </div>
+
+                <!-- Corruption Category -->
+                <div class="category-card card cursor-pointer hover:shadow-modal transition-all duration-300 group" data-category="corruption">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-error-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-error-200 transition-colors">
+                            <svg class="w-8 h-8 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-text-primary mb-2">Corruption</h3>
+                        <p class="text-text-secondary text-sm">Bribery, misuse of power, unfair practices by officials</p>
+                        <div class="mt-3 text-xs text-warning font-medium">Avg. Resolution: 7-10 days</div>
+                    </div>
+                </div>
+
+                <!-- Environmental Category -->
+                <div class="category-card card cursor-pointer hover:shadow-modal transition-all duration-300 group" data-category="environmental">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-success-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-success-200 transition-colors">
+                            <svg class="w-8 h-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-text-primary mb-2">Environmental</h3>
+                        <p class="text-text-secondary text-sm">Pollution, waste management, illegal construction, noise</p>
+                        <div class="mt-3 text-xs text-success font-medium">Avg. Resolution: 4-6 days</div>
+                    </div>
+                </div>
+
+                <!-- Safety & Security Category -->
+                <div class="category-card card cursor-pointer hover:shadow-modal transition-all duration-300 group" data-category="safety">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-accent-200 transition-colors">
+                            <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-text-primary mb-2">Safety & Security</h3>
+                        <p class="text-text-secondary text-sm">Public safety, law enforcement, emergency services</p>
+                        <div class="mt-3 text-xs text-warning font-medium">Avg. Resolution: 2-4 days</div>
+                    </div>
+                </div>
+
+                <!-- Other Category -->
+                <div class="category-card card cursor-pointer hover:shadow-modal transition-all duration-300 group" data-category="other">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-gray-200 transition-colors">
+                            <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-text-primary mb-2">Other Issues</h3>
+                        <p class="text-text-secondary text-sm">Issues not covered in above categories</p>
+                        <div class="mt-3 text-xs text-text-secondary font-medium">Avg. Resolution: 5-8 days</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Suggestions -->
+            <div id="ai-suggestions" class="hidden bg-primary-50 rounded-xl p-6 mb-8">
+                <div class="flex items-start">
+                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-text-primary mb-2">AI-Powered Suggestions</h4>
+                        <p class="text-text-secondary mb-3">Based on your selection, here are similar issues that were recently resolved:</p>
+                        <div id="suggestion-list" class="space-y-2">
+                            <!-- Dynamic suggestions will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button id="next-step-1" class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    Continue to Details
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: Details -->
+        <div id="step-2" class="step-content hidden">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-text-primary mb-4">Describe Your Grievance</h2>
+                <p class="text-lg text-text-secondary">
+                    Provide detailed information about your issue. The more specific you are, the better we can help resolve it.
+                </p>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Subject -->
+                <div>
+                    <label for="subject" class="block text-sm font-medium text-text-primary mb-2">
+                        Subject <span class="text-error">*</span>
+                    </label>
+                    <input type="text" id="subject" name="subject" class="form-input" placeholder="Brief summary of your issue" maxlength="100" />
+                    <div class="flex justify-between mt-1">
+                        <p class="text-xs text-text-secondary">Be specific and concise</p>
+                        <span id="subject-count" class="text-xs text-text-secondary">0/100</span>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label for="description" class="block text-sm font-medium text-text-primary mb-2">
+                        Detailed Description <span class="text-error">*</span>
+                    </label>
+                    <div class="relative">
+                        <textarea id="description" name="description" rows="6" class="form-input pr-12" placeholder="Describe your issue in detail. Include what happened, when it occurred, and how it affects you or your community..."></textarea>
+                        <button type="button" id="voice-input" class="absolute top-3 right-3 p-2 text-text-secondary hover:text-primary transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex justify-between mt-1">
+                        <p class="text-xs text-text-secondary">Include dates, times, and specific details</p>
+                        <span id="description-count" class="text-xs text-text-secondary">0/2000</span>
+                    </div>
+                </div>
+
+                <!-- Priority Level -->
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">Priority Level</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <label class="priority-option cursor-pointer">
+                            <input type="radio" name="priority" value="low" class="sr-only" />
+                            <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-success transition-colors">
+                                <div class="w-8 h-8 bg-success-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <div class="w-3 h-3 bg-success rounded-full"></div>
+                                </div>
+                                <div class="font-medium text-text-primary">Low</div>
+                                <div class="text-xs text-text-secondary">Non-urgent issue</div>
+                            </div>
+                        </label>
+                        <label class="priority-option cursor-pointer">
+                            <input type="radio" name="priority" value="medium" class="sr-only" />
+                            <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-warning transition-colors">
+                                <div class="w-8 h-8 bg-warning-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <div class="w-3 h-3 bg-warning rounded-full"></div>
+                                </div>
+                                <div class="font-medium text-text-primary">Medium</div>
+                                <div class="text-xs text-text-secondary">Moderate urgency</div>
+                            </div>
+                        </label>
+                        <label class="priority-option cursor-pointer">
+                            <input type="radio" name="priority" value="high" class="sr-only" />
+                            <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-error transition-colors">
+                                <div class="w-8 h-8 bg-error-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <div class="w-3 h-3 bg-error rounded-full"></div>
+                                </div>
+                                <div class="font-medium text-text-primary">High</div>
+                                <div class="text-xs text-text-secondary">Urgent attention needed</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Community Impact -->
+                <div class="bg-accent-50 rounded-xl p-6">
+                    <div class="flex items-start">
+                        <input type="checkbox" id="community-impact" class="mt-1 mr-3" />
+                        <div>
+                            <label for="community-impact" class="font-medium text-text-primary cursor-pointer">
+                                Mark as Community Impact Issue
+                            </label>
+                            <p class="text-text-secondary text-sm mt-1">
+                                This issue affects multiple people in my area and would benefit from community support and visibility.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">
+                        Supporting Documents
+                    </label>
+                    <div id="upload-area" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
+                        <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <p class="text-text-primary font-medium mb-2">Drop files here or click to upload</p>
+                        <p class="text-text-secondary text-sm">Photos, videos, PDFs up to 10MB each</p>
+                        <input type="file" id="file-input" class="hidden" multiple accept="image/*,video/*,.pdf" />
+                    </div>
+                    <div id="file-preview" class="mt-4 space-y-2 hidden">
+                        <!-- File previews will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-8">
+                <button id="prev-step-2" class="bg-gray-200 text-text-primary px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                    <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/>
+                    </svg>
+                    Back to Category
+                </button>
+                <button id="next-step-2" class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    Continue to Location
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3: Location -->
+        <div id="step-3" class="step-content hidden">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-text-primary mb-4">Where did this issue occur?</h2>
+                <p class="text-lg text-text-secondary">
+                    Provide the exact location of the issue. This helps us assign it to the correct local authority.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Address Form -->
+                <div class="space-y-6">
+                    <div>
+                        <label for="address" class="block text-sm font-medium text-text-primary mb-2">
+                            Street Address <span class="text-error">*</span>
+                        </label>
+                        <input type="text" id="address" name="address" class="form-input" placeholder="Enter street address" />
+                        <button type="button" id="detect-location" class="mt-2 text-primary text-sm font-medium hover:text-primary-700 transition-colors">
+                            <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            Use my current location
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="city" class="block text-sm font-medium text-text-primary mb-2">
+                                City <span class="text-error">*</span>
+                            </label>
+                            <input type="text" id="city" name="city" class="form-input" placeholder="City" />
+                        </div>
+                        <div>
+                            <label for="state" class="block text-sm font-medium text-text-primary mb-2">
+                                State <span class="text-error">*</span>
+                            </label>
+                            <select id="state" name="state" class="form-input">
+                                <option value>Select State</option>
+                                <option value="maharashtra">Maharashtra</option>
+                                <option value="karnataka">Karnataka</option>
+                                <option value="tamil-nadu">Tamil Nadu</option>
+                                <option value="delhi">Delhi</option>
+                                <option value="gujarat">Gujarat</option>
+                                <option value="rajasthan">Rajasthan</option>
+                                <option value="uttar-pradesh">Uttar Pradesh</option>
+                                <option value="west-bengal">West Bengal</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="district" class="block text-sm font-medium text-text-primary mb-2">
+                                District <span class="text-error">*</span>
+                            </label>
+                            <input type="text" id="district" name="district" class="form-input" placeholder="District" />
+                        </div>
+                        <div>
+                            <label for="pincode" class="block text-sm font-medium text-text-primary mb-2">
+                                PIN Code <span class="text-error">*</span>
+                            </label>
+                            <input type="text" id="pincode" name="pincode" class="form-input" placeholder="6-digit PIN code" maxlength="6" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="landmark" class="block text-sm font-medium text-text-primary mb-2">
+                            Nearby Landmark
+                        </label>
+                        <input type="text" id="landmark" name="landmark" class="form-input" placeholder="Nearby landmark or reference point" />
+                    </div>
+                </div>
+
+                <!-- Map Placeholder -->
+                <div class="bg-gray-100 rounded-xl p-6 flex items-center justify-center min-h-96">
+                    <div class="text-center">
+                        <img src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Interactive Map" class="w-full h-64 object-cover rounded-lg mb-4 opacity-60" onerror="this.src='https://images.pexels.com/photos/1098365/pexels-photo-1098365.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'; this.onerror=null;" />
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-center">
+                                <svg class="w-12 h-12 text-primary mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                <p class="text-text-primary font-medium">Interactive Map</p>
+                                <p class="text-text-secondary text-sm">Click to pinpoint exact location</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-8">
+                <button id="prev-step-3" class="bg-gray-200 text-text-primary px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                    <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/>
+                    </svg>
+                    Back to Details
+                </button>
+                <button id="next-step-3" class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    Review & Submit
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 4: Review & Submit -->
+        <div id="step-4" class="step-content hidden">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-text-primary mb-4">Review Your Grievance</h2>
+                <p class="text-lg text-text-secondary">
+                    Please review all the information before submitting. You can go back to make changes if needed.
+                </p>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Review Summary -->
+                <div class="card">
+                    <div class="flex items-start justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-text-primary">Grievance Summary</h3>
+                        <span id="review-priority" class="status-badge status-warning">Medium Priority</span>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <dt class="text-sm font-medium text-text-secondary">Category</dt>
+                            <dd id="review-category" class="text-text-primary">Infrastructure</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-text-secondary">Subject</dt>
+                            <dd id="review-subject" class="text-text-primary">Pothole on Main Street causing accidents</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-text-secondary">Description</dt>
+                            <dd id="review-description" class="text-text-primary">Large pothole has formed on Main Street near the bus stop...</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-text-secondary">Location</dt>
+                            <dd id="review-location" class="text-text-primary">123 Main Street, Mumbai, Maharashtra - 400001</dd>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expected Timeline -->
+                <div class="card bg-primary-50">
+                    <div class="flex items-start">
+                        <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-text-primary mb-2">Expected Timeline</h4>
+                            <p class="text-text-secondary mb-3">Based on your category and priority level:</p>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <div class="w-2 h-2 bg-success rounded-full mr-3"></div>
+                                    <span class="text-sm text-text-secondary">Acknowledgment: Within 24 hours</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-2 h-2 bg-warning rounded-full mr-3"></div>
+                                    <span class="text-sm text-text-secondary">Assignment to Department: 1-2 days</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                                    <span class="text-sm text-text-secondary">Expected Resolution: 5-7 days</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assigned Department -->
+                <div class="card">
+                    <h4 class="font-semibold text-text-primary mb-3">Assigned Department</h4>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-secondary-100 rounded-full flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-medium text-text-primary">Public Works Department</div>
+                            <div class="text-text-secondary text-sm">Municipal Corporation of Greater Mumbai</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <div class="flex items-start">
+                        <input type="checkbox" id="terms-agreement" class="mt-1 mr-3" />
+                        <div>
+                            <label for="terms-agreement" class="font-medium text-text-primary cursor-pointer">
+                                I agree to the terms and conditions
+                            </label>
+                            <p class="text-text-secondary text-sm mt-1">
+                                I confirm that the information provided is accurate and I understand that false complaints may result in legal action. I also consent to the processing of my personal data for grievance resolution purposes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-8">
+                <button id="prev-step-4" class="bg-gray-200 text-text-primary px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                    <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/>
+                    </svg>
+                    Back to Location
+                </button>
+                <button id="submit-grievance" class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    </svg>
+                    Submit Grievance
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center">
+            <div class="w-16 h-16 bg-success-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-8 h-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-text-primary mb-4">Grievance Submitted Successfully!</h3>
+            <p class="text-text-secondary mb-6">Your grievance has been registered and assigned a unique tracking ID.</p>
+            
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <div class="text-sm text-text-secondary mb-1">Tracking ID</div>
+                <div class="text-2xl font-bold text-primary font-mono" id="tracking-id">GRV-2025-001234</div>
+                <div class="mt-3">
+                    <img src="https://images.unsplash.com/photo-1606166187734-a4cb74079037?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3" alt="QR Code" class="w-24 h-24 mx-auto" onerror="this.src='https://images.pexels.com/photos/4386431/pexels-photo-4386431.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'; this.onerror=null;" />
+                    <p class="text-xs text-text-secondary mt-2">Scan QR code for quick tracking</p>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <a href="track_grievance.html" class="btn-primary w-full inline-block">
+                    Track Your Grievance
+                </a>
+                <button onclick="closeSuccessModal()" class="w-full px-6 py-3 text-text-secondary hover:text-text-primary transition-colors">
+                    Submit Another Grievance
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-text-primary text-white py-12 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <!-- Brand -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center mb-4">
+                        <svg class="h-8 w-8 text-primary" viewBox="0 0 40 40" fill="currentColor">
+                            <path d="M20 4C11.163 4 4 11.163 4 20s7.163 16 16 16 16-7.163 16-16S28.837 4 20 4zm0 28c-6.627 0-12-5.373-12-12S13.373 8 20 8s12 5.373 12 12-5.373 12-12 12z"/>
+                            <path d="M20 12c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8zm0 12c-2.206 0-4-1.794-4-4s1.794-4 4-4 4 1.794 4 4-1.794 4-4 4z"/>
+                            <circle cx="20" cy="20" r="2" fill="white"/>
+                        </svg>
+                        <div class="ml-3">
+                            <h3 class="text-xl font-bold">GrievMitra Portal</h3>
+                            <p class="text-gray-300 text-sm">Your Voice, Our Mission</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 mb-4 max-w-md">
+                        Transforming governance through transparency, accountability, and citizen empowerment. Every voice matters, every grievance counts.
+                    </p>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="submit_grievance.html" class="text-gray-300 hover:text-white transition-colors">Submit Grievance</a></li>
+                        <li><a href="track_grievance.html" class="text-gray-300 hover:text-white transition-colors">Track Status</a></li>
+                        <li><a href="transparency_dashboard.html" class="text-gray-300 hover:text-white transition-colors">Transparency</a></li>
+                        <li><a href="about_griev_mitra.html" class="text-gray-300 hover:text-white transition-colors">About Us</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact -->
+                <div>
+                    <h4 class="font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2">
+                        <li class="text-gray-300">Helpline: 1800-123-4567</li>
+                        <li class="text-gray-300">Email: support@grievmitra.gov.in</li>
+                        <li class="text-gray-300">24/7 Citizen Support</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center">
+                <p class="text-gray-300">
+                    © 2025 GrievMitra Portal. All Rights Reserved. | A Digital India Initiative
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global variables
+        let currentStep = 1;
+        let selectedCategory = '';
+        let formData = {};
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Step navigation
+        function showStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+            
+            // Show current step
+            document.getElementById(`step-${step}`).classList.remove('hidden');
+            
+            // Update progress
+            updateProgress(step);
+            
+            currentStep = step;
+        }
+
+        function updateProgress(step) {
+            const progress = (step / 4) * 100;
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+            document.getElementById('current-step').textContent = step;
+            
+            // Update step labels
+            const labels = document.querySelectorAll('.progress-bar + div span');
+            labels.forEach((label, index) => {
+                if (index < step - 1) {
+                    label.classList.add('font-medium', 'text-success');
+                    label.classList.remove('text-text-secondary');
+                } else if (index === step - 1) {
+                    label.classList.add('font-medium', 'text-primary');
+                    label.classList.remove('text-text-secondary');
+                } else {
+                    label.classList.add('text-text-secondary');
+                    label.classList.remove('font-medium', 'text-primary', 'text-success');
+                }
+            });
+        }
+
+        // Category selection
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove previous selection
+                document.querySelectorAll('.category-card').forEach(c => {
+                    c.classList.remove('ring-2', 'ring-primary', 'bg-primary-50');
+                });
+                
+                // Add selection to clicked card
+                this.classList.add('ring-2', 'ring-primary', 'bg-primary-50');
+                
+                selectedCategory = this.dataset.category;
+                document.getElementById('next-step-1').disabled = false;
+                
+                // Show AI suggestions
+                showAISuggestions(selectedCategory);
+            });
+        });
+
+        function showAISuggestions(category) {
+            const suggestions = {
+                'infrastructure': [
+                    'Pothole repair on MG Road - Resolved in 3 days',
+                    'Street light not working - Fixed within 24 hours',
+                    'Water pipeline burst - Repaired in 2 days'
+                ],
+                'public-services': [
+                    'Birth certificate delay - Processed in 1 day',
+                    'Ration card issue - Resolved in 4 days',
+                    'School admission problem - Sorted in 2 days'
+                ],
+                'corruption': [
+                    'Bribery demand for license - Action taken in 7 days',
+                    'Unfair treatment at office - Official warned in 5 days'
+                ],
+                'environmental': [
+                    'Illegal dumping of waste - Cleaned in 2 days',
+                    'Air pollution from factory - Inspection done in 3 days'
+                ],
+                'safety': [
+                    'Broken traffic signal - Fixed in 1 day',
+                    'Unsafe construction site - Secured in 2 days'
+                ],
+                'other': [
+                    'General complaint - Reviewed in 3-5 days'
+                ]
+            };
+
+            const suggestionList = document.getElementById('suggestion-list');
+            suggestionList.innerHTML = '';
+            
+            suggestions[category]?.forEach(suggestion => {
+                const div = document.createElement('div');
+                div.className = 'text-sm text-text-secondary bg-white rounded-lg p-3 border border-primary-200';
+                div.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 text-success mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        ${suggestion}
+                    </div>
+                `;
+                suggestionList.appendChild(div);
+            });
+            
+            document.getElementById('ai-suggestions').classList.remove('hidden');
+        }
+
+        // Form validation
+        function validateStep2() {
+            const subject = document.getElementById('subject').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const priority = document.querySelector('input[name="priority"]:checked');
+            
+            const isValid = subject.length > 0 && description.length > 10 && priority;
+            document.getElementById('next-step-2').disabled = !isValid;
+            
+            return isValid;
+        }
+
+        function validateStep3() {
+            const address = document.getElementById('address').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const state = document.getElementById('state').value;
+            const district = document.getElementById('district').value.trim();
+            const pincode = document.getElementById('pincode').value.trim();
+            
+            const isValid = address && city && state && district && pincode.length === 6;
+            document.getElementById('next-step-3').disabled = !isValid;
+            
+            return isValid;
+        }
+
+        // Character counters
+        document.getElementById('subject').addEventListener('input', function() {
+            const count = this.value.length;
+            document.getElementById('subject-count').textContent = `${count}/100`;
+            validateStep2();
+        });
+
+        document.getElementById('description').addEventListener('input', function() {
+            const count = this.value.length;
+            document.getElementById('description-count').textContent = `${count}/2000`;
+            validateStep2();
+        });
+
+        // Priority selection
+        document.querySelectorAll('input[name="priority"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Remove previous selection styling
+                document.querySelectorAll('.priority-option div').forEach(div => {
+                    div.classList.remove('border-success', 'border-warning', 'border-error', 'bg-success-50', 'bg-warning-50', 'bg-error-50');
+                    div.classList.add('border-gray-200');
+                });
+                
+                // Add selection styling
+                const parentDiv = this.closest('.priority-option').querySelector('div');
+                const value = this.value;
+                parentDiv.classList.remove('border-gray-200');
+                
+                if (value === 'low') {
+                    parentDiv.classList.add('border-success', 'bg-success-50');
+                } else if (value === 'medium') {
+                    parentDiv.classList.add('border-warning', 'bg-warning-50');
+                } else if (value === 'high') {
+                    parentDiv.classList.add('border-error', 'bg-error-50');
+                }
+                
+                validateStep2();
+            });
+        });
+
+        // Location validation
+        ['address', 'city', 'district'].forEach(id => {
+            document.getElementById(id).addEventListener('input', validateStep3);
+        });
+
+        document.getElementById('state').addEventListener('change', validateStep3);
+
+        document.getElementById('pincode').addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 6);
+            validateStep3();
+        });
+
+        // Location detection
+        document.getElementById('detect-location').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                this.innerHTML = '<svg class="w-4 h-4 mr-1 inline animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Detecting location...';
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        // Simulate reverse geocoding
+                        setTimeout(() => {
+                            document.getElementById('address').value = '123 Sample Street';
+                            document.getElementById('city').value = 'Mumbai';
+                            document.getElementById('state').value = 'maharashtra';
+                            document.getElementById('district').value = 'Mumbai';
+                            document.getElementById('pincode').value = '400001';
+                            document.getElementById('landmark').value = 'Near Central Mall';
+                            
+                            document.getElementById('detect-location').innerHTML = '<svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Location detected';
+                            
+                            validateStep3();
+                        }, 2000);
+                    },
+                    function(error) {
+                        document.getElementById('detect-location').innerHTML = '<svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>Use my current location';
+                        alert('Unable to detect location. Please enter manually.');
+                    }
+                );
+            }
+        });
+
+        // File upload
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const filePreview = document.getElementById('file-preview');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('border-primary', 'bg-primary-50');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('border-primary', 'bg-primary-50');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('border-primary', 'bg-primary-50');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            filePreview.classList.remove('hidden');
+            filePreview.innerHTML = '';
+            
+            Array.from(files).forEach((file, index) => {
+                if (file.size > 10 * 1024 * 1024) {
+                    alert(`File ${file.name} is too large. Maximum size is 10MB.`);
+                    return;
+                }
+                
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'flex items-center justify-between bg-gray-50 rounded-lg p-3';
+                fileDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-8 h-8 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <div>
+                            <div class="font-medium text-text-primary">${file.name}</div>
+                            <div class="text-sm text-text-secondary">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                        </div>
+                    </div>
+                    <button type="button" class="text-error hover:text-error-700 transition-colors" onclick="removeFile(this)">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                `;
+                filePreview.appendChild(fileDiv);
+            });
+        }
+
+        function removeFile(button) {
+            button.closest('div').remove();
+            if (filePreview.children.length === 0) {
+                filePreview.classList.add('hidden');
+            }
+        }
+
+        // Voice input (mock implementation)
+        document.getElementById('voice-input').addEventListener('click', function() {
+            const button = this;
+            const textarea = document.getElementById('description');
+            
+            button.innerHTML = '<svg class="w-5 h-5 animate-pulse" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"></path></svg>';
+            
+            // Simulate voice recognition
+            setTimeout(() => {
+                textarea.value += (textarea.value ? ' ' : '') + 'This is a sample voice input text that demonstrates the voice-to-text functionality.';
+                textarea.dispatchEvent(new Event('input'));
+                
+                button.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>';
+            }, 3000);
+        });
+
+        // Step navigation buttons
+        document.getElementById('next-step-1').addEventListener('click', () => showStep(2));
+        document.getElementById('prev-step-2').addEventListener('click', () => showStep(1));
+        document.getElementById('next-step-2').addEventListener('click', () => showStep(3));
+        document.getElementById('prev-step-3').addEventListener('click', () => showStep(2));
+        document.getElementById('next-step-3').addEventListener('click', () => {
+            populateReview();
+            showStep(4);
+        });
+        document.getElementById('prev-step-4').addEventListener('click', () => showStep(3));
+
+        // Terms agreement
+        document.getElementById('terms-agreement').addEventListener('change', function() {
+            document.getElementById('submit-grievance').disabled = !this.checked;
+        });
+
+        // Populate review step
+        function populateReview() {
+            const categoryNames = {
+                'infrastructure': 'Infrastructure',
+                'public-services': 'Public Services',
+                'corruption': 'Corruption',
+                'environmental': 'Environmental',
+                'safety': 'Safety & Security',
+                'other': 'Other Issues'
+            };
+            
+            document.getElementById('review-category').textContent = categoryNames[selectedCategory];
+            document.getElementById('review-subject').textContent = document.getElementById('subject').value;
+            document.getElementById('review-description').textContent = document.getElementById('description').value;
+            
+            const location = `${document.getElementById('address').value}, ${document.getElementById('city').value}, ${document.getElementById('state').options[document.getElementById('state').selectedIndex].text} - ${document.getElementById('pincode').value}`;
+            document.getElementById('review-location').textContent = location;
+            
+            const priority = document.querySelector('input[name="priority"]:checked')?.value;
+            const priorityBadge = document.getElementById('review-priority');
+            priorityBadge.textContent = `${priority.charAt(0).toUpperCase() + priority.slice(1)} Priority`;
+            priorityBadge.className = `status-badge status-${priority === 'high' ? 'error' : priority === 'medium' ? 'warning' : 'success'}`;
+        }
+
+        // Submit grievance
+        document.getElementById('submit-grievance').addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<svg class="w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Submitting...';
+            
+            // Simulate submission
+            setTimeout(() => {
+                const trackingId = 'GRV-2025-' + Math.random().toString().substr(2, 6);
+                document.getElementById('tracking-id').textContent = trackingId;
+                document.getElementById('success-modal').classList.remove('hidden');
+            }, 2000);
+        });
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').classList.add('hidden');
+            // Reset form
+            location.reload();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showStep(1);
+        });
+
+        // Auto-save draft (mock implementation)
+        let draftTimer;
+        function saveDraft() {
+            clearTimeout(draftTimer);
+            draftTimer = setTimeout(() => {
+                const draftData = {
+                    category: selectedCategory,
+                    subject: document.getElementById('subject').value,
+                    description: document.getElementById('description').value,
+                    priority: document.querySelector('input[name="priority"]:checked')?.value,
+                    timestamp: new Date().toISOString()
+                };
+                localStorage.setItem('grievance_draft', JSON.stringify(draftData));
+            }, 1000);
+        }
+
+        // Add auto-save listeners
+        ['subject', 'description'].forEach(id => {
+            document.getElementById(id).addEventListener('input', saveDraft);
+        });
+
+        document.querySelectorAll('input[name="priority"]').forEach(radio => {
+            radio.addEventListener('change', saveDraft);
+        });
+    </script>
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>

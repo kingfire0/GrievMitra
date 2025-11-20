@@ -90,9 +90,9 @@
                         class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">Transparency</a>
                     <a href="about_griev_mitra.html"
                         class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">About</a>
-                    <a href="admin_dashboard.html"
-                        class="bg-primary text-white block px-3 py-2 rounded-md text-base font-medium">Admin</a>
-                         <a href="user_registration.html" id="register-link"
+                        <a href="admin_dashboard.html" id="admin-link-mobile"
+                            class="bg-primary text-white block px-3 py-2 rounded-md text-base font-medium hidden">Admin</a>
+                        <a href="user_registration.html" id="register-link"
                             class="text-primary font-semibold">Register</a>
                         <a href="login_screen.html" id="login-link"
                             class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-700">Login</a>
@@ -624,11 +624,14 @@
         });
         // Check login status and update header
         function updateHeader() {
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; // or sessionStorage
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const userRole = localStorage.getItem('userRole'); // 'admin' or 'user'
 
             const registerLink = document.getElementById('register-link');
             const loginLink = document.getElementById('login-link');
             const logoutLink = document.getElementById('logout-link');
+            const adminLinkDesktop = document.querySelector('a[href="admin_dashboard.html"]');
+            const adminLinkMobile = document.getElementById('admin-link-mobile');
 
             if (isLoggedIn) {
                 // Hide login/register
@@ -637,13 +640,24 @@
 
                 // Show logout
                 logoutLink.style.display = 'inline-flex';
+
+                // Show admin links only for admin users
+                if (userRole === 'admin') {
+                    if (adminLinkDesktop) adminLinkDesktop.style.display = 'inline-flex';
+                    if (adminLinkMobile) adminLinkMobile.style.display = 'block';
+                } else {
+                    if (adminLinkDesktop) adminLinkDesktop.style.display = 'none';
+                    if (adminLinkMobile) adminLinkMobile.style.display = 'none';
+                }
             } else {
                 // Show login/register
                 registerLink.style.display = 'inline';
                 loginLink.style.display = 'inline-flex';
 
-                // Hide logout
+                // Hide logout and admin links
                 logoutLink.style.display = 'none';
+                if (adminLinkDesktop) adminLinkDesktop.style.display = 'none';
+                if (adminLinkMobile) adminLinkMobile.style.display = 'none';
             }
         }
 

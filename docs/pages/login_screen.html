@@ -1,133 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - GrievMitra</title>
-  <link rel="stylesheet" href="../css/main.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - GrievMitra Portal</title>
+    <meta name="description" content="Secure login portal for citizens and government officials to access the GrievMitra grievance management system.">
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            position: relative;
+            animation: slideIn 0.8s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo svg {
+            width: 60px;
+            height: 60px;
+            color: #3b82f6;
+            margin: 0 auto 15px;
+        }
+        .logo h1 {
+            color: #1e40af;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+        }
+        .logo p {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 5px 0 0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .form-group svg {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            width: 20px;
+            height: 20px;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .lazy-loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 25px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .register-link a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        .register-link a:hover {
+            color: #1d4ed8;
+        }
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        .shape:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            top: 20%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+        .shape:nth-child(3) {
+            width: 40px;
+            height: 40px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-  <main class="max-w-4xl mx-auto p-6">
-    <h1 class="text-3xl font-bold text-center mb-8">Login to GrievMitra</h1>
+<body>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
 
-    <!-- Admin Login -->
-    <form id="adminLoginForm" class="bg-white p-6 rounded-xl shadow mb-6">
-      <h2 class="text-xl font-semibold mb-4">Admin Login</h2>
-      <input type="text" name="username" placeholder="Employee ID" class="w-full border p-3 mb-3 rounded" required />
-      <input type="password" name="password" placeholder="Password" class="w-full border p-3 mb-3 rounded" required />
-      <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded">Login</button>
-    </form>
+    <div class="login-container">
+        <div class="logo">
+            <svg viewBox="0 0 40 40" fill="currentColor">
+                <path d="M20 4C11.163 4 4 11.163 4 20s7.163 16 16 16 16-7.163 16-16S28.837 4 20 4zm0 28c-6.627 0-12-5.373-12-12S13.373 8 20 8s12 5.373 12 12-5.373 12-12 12z"/>
+                <path d="M20 12c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8zm0 12c-2.206 0-4-1.794-4-4s1.794-4 4-4 4 1.794 4 4-1.794 4-4 4z"/>
+                <circle cx="20" cy="20" r="2" fill="white"/>
+            </svg>
+            <h1>GrievMitra</h1>
+            <p>Secure Access Portal</p>
+        </div>
 
-    <!-- Public Login -->
-    <form id="publicLoginForm" class="bg-white p-6 rounded-xl shadow mb-6">
-      <h2 class="text-xl font-semibold mb-4">Citizen Login</h2>
-      <input type="text" name="email" placeholder="Email" class="w-full border p-3 mb-3 rounded" required />
-      <input type="password" name="password" placeholder="Password" class="w-full border p-3 mb-3 rounded" required />
-      <button type="submit" class="w-full bg-green-600 text-white py-3 rounded">Login</button>
-    </form>
-  </main>
+        <form id="loginForm">
+            <div class="form-group">
+                <input type="email" name="email" placeholder="Email Address" required />
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+                </svg>
+            </div>
 
- 
-   <!-- <script>
-  document.getElementById("loginForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const formData = {};
-    new FormData(e.target).forEach((val, key) => formData[key] = val);
+            <div class="form-group">
+                <input type="password" name="password" placeholder="Password" required />
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+            </div>
 
-    try {
-      const res = await fetch("http://localhost:5000/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
-      const data = await res.json();
+            <button type="submit" id="loginBtn" class="login-btn">
+                <span id="btnText">Sign In</span>
+            </button>
+        </form>
 
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role);
+        <div class="register-link">
+            Don't have an account? <a href="user_registration.html">Register here</a>
+        </div>
+    </div>
 
-        if (data.role === "admin") {
-          window.location.href = "admin_dashboard.html";
-        } else {
-          window.location.href = "homepage.html";
-        }
-    
-      } else {
-        alert("Error: " + data.message);
-      }
-    } catch (err) {
-      alert("Server error. Please try again.");
-    }
-  });
-</script> -->
-<script>
-  // --- Admin Login ---
-  document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const formData = {};
-    new FormData(e.target).forEach((val, key) => formData[key] = val);
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const loginBtn = document.getElementById("loginBtn");
+            const btnText = document.getElementById("btnText");
+            const originalText = btnText.textContent;
+            btnText.innerHTML = '<span class="lazy-loader"></span>Signing In...';
+            loginBtn.disabled = true;
 
-    // For backend, we send email as username
-    formData.email = formData.username; // backend expects 'email'
-    
-    try {
-      const res = await fetch("http://localhost:5000/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
-      const data = await res.json();
+            const formData = {};
+            new FormData(e.target).forEach((val, key) => formData[key] = val);
 
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role);
-        localStorage.setItem("name", data.name);
+            try {
+                const res = await fetch("http://localhost:5000/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formData)
+                });
+                const data = await res.json();
 
-        if (data.role === "admin") {
-          window.location.href = "admin_dashboard.html";
-        } else {
-          window.location.href = "homepage.html";
-        }
-      } else {
-        alert("Error: " + (data.error || "Invalid login"));
-      }
-    } catch (err) {
-      alert("Server error. Please try again.");
-      console.error(err);
-    }
-  });
+                if (data.token) {
+                    localStorage.setItem("token", data.token);
+                    localStorage.setItem("role", data.role);
+                    localStorage.setItem("name", data.name);
 
-  // --- Citizen Login ---
-  document.getElementById("publicLoginForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const formData = {};
-    new FormData(e.target).forEach((val, key) => formData[key] = val);
-
-    try {
-      const res = await fetch("http://localhost:5000/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
-      const data = await res.json();
-
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role);
-        localStorage.setItem("name", data.name);
-
-        // Redirect to homepage for citizen
-        window.location.href = "homepage.html";
-      } else {
-        alert("Error: " + (data.error || "Invalid login"));
-      }
-    } catch (err) {
-      alert("Server error. Please try again.");
-      console.error(err);
-    }
-  });
-</script>
-
- 
+                    if (data.role === "admin") {
+                        window.location.href = "admin_dashboard.html";
+                    } else {
+                        window.location.href = "homepage.html";
+                    }
+                } else {
+                    alert("Error: " + (data.message || "Invalid credentials"));
+                }
+            } catch (err) {
+                alert("Server error. Please try again.");
+                console.error(err);
+            } finally {
+                btnText.innerHTML = originalText;
+                loginBtn.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>

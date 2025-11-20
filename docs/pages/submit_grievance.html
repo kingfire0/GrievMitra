@@ -38,7 +38,10 @@
                         <a href="track_grievance.html" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">Track Status</a>
                         <a href="transparency_dashboard.html" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">Transparency</a>
                         <a href="about_griev_mitra.html" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">About</a>
-                        <a href="admin_dashboard.html" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors">Admin</a>
+                        <a href="admin_dashboard.html" id="admin-link-desktop" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors">Admin</a>
+                        <a href="user_registration.html" id="register-link" class="text-primary font-semibold">Register</a>
+                        <a href="login_screen.html" id="login-link" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-700">Login</a>
+                        <a href="#" id="logout-link" class="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-700 hidden">Logout</a>
                     </div>
                 </div>
 
@@ -60,7 +63,10 @@
                     <a href="track_grievance.html" class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">Track Status</a>
                     <a href="transparency_dashboard.html" class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">Transparency</a>
                     <a href="about_griev_mitra.html" class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">About</a>
-                    <a href="admin_dashboard.html" class="bg-primary text-white block px-3 py-2 rounded-md text-base font-medium">Admin</a>
+                    <a href="admin_dashboard.html" id="admin-link-mobile" class="bg-primary text-white block px-3 py-2 rounded-md text-base font-medium">Admin</a>
+                    <a href="user_registration.html" id="register-link-mobile" class="text-primary font-semibold block px-3 py-2 rounded-md text-base">Register</a>
+                    <a href="login_screen.html" id="login-link-mobile" class="bg-primary text-white block px-3 py-2 rounded-md text-base">Login</a>
+                    <a href="#" id="logout-link-mobile" class="bg-accent text-white block px-3 py-2 rounded-md text-base hidden">Logout</a>
                 </div>
             </div>
         </nav>
@@ -573,7 +579,7 @@
             </div>
             <h3 class="text-2xl font-bold text-text-primary mb-4">Grievance Submitted Successfully!</h3>
             <p class="text-text-secondary mb-6">Your grievance has been registered and assigned a unique tracking ID.</p>
-            
+
             <div class="bg-gray-50 rounded-lg p-4 mb-6">
                 <div class="text-sm text-text-secondary mb-1">Tracking ID</div>
                 <div class="text-2xl font-bold text-primary font-mono" id="tracking-id">GRV-2025-001234</div>
@@ -590,6 +596,28 @@
                 <button onclick="closeSuccessModal()" class="w-full px-6 py-3 text-text-secondary hover:text-text-primary transition-colors">
                     Submit Another Grievance
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Prompt Modal -->
+    <div id="login-prompt-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center">
+            <div class="w-16 h-16 bg-warning-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-8 h-8 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-text-primary mb-4">Login Required</h3>
+            <p class="text-text-secondary mb-6">You need to be logged in to submit a grievance. Please login or register to continue.</p>
+
+            <div class="space-y-3">
+                <a href="login_screen.html" class="btn-primary w-full inline-block">
+                    Login
+                </a>
+                <a href="user_registration.html" class="w-full px-6 py-3 text-text-secondary hover:text-text-primary transition-colors inline-block">
+                    Register New Account
+                </a>
             </div>
         </div>
     </div>
@@ -989,9 +1017,19 @@
 
         // Submit grievance
         document.getElementById('submit-grievance').addEventListener('click', function() {
+            // Check if user is logged in
+            const userToken = localStorage.getItem('userToken');
+            const userRole = localStorage.getItem('userRole');
+
+            if (!userToken || !userRole) {
+                // Show login prompt modal
+                document.getElementById('login-prompt-modal').classList.remove('hidden');
+                return;
+            }
+
             this.disabled = true;
             this.innerHTML = '<svg class="w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Submitting...';
-            
+
             // Simulate submission
             setTimeout(() => {
                 const trackingId = 'GRV-2025-' + Math.random().toString().substr(2, 6);

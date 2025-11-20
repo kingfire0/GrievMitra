@@ -24,9 +24,36 @@ const GrievanceSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  location: {
+  priority: {
     type: String,
-    required: true
+    enum: ["low", "medium", "high"],
+    default: "medium"
+  },
+  location: {
+    address: {
+      type: String,
+      required: true
+    },
+    city: {
+      type: String,
+      required: true
+    },
+    state: {
+      type: String,
+      required: true
+    },
+    district: {
+      type: String,
+      required: true
+    },
+    pincode: {
+      type: String,
+      required: true
+    },
+    landmark: {
+      type: String,
+      default: ""
+    }
   },
   status: {
     type: String,

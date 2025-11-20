@@ -248,7 +248,76 @@
         </div>
     </div>
 
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
 
+            const formData = new FormData(event.target);
+            const data = {
+                name: formData.get('name').trim(),
+                email: formData.get('email').trim(),
+                phone: formData.get('phone').trim(),
+                password: formData.get('password')
+            };
+
+            // Validation
+            if (!data.name || data.name.length < 2) {
+                alert('Please enter a valid full name (at least 2 characters).');
+                return;
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(data.email)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+            const phoneRegex = /^[6-9][0-9]{9}$/;
+            if (!phoneRegex.test(data.phone)) {
+                alert('Please enter a valid 10-digit phone number starting with 6-9.');
+                return;
+            }
+            if (!data.password || data.password.length < 6) {
+                alert('Password must be at least 6 characters long.');
+                return;
+            }
+
+            // Disable button and show loader
+            const btn = document.getElementById('registerBtn');
+            const btnText = document.getElementById('btnText');
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="lazy-loader"></span>Creating Account...';
+
+            try {
+                const response = await fetch('http://localhost:5000/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Show success modal
+                    document.getElementById('successTitle').textContent = 'Registration Successful!';
+                    document.getElementById('successMessage').textContent = result.message || 'Your account has been created successfully. Please log in to continue.';
+                    document.getElementById('successModal').classList.remove('hidden');
+                } else {
+                    alert(result.message || 'Registration failed. Please try again.');
+                }
+            } catch (error) {
+                alert('An error occurred. Please check your connection and try again.');
+            } finally {
+                // Re-enable button
+                btn.disabled = false;
+                btnText.innerHTML = 'Create Account';
+            }
+        });
+
+        function goToLogin() {
+            window.location.href = 'login_screen.html';
+        }
+    </script>
 
 </body>
 </html>

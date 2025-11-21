@@ -1,4 +1,5 @@
 # GrievMitra Portal
+<p align="center"> <img src="https://img.shields.io/badge/Status-Active-brightgreen" /> <img src="https://img.shields.io/badge/Version-1.0.0-blue" /> <img src="https://img.shields.io/badge/Frontend-HTML%20%7C%20CSS%20%7C%20JS-orange" /> <img src="https://img.shields.io/badge/Backend-Firebase-yellow" /> <img src="https://img.shields.io/badge/Platform-Web-lightgrey" /> </p>
 
 GrievMitra Portal is a comprehensive grievance management system designed to facilitate efficient handling of citizen grievances. It provides a user-friendly interface for citizens to submit grievances, track their status, and view transparency dashboards. Administrators can manage grievances, update statuses, and oversee the system. The portal supports multiple user roles (citizen, leader, admin) and ensures secure authentication and data management.
 

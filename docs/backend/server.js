@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const path = require("path");
 
 // Import models
 const User = require("./models/User");
@@ -13,11 +14,11 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+// Serve static files from the parent directory (docs)
+app.use(express.static(path.join(__dirname, '..')));
+
 // ✅ MongoDB Connection
-mongoose.connect("mongodb://127.0.0.1:27017/grievmitra", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect("mongodb://127.0.0.1:27017/grievmitra")
   .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.error("❌ MongoDB connection error:", err));
 

@@ -214,3 +214,59 @@
     box-shadow: var(--shadow-modal);
   }
 }
+/* Base clickable style */
+.btn-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: #eceef1;
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.25s ease;
+}
+
+/* 🔹 Hover background */
+.btn-link:hover {
+  background: rgba(0, 102, 255, 0.08);
+}
+
+/* 🔹 Underline animation */
+.btn-link span {
+  position: relative;
+}
+.btn-link span::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0%;
+  height: 2px;
+  background: #0052cc;
+  transition: 0.25s ease;
+}
+.btn-link:hover span::after {
+  width: 100%;
+}
+
+/* 🔹 Filled style (optional) */
+.btn-link.filled {
+  background: rgba(0, 102, 255, 0.16);
+}
+.btn-link.filled:hover {
+  background: rgba(0, 102, 255, 0.25);
+}
+
+/* 🔹 Icon-only mobile */
+@media (max-width: 600px) {
+  .btn-link span {
+    display: none;
+  }
+}
+/* Form input focus style */
+.form-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(11, 99, 206, 0.3);
+  border-color: #0b63ce;
+}   

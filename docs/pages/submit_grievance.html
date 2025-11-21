@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="../css/main.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fgrievmitra7175back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
 </head>
 <body class="bg-background">
@@ -365,112 +368,198 @@
         </div>
 
         <!-- Step 3: Location -->
-        <div id="step-3" class="step-content hidden">
-            <div class="mb-8">
-                <h2 class="text-3xl font-bold text-text-primary mb-4">Where did this issue occur?</h2>
-                <p class="text-lg text-text-secondary">
-                    Provide the exact location of the issue. This helps us assign it to the correct local authority.
-                </p>
+       <!-- Step 3: Location -->
+<div id="step-3" class="step-content hidden">
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-text-primary mb-4">Where did this issue occur?</h2>
+        <p class="text-lg text-text-secondary">
+            Provide the exact location of the issue. This helps us assign it to the correct local authority.
+        </p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-8">
+        <!-- Address Form -->
+        <div class="space-y-6">
+
+            <!-- Address + Use My Location -->
+            <div>
+                <label for="address" class="block text-sm font-medium text-text-primary mb-2">
+                    Street Address <span class="text-error">*</span>
+                </label>
+                <input type="text" id="address" class="form-input" placeholder="Enter street address" />
+
+               <button type="button" id="detect-location"
+    class="mt-2 inline-flex items-center gap-2 px-3 py-2 bg-primary rounded-full text-white text-sm font-medium hover:bg-primary-700 transition">
+
+    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+
+    <span>Use my current location</span>
+</button>
+
             </div>
 
-            <div class="grid lg:grid-cols-2 gap-8">
-                <!-- Address Form -->
-                <div class="space-y-6">
-                    <div>
-                        <label for="address" class="block text-sm font-medium text-text-primary mb-2">
-                            Street Address <span class="text-error">*</span>
-                        </label>
-                        <input type="text" id="address" name="address" class="form-input" placeholder="Enter street address" />
-                        <button type="button" id="detect-location" class="mt-2 text-primary text-sm font-medium hover:text-primary-700 transition-colors">
-                            <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
-                            Use my current location
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="city" class="block text-sm font-medium text-text-primary mb-2">
-                                City <span class="text-error">*</span>
-                            </label>
-                            <input type="text" id="city" name="city" class="form-input" placeholder="City" />
-                        </div>
-                        <div>
-                            <label for="state" class="block text-sm font-medium text-text-primary mb-2">
-                                State <span class="text-error">*</span>
-                            </label>
-                            <select id="state" name="state" class="form-input">
-                                <option value>Select State</option>
-                                <option value="maharashtra">Maharashtra</option>
-                                <option value="karnataka">Karnataka</option>
-                                <option value="tamil-nadu">Tamil Nadu</option>
-                                <option value="delhi">Delhi</option>
-                                <option value="gujarat">Gujarat</option>
-                                <option value="rajasthan">Rajasthan</option>
-                                <option value="uttar-pradesh">Uttar Pradesh</option>
-                                <option value="west-bengal">West Bengal</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="district" class="block text-sm font-medium text-text-primary mb-2">
-                                District <span class="text-error">*</span>
-                            </label>
-                            <input type="text" id="district" name="district" class="form-input" placeholder="District" />
-                        </div>
-                        <div>
-                            <label for="pincode" class="block text-sm font-medium text-text-primary mb-2">
-                                PIN Code <span class="text-error">*</span>
-                            </label>
-                            <input type="text" id="pincode" name="pincode" class="form-input" placeholder="6-digit PIN code" maxlength="6" />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label for="landmark" class="block text-sm font-medium text-text-primary mb-2">
-                            Nearby Landmark
-                        </label>
-                        <input type="text" id="landmark" name="landmark" class="form-input" placeholder="Nearby landmark or reference point" />
-                    </div>
+            <!-- City + State -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">City <span class="text-error">*</span></label>
+                    <input type="text" id="city" class="form-input" placeholder="City" />
                 </div>
 
-                <!-- Map Placeholder -->
-                <div class="bg-gray-100 rounded-xl p-6 flex items-center justify-center min-h-96">
-                    <div class="text-center">
-                        <img src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Interactive Map" class="w-full h-64 object-cover rounded-lg mb-4 opacity-60" onerror="this.src='https://images.pexels.com/photos/1098365/pexels-photo-1098365.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'; this.onerror=null;" />
-                        <div class="absolute inset-0 flex items-center justify-center">
-                            <div class="text-center">
-                                <svg class="w-12 h-12 text-primary mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                </svg>
-                                <p class="text-text-primary font-medium">Interactive Map</p>
-                                <p class="text-text-secondary text-sm">Click to pinpoint exact location</p>
-                            </div>
-                        </div>
-                    </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">State/UT <span class="text-error">*</span></label>
+                    <input type="text" id="state" class="form-input"
+                        placeholder="e.g., Maharashtra, Delhi, Karnataka" />
                 </div>
             </div>
 
-            <div class="flex justify-between mt-8">
-                <button id="prev-step-3" class="bg-gray-200 text-text-primary px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
-                    <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/>
-                    </svg>
-                    Back to Details
-                </button>
-                <button id="next-step-3" class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    Review & Submit
-                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                    </svg>
-                </button>
+            <!-- District + PIN -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">District <span class="text-error">*</span></label>
+                    <input type="text" id="district" class="form-input" placeholder="District" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-text-primary mb-2">PIN Code <span class="text-error">*</span></label>
+                    <input type="text" id="pincode" maxlength="6" class="form-input" placeholder="6-digit PIN code" />
+                </div>
+            </div>
+
+            <!-- Landmark -->
+            <div>
+                <label class="block text-sm font-medium text-text-primary mb-2">Nearby Landmark</label>
+                <input type="text" id="landmark" class="form-input" placeholder="Nearby landmark or reference point" />
             </div>
         </div>
+
+        <!-- Live Map -->
+        <div class="bg-gray-100 rounded-xl p-2">
+            <div id="map" class="w-full h-96 rounded-xl"></div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="flex justify-between mt-8">
+        <button id="prev-step-3"
+            class="bg-gray-200 text-text-primary px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+            <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+            </svg>
+            Back to Details
+        </button>
+
+        <button id="next-step-3"
+            class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            Review & Submit
+            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+        </button>
+    </div>
+</div>
+
+<script>
+// ------------------- MAP + LOCATION HANDLER --------------------
+let map = L.map('map').setView([20.5937, 78.9629], 5); // India view
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+}).addTo(map);
+
+let marker = null;
+
+// Update form fields after reverse geocoding
+function updateLocationFields(lat, lon) {
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+        .then(res => res.json())
+        .then(data => {
+            let addr = data.address;
+
+            document.getElementById("address").value = data.display_name || "";
+            document.getElementById("city").value = addr.city || addr.town || addr.village || "";
+            document.getElementById("state").value = addr.state || "";
+            document.getElementById("district").value = addr.county || addr.suburb || "";
+            document.getElementById("pincode").value = addr.postcode || "";
+
+            validateAfterAutoFill();
+        });
+}
+
+// Place & drag marker
+function placeMarker(lat, lon) {
+    if (marker) map.removeLayer(marker);
+
+    marker = L.marker([lat, lon], { draggable: true }).addTo(map);
+
+    marker.on('dragend', function () {
+        let pos = marker.getLatLng();
+        updateLocationFields(pos.lat, pos.lng);
+    });
+
+    updateLocationFields(lat, lon);
+}
+
+// Use my current location
+document.getElementById("detect-location").addEventListener("click", () => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+            let lat = position.coords.latitude;
+            let lon = position.coords.longitude;
+
+            map.setView([lat, lon], 17);
+            placeMarker(lat, lon);
+        });
+    } else {
+        alert("Location permission denied!");
+    }
+});
+
+// Click on map to place marker
+map.on("click", function (e) {
+    placeMarker(e.latlng.lat, e.latlng.lng);
+});
+
+
+// ---------------- ENABLE SUBMIT ONLY WHEN VALID ----------------
+const requiredFields = ["address", "city", "state", "district", "pincode"];
+const submitBtn = document.getElementById("next-step-3");
+
+function validateStep3() {
+    let isValid = true;
+
+    requiredFields.forEach(id => {
+        let value = document.getElementById(id).value.trim();
+
+        if (id === "pincode") {
+            if (!/^[0-9]{6}$/.test(value)) {
+                isValid = false;
+            }
+        } else {
+            if (value.length === 0) isValid = false;
+        }
+    });
+
+    submitBtn.disabled = !isValid;
+}
+
+// Trigger validation on typing
+requiredFields.forEach(id => {
+    document.getElementById(id).addEventListener("input", validateStep3);
+});
+
+// Validate after map auto-fills values
+function validateAfterAutoFill() {
+    setTimeout(validateStep3, 300);
+}
+</script>
+
 
         <!-- Step 4: Review & Submit -->
         <div id="step-4" class="step-content hidden">
@@ -866,18 +955,7 @@
             return isValid;
         }
 
-        function validateStep3() {
-            const address = document.getElementById('address').value.trim();
-            const city = document.getElementById('city').value.trim();
-            const state = document.getElementById('state').value;
-            const district = document.getElementById('district').value.trim();
-            const pincode = document.getElementById('pincode').value.trim();
-            
-            const isValid = address && city && state && district && pincode.length === 6;
-            document.getElementById('next-step-3').disabled = !isValid;
-            
-            return isValid;
-        }
+
 
         // Character counters
         document.getElementById('subject').addEventListener('input', function() {
@@ -1279,6 +1357,42 @@
             radio.addEventListener('change', saveDraft);
         });
     </script>
+    <script>
+// -------------------- STEP 3 → STEP 4 -----------------------
+// --------------------- STEP 3 → STEP 4 NAVIGATION ---------------------
+document.getElementById("next-step-3").addEventListener("click", () => {
+    if (!document.getElementById("next-step-3").disabled) {
+        document.getElementById("step-3").classList.add("hidden");
+        document.getElementById("step-4").classList.remove("hidden");
+
+        fillReviewData();  // ensure review page shows real values
+    }
+});
+
+function fillReviewData() {
+    // Fetch TEXT fields from Step 1 & Step 2 (already working in your project)
+    const category = document.getElementById("category")?.value || "";
+    const subject = document.getElementById("subject")?.value || "";
+    const description = document.getElementById("description")?.value || "";
+
+    // Fetch LOCATION fields from Step 3
+    const address = document.getElementById("address").value;
+    const city = document.getElementById("city").value;
+    const state = document.getElementById("state").value;
+    const district = document.getElementById("district").value;
+    const pincode = document.getElementById("pincode").value;
+
+    const fullLocation = `${address}, ${district}, ${city}, ${state} - ${pincode}`;
+
+    // Push values to Review Page
+    document.getElementById("review-category").textContent = category;
+    document.getElementById("review-subject").textContent = subject;
+    document.getElementById("review-description").textContent = description;
+    document.getElementById("review-location").textContent = fullLocation;
+}
+
+</script>
+
 <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
 </body>
 </html>

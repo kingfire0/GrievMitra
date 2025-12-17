@@ -16,8 +16,63 @@ window.addEventListener('DOMContentLoaded', function() {
     if (!token || role !== 'admin') {
         alert('Access denied. Admin login required.');
         window.location.href = 'login_screen.html';
+    } else {
+        // Show user menu and admin elements
+        document.getElementById('user-menu').classList.remove('hidden');
+        document.getElementById('register-link').classList.add('hidden');
+        document.getElementById('login-link').classList.add('hidden');
+        document.getElementById('logout-link').classList.remove('hidden');
+        document.getElementById('logout-link-mobile').classList.remove('hidden');
+        document.getElementById('logout-link-mobile-menu').classList.remove('hidden');
+        document.getElementById('admin-link-desktop').classList.remove('hidden');
+        document.getElementById('admin-link-mobile').classList.remove('hidden');
+
+        // Populate user info
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user) {
+            document.getElementById('welcome-message').textContent = `Welcome, ${user.name}`;
+            document.getElementById('profile-name').textContent = user.name;
+            document.getElementById('dropdown-profile-name').textContent = user.name;
+
+            // Profile photo and initials
+            if (user.profilePhoto) {
+                document.getElementById('profile-photo').src = user.profilePhoto;
+                document.getElementById('profile-photo').classList.remove('hidden');
+                document.getElementById('dropdown-profile-photo').src = user.profilePhoto;
+                document.getElementById('dropdown-profile-photo').classList.remove('hidden');
+            } else {
+                const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                document.getElementById('profile-initials').textContent = initials;
+                document.getElementById('dropdown-profile-initials').textContent = initials;
+            }
+        }
     }
 });
+
+// Logout function
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('user');
+    window.location.href = 'login_screen.html';
+}
+
+// Profile dropdown toggle
+document.getElementById('profile-dropdown-btn').addEventListener('click', function() {
+    document.getElementById('profile-dropdown').classList.toggle('hidden');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('profile-dropdown-btn').contains(e.target)) {
+        document.getElementById('profile-dropdown').classList.add('hidden');
+    }
+});
+
+// Add event listeners for logout
+document.getElementById('logout-link').addEventListener('click', logout);
+document.getElementById('logout-link-mobile').addEventListener('click', logout);
+document.getElementById('logout-link-mobile-menu').addEventListener('click', logout);
 </script>
 </head>
 <body class="bg-surface">
@@ -48,30 +103,46 @@ window.addEventListener('DOMContentLoaded', function() {
                         <a href="track_grievance.html" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">Track Status</a>
                         <a href="transparency_dashboard.html" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">Transparency</a>
                         <a href="about_griev_mitra.html" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">About</a>
-                        <a href="admin_dashboard.html" class="text-primary font-semibold px-3 py-2 rounded-md text-sm">Admin Dashboard</a>
+                        <a href="admin_dashboard.html" id="admin-link-desktop" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors hidden">Admin</a>
                     </div>
                 </div>
 
-                <!-- Admin Profile -->
-                <div class="flex items-center space-x-4">
+                <!-- User Menu -->
+                <div class="hidden md:flex items-center space-x-4" id="user-menu">
+                    <span id="welcome-message" class="text-text-primary font-medium"></span>
                     <div class="relative">
-                        <button class="p-2 text-text-secondary hover:text-primary transition-colors" onclick="toggleNotifications()">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM10.07 2.82l3.93 3.93-3.93 3.93-3.93-3.93 3.93-3.93z"/>
+                        <button id="profile-dropdown-btn" class="flex items-center text-text-secondary hover:text-primary transition-colors">
+                            <img id="profile-photo" src="" alt="Profile Photo" class="w-6 h-6 rounded-full mr-2 object-cover hidden" />
+                            <div id="profile-initials" class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center font-semibold mr-2"></div>
+                            <span id="profile-name" class="mr-1"></span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9l6 6 6-6" />
                             </svg>
-                            <span class="absolute -top-1 -right-1 w-3 h-3 bg-error rounded-full"></span>
                         </button>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center mr-3">
-                            <span class="text-white font-semibold text-sm">AK</span>
-                        </div>
-                        <div class="hidden md:block">
-                            <div class="font-medium text-text-primary">Amit Kumar</div>
-                            <div class="text-text-secondary text-sm">District Collector</div>
+                        <div id="profile-dropdown" class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-50 hidden p-2">
+                            <div class="flex items-center space-x-3 px-4 py-2">
+                                <img id="dropdown-profile-photo" src="" alt="Profile Photo" class="w-10 h-10 rounded-full object-cover hidden" />
+                                <div id="dropdown-profile-initials" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold"></div>
+                                <div>
+                                    <div id="dropdown-profile-name" class="font-semibold text-text-primary"></div>
+                                    <button id="edit-photo-btn" class="text-xs text-primary underline mt-1">Edit Photo</button>
+                                </div>
+                            </div>
+                            <div id="grievance-shortcut" class="px-4 py-2 text-sm text-text-primary hover:bg-gray-100 rounded cursor-pointer">
+                                Grievances: <span id="grievance-count">0</span>
+                            </div>
+                            <a href="my_grievances.html" class="block px-4 py-2 text-sm text-text-primary hover:bg-gray-100 rounded">My Grievances</a>
+                            <a href="edit_profile.html" class="block px-4 py-2 text-sm text-text-primary hover:bg-gray-100 rounded">Edit Profile</a>
+                            <a href="change_password.html" class="block px-4 py-2 text-sm text-text-primary hover:bg-gray-100 rounded">Change Password</a>
+                            <a href="#" id="logout-link" class="block px-4 py-2 text-sm text-text-primary hover:bg-gray-100 rounded mt-2">Logout</a>
                         </div>
                     </div>
                 </div>
+
+                <!-- Login/Register links -->
+                <a href="user_registration.html" id="register-link" class="text-primary font-semibold">Register</a>
+                <a href="login_screen.html" id="login-link" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-700">Login</a>
+                <a href="#" id="logout-link-mobile" class="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-700 hidden">Logout</a>
 
                 <!-- Mobile menu button -->
                 <div class="md:hidden">
@@ -91,7 +162,8 @@ window.addEventListener('DOMContentLoaded', function() {
                     <a href="track_grievance.html" class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">Track Status</a>
                     <a href="transparency_dashboard.html" class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">Transparency</a>
                     <a href="about_griev_mitra.html" class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">About</a>
-                    <a href="admin_dashboard.html" class="text-primary font-semibold block px-3 py-2 rounded-md text-base">Admin Dashboard</a>
+                    <a href="admin_dashboard.html" id="admin-link-mobile" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors hidden">Admin</a>
+                    <a href="#" id="logout-link-mobile-menu" class="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-700 hidden">Logout</a>
                 </div>
             </div>
         </nav>

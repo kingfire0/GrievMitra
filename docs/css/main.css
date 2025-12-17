@@ -2198,7 +2198,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .text-primary-700{
   --tw-text-opacity: 1;
-  color: rgb(29 78 216 / var(--tw-text-opacity, 1));
+  color: #fff;
 }
 
 .text-secondary{
@@ -2822,3 +2822,19 @@ form:hover button[type="submit"] {
   hover: cursor;
   effect: ease-in;
 } 
+/* Add this CSS to your stylesheet file (e.g., style.css) */
+.btn-primary-blue {
+    background-color: #3b82f6; /* A clean, professional blue */
+    color: #ffffff; /* White text */
+    /* Add padding and rounded corners for a button look */
+    padding: 8px 16px; 
+    border-radius: 6px;
+    text-decoration: none; /* Removes underline for links */
+    display: inline-block; /* Ensures padding works on links */
+    text-align: center;
+}
+
+/* Optional: Add hover effect */
+.btn-primary-blue:hover {
+    background-color: #2563eb; /* A slightly darker blue on hover */
+}

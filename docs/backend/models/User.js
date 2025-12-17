@@ -27,6 +27,10 @@ const UserSchema = new mongoose.Schema({
     enum: ["citizen", "leader", "admin"],
     default: "citizen"
   },
+  profilePhotoUrl: {
+    type: String,
+    default: ""
+  },
   createdAt: {
     type: Date,
     default: Date.now

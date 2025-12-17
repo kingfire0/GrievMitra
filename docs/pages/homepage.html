@@ -50,18 +50,47 @@
                             class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">Transparency</a>
                         <a href="about_griev_mitra.html"
                             class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">About</a>
-                        <a href="admin_dashboard.html"
-                            class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors">Admin</a>
+                        <a href="admin_dashboard.html" id="admin-link-desktop"
+                            class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors hidden">Admin</a>
+                        <div id="user-menu" class="hidden flex items-center space-x-4">
+                            <span id="welcome-message" class="text-text-primary font-medium"></span>
+                            <div class="relative">
+                                <button id="profile-dropdown-btn" class="flex items-center bg-blue-500 text-white hover:bg-blue-600 transition-colors px-4 py-2 rounded-md">
+                                    <img id="profile-photo" src="" alt="Profile Photo" class="" />
+                                    <div id="profile-initials" class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center font-semibold mr-2"></div>
+                                    <span id="profile-name" class=""></span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9l6 6 6-6" />
+                                    </svg>
+                                </button>
+                                <div id="profile-dropdown" class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-50 hidden p-2">
+                            <div class="flex items-center space-x-3 px-4 py-2">
+                                <img id="dropdown-profile-photo" src="" alt="Profile Photo" class="w-10 h-10 rounded-full object-cover hidden" />
+                                <div id="dropdown-profile-initials" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold"></div>
+                                <div>
+                                    <div id="dropdown-profile-name" class="btn-primary-blue "></div>
+                                    <button id="edit-photo-btn" class="btn-primary-blue ">Edit Photo</button>
+                                </div>
+                            </div>
+                                    <input type="file" id="photo-upload-input" accept="image/*" class="hidden" />
+                                    <div id="grievance-shortcut" class="px-4 py-2 text-sm text-text-primary hover:bg-gray-100 rounded cursor-pointer">
+                                        Grievances: <span id="grievance-count">0</span>
+                                    </div>
+                                    <a href="my_grievances.html" class="block px-4 py-2 text-sm text-text-primary hover:bg-gray-100 rounded">My Grievances</a>
+                                    <a href="edit_profile.html" class="block px-4 py-2 text-sm text-text-primary hover:bg-gray-100 rounded">Edit Profile</a>
+                                    <a href="change_password.html" class="block px-4 py-2 text-sm text-text-primary hover:bg-gray-100 rounded">Change Password</a>
+                                    <a href="#" id="logout-link" class="block px-4 py-2 text-sm text-text-primary hover:bg-gray-100 rounded mt-2">Logout</a>
+                                </div>
+                            </div>
+                        </div>
                         <a href="user_registration.html" id="register-link"
                             class="text-primary font-semibold">Register</a>
                         <a href="login_screen.html" id="login-link"
                             class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-700">Login</a>
                         <a href="#" id="logout-link"
                             class="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-700 hidden">Logout</a>
-
                     </div>
                 </div>
-
 
                 <!-- Mobile menu button -->
                 <div class="md:hidden">
@@ -92,12 +121,12 @@
                         class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">About</a>
                         <a href="admin_dashboard.html" id="admin-link-mobile"
                             class="bg-primary text-white block px-3 py-2 rounded-md text-base font-medium hidden">Admin</a>
-                        <a href="user_registration.html" id="register-link"
-                            class="text-primary font-semibold">Register</a>
-                        <a href="login_screen.html" id="login-link"
-                            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-700">Login</a>
-                        <a href="#" id="logout-link"
-                            class="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-700 hidden">Logout</a>
+                        <a href="user_registration.html" id="register-link-mobile"
+                            class="text-primary font-semibold block px-3 py-2 rounded-md text-base">Register</a>
+                        <a href="login_screen.html" id="login-link-mobile"
+                            class="bg-primary text-white block px-3 py-2 rounded-md text-base">Login</a>
+                        <a href="#" id="logout-link-mobile"
+                            class="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-700 hidden block px-3 py-2 rounded-md text-base">Logout</a>
                 </div>
             </div>
         </nav>
@@ -426,89 +455,6 @@
             </div>
 
             <div class="text-center mt-12">
-                <a href="transparency_dashboard.html"
-                    class="inline-flex items-center text-primary font-semibold hover:text-primary-700 transition-colors">
-                    View All Success Stories
-                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Transparency Dashboard -->
-    <section class="py-16 bg-gradient-to-br from-primary-50 to-success-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-                    Transparency Dashboard
-                </h2>
-                <p class="text-lg text-text-secondary max-w-2xl mx-auto">
-                    Real-time metrics showcasing our commitment to transparent and accountable governance
-                </p>
-            </div>
-
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                <!-- Average Resolution Time -->
-                <div
-                    class="bg-white rounded-xl p-6 shadow-card text-center hover:shadow-modal transition-all duration-300">
-                    <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div class="text-3xl font-bold text-primary mb-2">4.2</div>
-                    <div class="text-text-secondary font-medium">Days</div>
-                    <div class="text-text-secondary text-sm">Average Resolution Time</div>
-                </div>
-
-                <!-- Citizen Satisfaction -->
-                <div
-                    class="bg-white rounded-xl p-6 shadow-card text-center hover:shadow-modal transition-all duration-300">
-                    <div class="w-16 h-16 bg-success-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div class="text-3xl font-bold text-success mb-2">94%</div>
-                    <div class="text-text-secondary font-medium">Satisfaction</div>
-                    <div class="text-text-secondary text-sm">Citizen Satisfaction Rate</div>
-                </div>
-
-                <!-- Participating Departments -->
-                <div
-                    class="bg-white rounded-xl p-6 shadow-card text-center hover:shadow-modal transition-all duration-300">
-                    <div class="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                    </div>
-                    <div class="text-3xl font-bold text-secondary mb-2">156+</div>
-                    <div class="text-text-secondary font-medium">Departments</div>
-                    <div class="text-text-secondary text-sm">Participating Departments</div>
-                </div>
-
-                <!-- Total Resolved -->
-                <div
-                    class="bg-white rounded-xl p-6 shadow-card text-center hover:shadow-modal transition-all duration-300">
-                    <div class="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div class="text-3xl font-bold text-accent mb-2">2.4L+</div>
-                    <div class="text-text-secondary font-medium">Resolved</div>
-                    <div class="text-text-secondary text-sm">Total Grievances Resolved</div>
-                </div>
-            </div>
-
-            <div class="text-center">
                 <a href="transparency_dashboard.html" class="btn-primary inline-flex items-center">
                     View Detailed Analytics
                     <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -624,22 +570,31 @@
         });
         // Check login status and update header
         function updateHeader() {
+            const token = localStorage.getItem('token');
             const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            const userRole = localStorage.getItem('userRole'); // 'admin' or 'user'
+            const loggedIn = token && isLoggedIn;
+            const userRole = localStorage.getItem('role'); // 'admin' or 'citizen' or 'leader'
+            const userName = localStorage.getItem('name') || 'User';
 
             const registerLink = document.getElementById('register-link');
             const loginLink = document.getElementById('login-link');
             const logoutLink = document.getElementById('logout-link');
-            const adminLinkDesktop = document.querySelector('a[href="admin_dashboard.html"]');
+            const logoutLinkMobile = document.getElementById('logout-link-mobile');
+            const adminLinkDesktop = document.getElementById('admin-link-desktop');
             const adminLinkMobile = document.getElementById('admin-link-mobile');
+            const userMenu = document.getElementById('user-menu');
+            const welcomeMessage = document.getElementById('welcome-message');
 
-            if (isLoggedIn) {
+            if (loggedIn) {
                 // Hide login/register
-                registerLink.style.display = 'none';
-                loginLink.style.display = 'none';
+                if (registerLink) registerLink.style.display = 'none';
+                if (loginLink) loginLink.style.display = 'none';
 
-                // Show logout
-                logoutLink.style.display = 'inline-flex';
+                // Show logout and user menu
+                if (logoutLink) logoutLink.style.display = 'inline-flex';
+                if (logoutLinkMobile) logoutLinkMobile.style.display = 'inline-flex';
+                if (userMenu) userMenu.style.display = 'flex';
+                if (welcomeMessage) welcomeMessage.textContent = `Welcome, ${userName}`;
 
                 // Show admin links only for admin users
                 if (userRole === 'admin') {
@@ -651,38 +606,55 @@
                 }
             } else {
                 // Show login/register
-                registerLink.style.display = 'inline';
-                loginLink.style.display = 'inline-flex';
+                if (registerLink) registerLink.style.display = 'inline';
+                if (loginLink) loginLink.style.display = 'inline-flex';
 
-                // Hide logout and admin links
-                logoutLink.style.display = 'none';
+                // Hide logout, user menu and admin links
+                if (logoutLink) logoutLink.style.display = 'none';
+                if (logoutLinkMobile) logoutLinkMobile.style.display = 'none';
+                if (userMenu) userMenu.style.display = 'none';
+
+                // Hide admin link just in case
                 if (adminLinkDesktop) adminLinkDesktop.style.display = 'none';
                 if (adminLinkMobile) adminLinkMobile.style.display = 'none';
             }
         }
 
         // Logout button functionality
-       document.addEventListener('DOMContentLoaded', () => {
-    // Attach logout listener
-    const logoutLink = document.getElementById('logout-link');
-    if (logoutLink) {
-        logoutLink.addEventListener('click', () => {
-            localStorage.setItem('isLoggedIn', 'false'); // log the user out
+        document.addEventListener('DOMContentLoaded', () => {
+            // Attach logout listener
+            const logoutLink = document.getElementById('logout-link');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', () => {
+                    // Clear all user-related localStorage keys
+                    localStorage.removeItem('isLoggedIn');
+                    localStorage.removeItem('userToken');
+                    localStorage.removeItem('userRole');
+                    localStorage.removeItem('userName');
+                    updateHeader();
+                    window.location.href = 'homepage.html';
+                });
+            }
+
+            // Initial header update
             updateHeader();
-            window.location.href = 'homepage.html';
+
+            // Profile dropdown toggle
+            const profileBtn = document.getElementById('profile-dropdown-btn');
+            const profileDropdown = document.getElementById('profile-dropdown');
+            if (profileBtn && profileDropdown) {
+                profileBtn.addEventListener('click', () => {
+                    profileDropdown.classList.toggle('hidden');
+                });
+                document.addEventListener('click', (e) => {
+                    if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                        profileDropdown.classList.add('hidden');
+                    }
+                });
+            }
         });
-    }
-
-    // Initial header update
-    updateHeader();
-});
-
-
-        // Run on page load
-        // document.addEventListener('DOMContentLoaded', updateHeader);
-
     </script>
-    <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
 </body>
-
 </html>
+                    
+                    

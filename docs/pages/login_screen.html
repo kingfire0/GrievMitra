@@ -245,19 +245,20 @@
                 });
                 const data = await res.json();
 
-                if (data.token) {
-                    localStorage.setItem("token", data.token);
-                    localStorage.setItem("role", data.role);
-                    localStorage.setItem("name", data.name);
+                    if (data.token) {
+                        localStorage.setItem("token", data.token);
+                        localStorage.setItem("role", data.role);
+                        localStorage.setItem("name", data.name);
+                        localStorage.setItem("isLoggedIn", "true");
 
-                    if (data.role === "admin") {
-                        window.location.href = "admin_dashboard.html";
+                        if (data.role === "admin") {
+                            window.location.href = "admin_dashboard.html";
+                        } else {
+                            window.location.href = "homepage.html";
+                        }
                     } else {
-                        window.location.href = "homepage.html";
+                        alert("Error: " + (data.message || "Invalid credentials"));
                     }
-                } else {
-                    alert("Error: " + (data.message || "Invalid credentials"));
-                }
             } catch (err) {
                 alert("Server error. Please try again.");
                 console.error(err);

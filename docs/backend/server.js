@@ -141,6 +141,36 @@ app.get("/admin/grievances", authenticate, async (req, res) => {
   }
 });
 
+// Profile update endpoint (authenticated)
+app.put("/auth/profile", authenticate, async (req, res) => {
+  try {
+    const { name, phone, profilePhotoUrl } = req.body;
+
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (phone) updateData.phone = phone;
+    if (profilePhotoUrl !== undefined) updateData.profilePhotoUrl = profilePhotoUrl;
+
+    const user = await User.findByIdAndUpdate(req.user.id, updateData, { new: true });
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    res.json({ message: "✅ Profile updated successfully", user });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get grievances of logged-in user
+app.get("/grievances/user", authenticate, async (req, res) => {
+  try {
+    const grievances = await Grievance.find({ user: req.user.id }).populate("user", "name email role");
+    res.json(grievances);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 //-------------------------------------------------------------
 // SERVER START
 //-------------------------------------------------------------

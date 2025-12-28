@@ -18,11 +18,12 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '..')));
 
 // ✅ MongoDB Atlas Connection
-mongoose.connect("mongodb+srv://spygamerz945_db_user:SANJAY456.00@grivemitra.v6l6wi7.mongodb.net/grievmitra")
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://spygamerz945_db_user:SANJAY456.00@grivemitra.v6l6wi7.mongodb.net/grievmitra";
+mongoose.connect(MONGODB_URI)
   .then(() => console.log("✅ MongoDB Atlas connected"))
   .catch(err => console.error("❌ MongoDB Atlas connection error:", err));
 
-const JWT_SECRET = "supersecret123"; // 🔑 change to env var in production
+const JWT_SECRET = process.env.JWT_SECRET || "supersecret123"; // 🔑 change to env var in production
 
 //-------------------------------------------------------------
 // AUTH ROUTES

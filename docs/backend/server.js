@@ -17,10 +17,10 @@ app.use(bodyParser.json());
 // Serve static files from the parent directory (docs)
 app.use(express.static(path.join(__dirname, '..')));
 
-// ✅ MongoDB Connection
-mongoose.connect("mongodb://127.0.0.1:27017/grievmitra")
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch(err => console.error("❌ MongoDB connection error:", err));
+// ✅ MongoDB Atlas Connection
+mongoose.connect("mongodb+srv://spygamerz945_db_user:SANJAY456.00@grivemitra.v6l6wi7.mongodb.net/grievmitra")
+  .then(() => console.log("✅ MongoDB Atlas connected"))
+  .catch(err => console.error("❌ MongoDB Atlas connection error:", err));
 
 const JWT_SECRET = "supersecret123"; // 🔑 change to env var in production
 
@@ -174,5 +174,8 @@ app.get("/grievances/user", authenticate, async (req, res) => {
 //-------------------------------------------------------------
 // SERVER START
 //-------------------------------------------------------------
-const PORT = 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+  console.log(`🚀 Server running on http://${host}:${PORT}`);
+});

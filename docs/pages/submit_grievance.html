@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -790,8 +790,8 @@ function validateAfterAutoFill() {
         // Check login status and update header
         function updateHeader() {
             const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            const userRole = localStorage.getItem('userRole'); // 'admin' or 'user'
-            const userName = localStorage.getItem('userName') || 'User';
+            const userRole = localStorage.getItem('role'); // 'admin' or 'citizen' or 'leader'
+            const userName = localStorage.getItem('name') || 'User';
 
             const registerLinks = document.querySelectorAll('#register-link');
             const loginLinks = document.querySelectorAll('#login-link');
@@ -1202,20 +1202,64 @@ function validateAfterAutoFill() {
             }
         }
 
-        // Voice input (mock implementation)
-        document.getElementById('voice-input').addEventListener('click', function() {
-            const button = this;
-            const textarea = document.getElementById('description');
-            
-            button.innerHTML = '<svg class="w-5 h-5 animate-pulse" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"></path></svg>';
-            
-            // Simulate voice recognition
-            setTimeout(() => {
-                textarea.value += (textarea.value ? ' ' : '') + 'This is a sample voice input text that demonstrates the voice-to-text functionality.';
+        // Voice input using Web Speech API
+        let recognition = null;
+        let isListening = false;
+
+        // Check if browser supports speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US'; // You can change this to support other languages
+
+            recognition.onstart = function() {
+                isListening = true;
+                const button = document.getElementById('voice-input');
+                button.innerHTML = '<svg class="w-5 h-5 animate-pulse text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"></path></svg>';
+                button.title = 'Listening... Click to stop';
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                const textarea = document.getElementById('description');
+                textarea.value += (textarea.value ? ' ' : '') + transcript;
                 textarea.dispatchEvent(new Event('input'));
-                
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                alert('Voice recognition error: ' + event.error + '. Please try again or type manually.');
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                const button = document.getElementById('voice-input');
                 button.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>';
-            }, 3000);
+                button.title = 'Voice input';
+            };
+        }
+
+        document.getElementById('voice-input').addEventListener('click', function() {
+            if (!recognition) {
+                alert('Voice recognition is not supported in this browser. Please use Chrome, Edge, or Safari for voice input functionality.');
+                return;
+            }
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                // Request microphone permission and start recognition
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(function(stream) {
+                        recognition.start();
+                    })
+                    .catch(function(err) {
+                        console.error('Microphone access denied:', err);
+                        alert('Microphone access is required for voice input. Please allow microphone access and try again.');
+                    });
+            }
         });
 
         // Step navigation buttons
@@ -1261,10 +1305,9 @@ function validateAfterAutoFill() {
         // Submit grievance
         document.getElementById('submit-grievance').addEventListener('click', async function() {
             // Check if user is logged in
-            const userToken = localStorage.getItem('userToken');
-            const userRole = localStorage.getItem('userRole');
+            const userToken = localStorage.getItem('token');
 
-            if (!userToken || !userRole) {
+            if (!userToken) {
                 // Show login prompt modal
                 document.getElementById('login-prompt-modal').classList.remove('hidden');
                 return;
@@ -1273,47 +1316,48 @@ function validateAfterAutoFill() {
             this.disabled = true;
             this.innerHTML = '<svg class="w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Submitting...';
 
-            // Collect form data
-            const priority = document.querySelector('input[name="priority"]:checked')?.value || 'medium';
-            const location = {
-                address: document.getElementById('address').value.trim(),
-                city: document.getElementById('city').value.trim(),
-                state: document.getElementById('state').value,
-                district: document.getElementById('district').value.trim(),
-                pincode: document.getElementById('pincode').value.trim(),
-                landmark: document.getElementById('landmark').value.trim()
-            };
-
-            const data = {
-                category: selectedCategory,
-                subject: document.getElementById('subject').value.trim(),
-                description: document.getElementById('description').value.trim(),
-                location: location,
-                priority: priority
-            };
-
-            console.log('Submitting data:', data); // Debug log
-
             try {
+                // Collect form data
+                const location = {
+                    address: document.getElementById('address').value.trim(),
+                    city: document.getElementById('city').value.trim(),
+                    state: document.getElementById('state').value,
+                    district: document.getElementById('district').value.trim(),
+                    pincode: document.getElementById('pincode').value.trim(),
+                    landmark: document.getElementById('landmark').value.trim()
+                };
+
+                const grievanceData = {
+                    category: selectedCategory,
+                    subject: document.getElementById('subject').value.trim(),
+                    description: document.getElementById('description').value.trim(),
+                    location: location
+                };
+
+                // Send to backend API
                 const response = await fetch('http://localhost:5000/grievances/create', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${userToken}`
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(grievanceData)
                 });
 
                 const result = await response.json();
 
                 if (response.ok) {
+                    // Show success with the reference ID from backend
                     document.getElementById('tracking-id').textContent = result.reference_id;
                     document.getElementById('success-modal').classList.remove('hidden');
                 } else {
-                    alert(result.error || 'Submission failed. Please try again.');
+                    // Handle error
+                    alert('Error submitting grievance: ' + (result.error || 'Unknown error'));
                 }
+
             } catch (error) {
-                alert('An error occurred. Please check your connection and try again.');
+                console.error('Submission error:', error);
+                alert('Error submitting grievance. Please try again.');
             } finally {
                 this.disabled = false;
                 this.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>Submit Grievance';

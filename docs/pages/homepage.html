@@ -10,11 +10,58 @@
     <link rel="stylesheet" href="../css/main.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <script type="module"
-        src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fgrievmitra7175back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+
 </head>
 
 <body class="bg-background">
+    <!-- Fullscreen Page Loader -->
+    <div id="page-loader" class="fixed inset-0 z-50 bg-primary flex items-center justify-center opacity-100 transition-opacity duration-500">
+        <div class="text-center">
+            <!-- Animated Logo -->
+            <div class="mb-8">
+                <svg class="w-20 h-20 text-white mx-auto" viewBox="0 0 40 40" fill="none">
+                    <path class="logo-path" d="M20 4C11.163 4 4 11.163 4 20s7.163 16 16 16 16-7.163 16-16S28.837 4 20 4zm0 28c-6.627 0-12-5.373-12-12S13.373 8 20 8s12 5.373 12 12-5.373 12-12 12z" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="125.664" stroke-dashoffset="125.664" style="animation: drawLogo 1s ease-out 0.2s forwards;"/>
+                    <path class="logo-path" d="M20 12c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8zm0 12c-2.206 0-4-1.794-4-4s1.794-4 4-4 4 1.794 4 4-1.794 4-4 4z" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="75.398" stroke-dashoffset="75.398" style="animation: drawLogo 1s ease-out 0.2s forwards;"/>
+                    <circle class="logo-path" cx="20" cy="20" r="2" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="12.566" stroke-dashoffset="12.566" style="animation: drawLogo 1s ease-out 0.2s forwards;"/>
+                </svg>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-64 h-1 bg-white/20 rounded-full mx-auto mb-4 overflow-hidden">
+                <div id="loader-progress" class="h-full bg-white rounded-full" style="width: 0%; animation: fillProgress 1.5s ease-in-out 0.5s forwards;"></div>
+            </div>
+
+            <!-- Loading Text -->
+            <p class="text-white/80 text-sm font-medium">Loading Experience...</p>
+        </div>
+    </div>
+
+    <style>
+        @keyframes drawLogo {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes fillProgress {
+            to {
+                width: 100%;
+            }
+        }
+
+        @keyframes fadeOutLoader {
+            to {
+                opacity: 0;
+            }
+        }
+
+        .fade-out {
+            animation: fadeOutLoader 0.5s ease-out forwards;
+        }
+    </style>
+
+    <!-- Page Content Wrapper (Initially Hidden) -->
+    <div id="page-content" class="opacity-0">
     <!-- Navigation Header -->
     <header class="bg-white shadow-subtle sticky top-0 z-50">
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,8 +102,8 @@
                         <div id="user-menu" class="hidden flex items-center space-x-4">
                             <span id="welcome-message" class="text-text-primary font-medium"></span>
                             <div class="relative">
-                                <button id="profile-dropdown-btn" class="flex items-center bg-blue-500 text-white hover:bg-blue-600 transition-colors px-4 py-2 rounded-md">
-                                    <img id="profile-photo" src="" alt="Profile Photo" class="" />
+                                <button id="profile-dropdown-btn" class="flex items-center bg-primary text-white hover:bg-primary-700 transition-colors px-4 py-2 rounded-md">
+                                    <img id="profile-photo" src="" alt="Profile Photo" class="w-6 h-6 rounded-full object-cover mr-2 hidden" />
                                     <div id="profile-initials" class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center font-semibold mr-2"></div>
                                     <span id="profile-name" class=""></span>
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,7 +115,7 @@
                                 <img id="dropdown-profile-photo" src="" alt="Profile Photo" class="w-10 h-10 rounded-full object-cover hidden" />
                                 <div id="dropdown-profile-initials" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold"></div>
                                 <div>
-                                    <div id="dropdown-profile-name" class="btn-primary-blue "></div>
+                                    <div id="dropdown-profile-name"></div>
                                     <button id="edit-photo-btn" class="btn-primary-blue ">Edit Photo</button>
                                 </div>
                             </div>
@@ -133,8 +180,7 @@
     </header>
 
     <!-- Hero Section with Real-time Statistics -->
-    <section class="relative bg-gradient-to-br from-primary-50 via-white to-success-50 py-16 lg:py-24">
-        <div class="absolute inset-0 bg-white/80"></div>
+    <section id="hero-section" class="relative bg-gradient-to-br from-primary-50 via-white to-success-50 py-16 lg:py-24">
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
                 <!-- Real-time Statistics Banner -->
@@ -532,42 +578,18 @@
             menu.classList.toggle('hidden');
         }
 
-        // Real-time counter animation
-        function animateCounter() {
-            const counter = document.getElementById('daily-resolved');
-            let count = 0;
-            const target = 247;
-            const increment = target / 100;
-
-            const timer = setInterval(() => {
-                count += increment;
-                if (count >= target) {
-                    counter.textContent = target;
-                    clearInterval(timer);
-                } else {
-                    counter.textContent = Math.floor(count);
-                }
-            }, 20);
-        }
-
-        // Initialize animations on page load
+        // Show content immediately without animations
         document.addEventListener('DOMContentLoaded', function () {
-            animateCounter();
+            const content = document.getElementById('page-content');
+            if (content) {
+                content.style.opacity = '1';
+            }
+            const loader = document.getElementById('page-loader');
+            if (loader) {
+                loader.style.display = 'none';
+            }
         });
 
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
         // Check login status and update header
         function updateHeader() {
             const token = localStorage.getItem('token');
@@ -651,6 +673,70 @@
                         profileDropdown.classList.add('hidden');
                     }
                 });
+            }
+
+            // Photo upload functionality
+            const editPhotoBtn = document.getElementById('edit-photo-btn');
+            const photoUploadInput = document.getElementById('photo-upload-input');
+            const profilePhoto = document.getElementById('profile-photo');
+            const dropdownProfilePhoto = document.getElementById('dropdown-profile-photo');
+            const profileInitials = document.getElementById('profile-initials');
+            const dropdownProfileInitials = document.getElementById('dropdown-profile-initials');
+
+            if (editPhotoBtn && photoUploadInput) {
+                editPhotoBtn.addEventListener('click', () => {
+                    photoUploadInput.click();
+                });
+            }
+
+            if (photoUploadInput) {
+                photoUploadInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const imageUrl = e.target.result;
+                            // Set photo for button
+                            if (profilePhoto) {
+                                profilePhoto.src = imageUrl;
+                                profilePhoto.classList.remove('hidden');
+                            }
+                            if (profileInitials) {
+                                profileInitials.style.display = 'none';
+                            }
+                            // Set photo for dropdown
+                            if (dropdownProfilePhoto) {
+                                dropdownProfilePhoto.src = imageUrl;
+                                dropdownProfilePhoto.classList.remove('hidden');
+                            }
+                            if (dropdownProfileInitials) {
+                                dropdownProfileInitials.style.display = 'none';
+                            }
+                            // Store in localStorage
+                            localStorage.setItem('profilePhoto', imageUrl);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            // Load saved photo on page load
+            const savedPhoto = localStorage.getItem('profilePhoto');
+            if (savedPhoto) {
+                if (profilePhoto) {
+                    profilePhoto.src = savedPhoto;
+                    profilePhoto.classList.remove('hidden');
+                }
+                if (profileInitials) {
+                    profileInitials.style.display = 'none';
+                }
+                if (dropdownProfilePhoto) {
+                    dropdownProfilePhoto.src = savedPhoto;
+                    dropdownProfilePhoto.classList.remove('hidden');
+                }
+                if (dropdownProfileInitials) {
+                    dropdownProfileInitials.style.display = 'none';
+                }
             }
         });
     </script>

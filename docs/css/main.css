@@ -2812,6 +2812,27 @@ h1, h2, h3, h4, h5, h6 {
 button:hover {
   background-color: #2563eb; /* slightly darker blue */
 }
+/* Hero section overlay for text visibility */
+#hero-section {
+  position: relative;
+}
+
+#hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: 1;
+}
+
+#hero-section .relative {
+  position: relative;
+  z-index: 2;
+}
+
 /* Always show the register button */
 
 
@@ -2824,10 +2845,10 @@ form:hover button[type="submit"] {
 } 
 /* Add this CSS to your stylesheet file (e.g., style.css) */
 .btn-primary-blue {
-    background-color: #3b82f6; /* A clean, professional blue */
+    background-color: var(--color-primary); /* Use custom primary color */
     color: #ffffff; /* White text */
     /* Add padding and rounded corners for a button look */
-    padding: 8px 16px; 
+    padding: 8px 16px;
     border-radius: 6px;
     text-decoration: none; /* Removes underline for links */
     display: inline-block; /* Ensures padding works on links */
@@ -2836,5 +2857,5 @@ form:hover button[type="submit"] {
 
 /* Optional: Add hover effect */
 .btn-primary-blue:hover {
-    background-color: #2563eb; /* A slightly darker blue on hover */
+    background-color: var(--color-primary-700); /* Use custom primary hover color */
 }

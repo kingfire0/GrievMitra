@@ -12,7 +12,7 @@
 <script>
 window.addEventListener('DOMContentLoaded', function() {
     const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
+    const role = localStorage.getItem('role'); // 'admin' or 'citizen' or 'leader'
     if (!token || role !== 'admin') {
         alert('Access denied. Admin login required.');
         window.location.href = 'login_screen.html';

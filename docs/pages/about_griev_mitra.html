@@ -11,60 +11,7 @@
 <script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fgrievmitra7175back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
 </head>
 <body class="bg-background">
-    <!-- Navigation Header -->
-    <header class="bg-white shadow-subtle sticky top-0 z-50">
-        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo -->
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <svg class="h-10 w-10 text-primary" viewBox="0 0 40 40" fill="currentColor">
-                            <path d="M20 4C11.163 4 4 11.163 4 20s7.163 16 16 16 16-7.163 16-16S28.837 4 20 4zm0 28c-6.627 0-12-5.373-12-12S13.373 8 20 8s12 5.373 12 12-5.373 12-12 12z"/>
-                            <path d="M20 12c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8zm0 12c-2.206 0-4-1.794-4-4s1.794-4 4-4 4 1.794 4 4-1.794 4-4 4z"/>
-                            <circle cx="20" cy="20" r="2" fill="white"/>
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <h1 class="text-xl font-bold text-primary">GrievMitra</h1>
-                        <p class="text-xs text-text-secondary">Portal</p>
-                    </div>
-                </div>
-
-                <!-- Desktop Navigation -->
-                <div class="hidden md:block">
-                    <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="homepage.html" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">Home</a>
-                        <a href="submit_grievance.html" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">Submit Grievance</a>
-                        <a href="track_grievance.html" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">Track Status</a>
-                        <a href="transparency_dashboard.html" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm transition-colors">Transparency</a>
-                        <a href="about_griev_mitra.html" class="text-primary font-semibold px-3 py-2 rounded-md text-sm">About</a>
-                        <a href="admin_dashboard.html" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors">Admin</a>
-                    </div>
-                </div>
-
-                <!-- Mobile menu button -->
-                <div class="md:hidden">
-                    <button type="button" class="text-text-secondary hover:text-primary p-2" onclick="toggleMobileMenu()">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Mobile Navigation Menu -->
-            <div id="mobile-menu" class="md:hidden hidden">
-                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-border">
-                    <a href="homepage.html" class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">Home</a>
-                    <a href="submit_grievance.html" class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">Submit Grievance</a>
-                    <a href="track_grievance.html" class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">Track Status</a>
-                    <a href="transparency_dashboard.html" class="text-text-secondary hover:text-primary block px-3 py-2 rounded-md text-base">Transparency</a>
-                    <a href="about_griev_mitra.html" class="text-primary font-semibold block px-3 py-2 rounded-md text-base">About</a>
-                    <a href="admin_dashboard.html" class="bg-primary text-white block px-3 py-2 rounded-md text-base font-medium">Admin</a>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <!--#include file="components/navigation.html" -->
 
     <!-- Hero Section -->
     <section class="relative bg-gradient-to-br from-primary-50 via-white to-success-50 py-16 lg:py-24">

@@ -32,6 +32,68 @@ mongoose.connect(MONGODB_URI)
 const JWT_SECRET = process.env.JWT_SECRET;
 
 //-------------------------------------------------------------
+// PASSPORT CONFIGURATION
+//-------------------------------------------------------------
+
+// Passport initialization
+app.use(passport.initialize());
+
+// Google OAuth Strategy
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "http://localhost:5000/auth/google/callback"
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    try {
+      // Check if user already exists with this Google ID
+      let user = await User.findOne({ googleId: profile.id });
+
+      if (user) {
+        return done(null, user);
+      }
+
+      // Check if user exists with same email
+      user = await User.findOne({ email: profile.emails[0].value });
+
+      if (user) {
+        // Link Google account to existing user
+        user.googleId = profile.id;
+        await user.save();
+        return done(null, user);
+      }
+
+      // Create new user
+      const newUser = await User.create({
+        name: profile.displayName,
+        email: profile.emails[0].value,
+        googleId: profile.id,
+        phone: "", // Will be updated later
+        role: "citizen"
+      });
+
+      return done(null, newUser);
+    } catch (error) {
+      return done(error, null);
+    }
+  }
+));
+
+// Serialize and deserialize user for session
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
+});
+
+//-------------------------------------------------------------
 // AUTH ROUTES
 //-------------------------------------------------------------
 

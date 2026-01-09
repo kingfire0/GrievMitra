@@ -3075,4 +3075,16 @@ h1, h2, h3, h4, h5, h6 {
     padding-top: 6rem;
     padding-bottom: 6rem;
   }
-}   
+}
+
+.nav-link {
+  outline: none;
+}
+
+.nav-link:focus {
+  outline: none;
+  box-shadow: none;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+}

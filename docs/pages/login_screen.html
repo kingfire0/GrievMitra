@@ -132,6 +132,51 @@
         .register-link a:hover {
             text-decoration: underline;
         }
+        .google-btn {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            color: #3c4043;
+            border: 1px solid #dadce0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .google-btn:hover {
+            background: #f8f9fa;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .google-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+        }
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #dadce0;
+        }
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            color: #6b7280;
+            font-size: 14px;
+        }
         .lazy-loader {
             display: inline-block;
             width: 16px;
@@ -223,6 +268,11 @@
                 btnText.textContent = originalText;
                 loginBtn.disabled = false;
             }
+        });
+
+        // Google Login
+        document.getElementById("googleBtn").addEventListener("click", () => {
+            window.location.href = `${API_BASE_URL}/auth/google`;
         });
     </script>
 <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>

@@ -5,6 +5,12 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+require("dotenv").config();
+
+
+
 
 // Import models
 const User = require("./models/User");
@@ -70,6 +76,16 @@ app.post("/auth/login", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Google Auth
+app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+app.get("/auth/google/callback", passport.authenticate("google", { failureRedirect: "/login" }), (req, res) => {
+  const token = jwt.sign({ id: req.user._id, role: req.user.role }, JWT_SECRET, { expiresIn: "1h" });
+
+  // Redirect to frontend with token
+  res.redirect(`http://localhost:3000/auth/callback?token=${token}&role=${req.user.role}&name=${encodeURIComponent(req.user.name)}`);
 });
 
 //-------------------------------------------------------------

@@ -358,6 +358,11 @@
         // Google Login
         document.getElementById("googleBtn").addEventListener("click", (e) => {
             e.preventDefault(); // Prevent form submission
+            // Clear any existing session data before Google Auth
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+            localStorage.removeItem("name");
+            localStorage.removeItem("isLoggedIn");
             window.location.href = `${API_BASE_URL}/auth/google`;
         });
     </script>

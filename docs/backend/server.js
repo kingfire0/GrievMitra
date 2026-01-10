@@ -49,7 +49,7 @@ app.use(passport.session());
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:5000/auth/google/callback"
+    callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/auth/google/callback"
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
@@ -147,14 +147,15 @@ app.post("/auth/login", async (req, res) => {
   }
 });
 
-// Google Auth
-app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+// Google Auth - Force Google account selection to ensure OAuth flow
+app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"], prompt: 'select_account' }));
 
-app.get("/auth/google/callback", passport.authenticate("google", { failureRedirect: "/login" }), (req, res) => {
+app.get("/auth/google/callback", passport.authenticate("google", { failureRedirect: "/pages/login_screen.html" }), (req, res) => {
   const token = jwt.sign({ id: req.user._id, role: req.user.role }, JWT_SECRET, { expiresIn: "1h" });
 
   // Redirect to frontend with token
-  res.redirect(`http://localhost:5000/pages/auth_callback.html?token=${token}&role=${req.user.role}&name=${encodeURIComponent(req.user.name)}`);
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5000";
+  res.redirect(`${frontendUrl}/pages/auth_callback.html?token=${token}&role=${req.user.role}&name=${encodeURIComponent(req.user.name)}`);
 });
 
 //-------------------------------------------------------------

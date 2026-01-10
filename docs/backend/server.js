@@ -5,12 +5,10 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
+const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 require("dotenv").config();
-
-
-
 
 // Import models
 const User = require("./models/User");
@@ -19,6 +17,14 @@ const Grievance = require("./models/Grievance");
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+// Session middleware for Passport
+app.use(session({
+  secret: process.env.JWT_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false } // Set to true in production with HTTPS
+}));
 
 // Serve static files from the parent directory (docs)
 app.use(express.static(path.join(__dirname, '..')));
@@ -37,6 +43,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 // Passport initialization
 app.use(passport.initialize());
+app.use(passport.session());
 
 // Google OAuth Strategy
 passport.use(new GoogleStrategy({
@@ -147,7 +154,7 @@ app.get("/auth/google/callback", passport.authenticate("google", { failureRedire
   const token = jwt.sign({ id: req.user._id, role: req.user.role }, JWT_SECRET, { expiresIn: "1h" });
 
   // Redirect to frontend with token
-  res.redirect(`http://localhost:3000/auth/callback?token=${token}&role=${req.user.role}&name=${encodeURIComponent(req.user.name)}`);
+  res.redirect(`http://localhost:5000/pages/auth_callback.html?token=${token}&role=${req.user.role}&name=${encodeURIComponent(req.user.name)}`);
 });
 
 //-------------------------------------------------------------

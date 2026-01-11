@@ -101,12 +101,13 @@
 
     <script>
         // Handle OAuth callback
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             const urlParams = new URLSearchParams(window.location.search);
 
             const token = urlParams.get('token');
             const role = urlParams.get('role');
             const name = urlParams.get('name');
+            const email = urlParams.get('email');
 
             if (token && role && name) {
                 // Store authentication data
@@ -114,6 +115,32 @@
                 localStorage.setItem('role', role);
                 localStorage.setItem('name', decodeURIComponent(name));
                 localStorage.setItem('isLoggedIn', 'true');
+
+                // Store email if provided in URL params
+                if (email) {
+                    localStorage.setItem('email', decodeURIComponent(email));
+                }
+
+                // Try to get user email from backend (for profile display) if not already set
+                if (!email) {
+                    try {
+                        const response = await fetch('http://localhost:5000/auth/profile', {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+
+                        if (response.ok) {
+                            const userData = await response.json();
+                            if (userData.email) {
+                                localStorage.setItem('email', userData.email);
+                            }
+                        }
+                    } catch (error) {
+                        console.log('Could not fetch user profile:', error);
+                    }
+                }
 
                 // Redirect based on role
                 if (role === 'admin') {

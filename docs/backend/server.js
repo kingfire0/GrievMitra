@@ -141,7 +141,7 @@ app.post("/auth/login", async (req, res) => {
 
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: "1h" });
 
-    res.json({ message: "✅ Login successful", token, role: user.role, name: user.name });
+    res.json({ message: "✅ Login successful", token, role: user.role, name: user.name, email: user.email });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -155,7 +155,7 @@ app.get("/auth/google/callback", passport.authenticate("google", { failureRedire
 
   // Redirect to frontend with token
   const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5000";
-  res.redirect(`${frontendUrl}/pages/auth_callback.html?token=${token}&role=${req.user.role}&name=${encodeURIComponent(req.user.name)}`);
+  res.redirect(`${frontendUrl}/pages/auth_callback.html?token=${token}&role=${req.user.role}&name=${encodeURIComponent(req.user.name)}&email=${encodeURIComponent(req.user.email)}`);
 });
 
 //-------------------------------------------------------------
@@ -223,6 +223,26 @@ app.get("/admin/grievances", authenticate, async (req, res) => {
 
     const grievances = await Grievance.find().populate("user", "name email role");
     res.json(grievances);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get user profile (authenticated)
+app.get("/auth/profile", authenticate, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password_hash');
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      profilePhotoUrl: user.profilePhotoUrl
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

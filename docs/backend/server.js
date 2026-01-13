@@ -282,7 +282,6 @@ app.get("/grievances/user", authenticate, async (req, res) => {
 // SERVER START
 //-------------------------------------------------------------
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
-  console.log(`🚀 Server running on http://${host}:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
 });

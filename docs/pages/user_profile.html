@@ -425,7 +425,8 @@
                         phone: formData.get('phone').trim()
                     };
 
-                    const response = await fetch('http://localhost:5000/auth/profile', {
+                    const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+                    const response = await fetch(`${apiBaseUrl}/auth/profile`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -466,7 +467,8 @@
 
             try {
                 // Get user profile data from backend
-                const profileResponse = await fetch('http://localhost:5000/auth/profile', {
+                const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+                const profileResponse = await fetch(`${apiBaseUrl}/auth/profile`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     },
@@ -491,7 +493,7 @@
                 }
 
                 // Get user grievances for statistics
-                const grievancesResponse = await fetch('http://localhost:5000/grievances/user', {
+                const grievancesResponse = await fetch(`${apiBaseUrl}/grievances/user`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     },

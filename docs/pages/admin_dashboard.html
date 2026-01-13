@@ -533,7 +533,8 @@ document.getElementById('logout-link-mobile-menu').addEventListener('click', log
     }
 
     try {
-      const res = await fetch("http://localhost:5000/admin/grievances", {
+      const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+      const res = await fetch(`${apiBaseUrl}/admin/grievances`, {
         headers: { "Authorization": "Bearer " + token }
       });
       if (!res.ok) throw new Error("Failed to fetch grievances");

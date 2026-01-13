@@ -353,7 +353,8 @@
             btnText.innerHTML = '<span class="lazy-loader"></span>Signing Up...';
 
             try {
-                const response = await fetch('http://localhost:5000/auth/register', {
+                const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+                const response = await fetch(`${apiBaseUrl}/auth/register`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -392,7 +393,8 @@
             localStorage.removeItem("role");
             localStorage.removeItem("name");
             localStorage.removeItem("isLoggedIn");
-            window.location.href = 'http://localhost:5000/auth/google';
+            const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+            window.location.href = `${apiBaseUrl}/auth/google`;
         });
     </script>
 <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>

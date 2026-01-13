@@ -124,7 +124,8 @@
                 // Try to get user email from backend (for profile display) if not already set
                 if (!email) {
                     try {
-                        const response = await fetch('http://localhost:5000/auth/profile', {
+                        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+                        const response = await fetch(`${apiBaseUrl}/auth/profile`, {
                             method: 'GET',
                             headers: {
                                 'Authorization': `Bearer ${token}`

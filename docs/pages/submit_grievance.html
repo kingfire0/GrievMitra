@@ -194,7 +194,8 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('mobile-user-email').textContent = userEmail;
         } else {
             // Fetch email from backend if not in localStorage
-            fetch('http://localhost:5000/auth/profile', {
+            const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+            fetch(`${apiBaseUrl}/auth/profile`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`

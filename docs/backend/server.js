@@ -38,12 +38,26 @@ mongoose.connect(MONGODB_URI)
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// Check environment variables
+console.log('🔍 Checking email configuration...');
+console.log('EMAIL_USER set:', !!process.env.EMAIL_USER);
+console.log('EMAIL_PASS set:', !!process.env.EMAIL_PASS);
+
 // Nodemailer transporter for email OTP
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
+  }
+});
+
+// Test transporter connection on startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('❌ Email transporter verification failed:', error);
+  } else {
+    console.log('✅ Email transporter is ready to send messages');
   }
 });
 
@@ -77,6 +91,49 @@ passport.use(new GoogleStrategy({
         // Link Google account to existing user
         user.googleId = profile.id;
         await user.save();
+
+        // If user is not verified, send OTP for verification
+        if (!user.isVerified) {
+          const otp = Math.floor(100000 + Math.random() * 900000).toString();
+          user.verificationToken = otp;
+          user.tokenExpiry = new Date(Date.now() + 10 * 60 * 1000);
+          await user.save();
+
+          // Send OTP email
+          const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: user.email,
+            subject: 'GrievMitra - Email Verification OTP',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2>Welcome back to GrievMitra!</h2>
+                <p>Please verify your email address using the OTP below to complete your login:</p>
+                <div style="background-color: #f4f4f4; padding: 20px; text-align: center; margin: 20px 0;">
+                  <h1 style="color: #333; font-size: 32px; margin: 0;">${otp}</h1>
+                </div>
+                <p>This OTP will expire in 10 minutes.</p>
+                <p>If you didn't request this, please ignore this email.</p>
+                <br>
+                <p>Best regards,<br>GrievMitra Team</p>
+              </div>
+            `
+          };
+
+          try {
+            console.log(`📧 Attempting to send OTP email to ${user.email} for Google OAuth login...`);
+            const result = await transporter.sendMail(mailOptions);
+            console.log(`✅ OTP email sent successfully to ${user.email}. Message ID: ${result.messageId}`);
+          } catch (emailError) {
+            console.error('❌ Error sending OTP email for existing user Google OAuth:', emailError);
+            console.error('❌ Email error details:', {
+              code: emailError.code,
+              command: emailError.command,
+              response: emailError.response
+            });
+            // Don't fail the OAuth flow if email fails
+          }
+        }
+
         return done(null, user);
       }
 
@@ -113,7 +170,13 @@ passport.use(new GoogleStrategy({
         `
       };
 
-      await transporter.sendMail(mailOptions);
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ OTP email sent to ${newUser.email} for Google OAuth`);
+      } catch (emailError) {
+        console.error('❌ Error sending OTP email for Google OAuth:', emailError);
+        // Don't fail the OAuth flow if email fails
+      }
 
       return done(null, newUser);
     } catch (error) {
@@ -217,6 +280,9 @@ app.post("/auth/verify-otp", async (req, res) => {
     user.tokenExpiry = undefined;
     await user.save();
 
+    // Generate JWT token for automatic login
+    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: "1h" });
+
     // Send confirmation email
     const confirmationMailOptions = {
       from: process.env.EMAIL_USER,
@@ -228,9 +294,9 @@ app.post("/auth/verify-otp", async (req, res) => {
           <p>Congratulations! Your email address has been successfully verified.</p>
           <div style="background-color: #f0f9ff; padding: 20px; text-align: center; margin: 20px 0; border-left: 4px solid #3b82f6;">
             <h3 style="color: #1e40af; margin: 0;">Account Verified ✓</h3>
-            <p style="margin: 10px 0 0;">You can now log in to your GrievMitra account and start submitting grievances.</p>
+            <p style="margin: 10px 0 0;">You can now access all features of our platform to report and track grievances.</p>
           </div>
-          <p>You can now access all features of our platform to report and track grievances effectively.</p>
+          <p>You are now automatically logged in and can start using GrievMitra immediately.</p>
           <br>
           <p>Best regards,<br>GrievMitra Team</p>
         </div>
@@ -244,7 +310,9 @@ app.post("/auth/verify-otp", async (req, res) => {
       // Don't fail the verification if email fails
     }
 
-    res.json({ message: "✅ Email verified successfully! You can now log in." });
+    // Redirect to homepage with authentication token
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5000";
+    res.redirect(`${frontendUrl}/pages/auth_callback.html?token=${token}&role=${user.role}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}`);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

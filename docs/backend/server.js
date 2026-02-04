@@ -8,6 +8,7 @@ const path = require("path");
 const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 // Import models
@@ -36,6 +37,15 @@ mongoose.connect(MONGODB_URI)
   .catch(err => console.error("❌ MongoDB Atlas connection error:", err));
 
 const JWT_SECRET = process.env.JWT_SECRET;
+
+// Nodemailer transporter for email OTP
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
 
 //-------------------------------------------------------------
 // PASSPORT CONFIGURATION
@@ -70,14 +80,40 @@ passport.use(new GoogleStrategy({
         return done(null, user);
       }
 
-      // Create new user
+      // Create new user with OTP verification
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const newUser = await User.create({
         name: profile.displayName,
         email: profile.emails[0].value,
         googleId: profile.id,
         phone: "", // Will be updated later
-        role: "citizen"
+        role: "citizen",
+        isVerified: false,
+        verificationToken: otp,
+        tokenExpiry: new Date(Date.now() + 10 * 60 * 1000)
       });
+
+      // Send OTP email
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: newUser.email,
+        subject: 'GrievMitra - Email Verification OTP',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2>Welcome to GrievMitra!</h2>
+            <p>Thank you for logging in with Google. Please verify your email address using the OTP below:</p>
+            <div style="background-color: #f4f4f4; padding: 20px; text-align: center; margin: 20px 0;">
+              <h1 style="color: #333; font-size: 32px; margin: 0;">${otp}</h1>
+            </div>
+            <p>This OTP will expire in 10 minutes.</p>
+            <p>If you didn't request this, please ignore this email.</p>
+            <br>
+            <p>Best regards,<br>GrievMitra Team</p>
+          </div>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
 
       return done(null, newUser);
     } catch (error) {
@@ -114,15 +150,101 @@ app.post("/auth/register", async (req, res) => {
 
     const hash = await bcrypt.hash(password, 10);
 
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const tokenExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
     const user = await User.create({
       name,
       email,
       password_hash: hash,
       phone,
-      role
+      role,
+      isVerified: false,
+      verificationToken: otp,
+      tokenExpiry
     });
 
-    res.json({ message: "✅ User registered successfully", user: { id: user._id, name: user.name, role: user.role } });
+    // Send OTP email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'GrievMitra - Email Verification OTP',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Welcome to GrievMitra!</h2>
+          <p>Thank you for registering. Please verify your email address using the OTP below:</p>
+          <div style="background-color: #f4f4f4; padding: 20px; text-align: center; margin: 20px 0;">
+            <h1 style="color: #333; font-size: 32px; margin: 0;">${otp}</h1>
+          </div>
+          <p>This OTP will expire in 10 minutes.</p>
+          <p>If you didn't request this, please ignore this email.</p>
+          <br>
+          <p>Best regards,<br>GrievMitra Team</p>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+
+  res.json({ message: "✅ Registration successful! Please check your email for OTP verification.", email });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Verify OTP
+app.post("/auth/verify-otp", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    if (user.isVerified) return res.status(400).json({ error: "Email already verified" });
+
+    if (!user.verificationToken || user.verificationToken !== otp) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    if (new Date() > user.tokenExpiry) {
+      return res.status(400).json({ error: "OTP expired" });
+    }
+
+    // Verify user
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.tokenExpiry = undefined;
+    await user.save();
+
+    // Send confirmation email
+    const confirmationMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'GrievMitra - Account Verified Successfully!',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Welcome to GrievMitra!</h2>
+          <p>Congratulations! Your email address has been successfully verified.</p>
+          <div style="background-color: #f0f9ff; padding: 20px; text-align: center; margin: 20px 0; border-left: 4px solid #3b82f6;">
+            <h3 style="color: #1e40af; margin: 0;">Account Verified ✓</h3>
+            <p style="margin: 10px 0 0;">You can now log in to your GrievMitra account and start submitting grievances.</p>
+          </div>
+          <p>You can now access all features of our platform to report and track grievances effectively.</p>
+          <br>
+          <p>Best regards,<br>GrievMitra Team</p>
+        </div>
+      `
+    };
+
+    try {
+      await transporter.sendMail(confirmationMailOptions);
+    } catch (emailError) {
+      console.error('Error sending confirmation email:', emailError);
+      // Don't fail the verification if email fails
+    }
+
+    res.json({ message: "✅ Email verified successfully! You can now log in." });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -135,6 +257,8 @@ app.post("/auth/login", async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) return res.status(401).json({ error: "Invalid email" });
+
+    if (!user.isVerified) return res.status(401).json({ error: "Please verify your email before logging in" });
 
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return res.status(401).json({ error: "Invalid password" });
@@ -151,6 +275,14 @@ app.post("/auth/login", async (req, res) => {
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"], prompt: 'select_account' }));
 
 app.get("/auth/google/callback", passport.authenticate("google", { failureRedirect: "/pages/login_screen.html" }), (req, res) => {
+  // Check if user is verified
+  if (!req.user.isVerified) {
+    // Redirect to OTP verification page
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5000";
+    res.redirect(`${frontendUrl}/pages/verify_otp.html?email=${encodeURIComponent(req.user.email)}`);
+    return;
+  }
+
   const token = jwt.sign({ id: req.user._id, role: req.user.role }, JWT_SECRET, { expiresIn: "1h" });
 
   // Redirect to frontend with token

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sign Up - GrievMitra Portal</title>
-    <meta name="description" content="Create your account for the GrievMitra grievance management system. Join citizens and government officials in transparent governance.">
+    <title>Register - GrievMitra Portal</title>
+    <meta name="description" content="Create your account on GrievMitra to submit and track grievances.">
     <link rel="stylesheet" href="../css/main.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,36 +21,25 @@
             padding: 20px;
             overflow-x: hidden;
         }
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="%23ffffff" opacity="0.05"/><circle cx="10" cy="50" r="0.5" fill="%23ffffff" opacity="0.05"/><circle cx="90" cy="30" r="0.5" fill="%23ffffff" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-            pointer-events: none;
-        }
-        .signup-card {
+        .register-container {
             background: white;
-            border-radius: 24px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 1000px;
+            max-width: 900px;
             display: flex;
-            min-height: 500px;
+            min-height: 600px;
             position: relative;
-            overflow: hidden;
-            animation: fadeIn 0.8s ease-out;
+            animation: slideIn 0.8s ease-out;
         }
-        @keyframes fadeIn {
+        @keyframes slideIn {
             from {
+                transform: translateY(-50px);
                 opacity: 0;
-                transform: translateY(20px);
             }
             to {
-                opacity: 1;
                 transform: translateY(0);
+                opacity: 1;
             }
         }
         .form-section {
@@ -60,94 +49,90 @@
             flex-direction: column;
             justify-content: center;
         }
-        .character-section {
+        .image-section {
             flex: 1;
             background: white;
+            border-radius: 0 20px 20px 0;
+            position: relative;
         }
-        .character-container {
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        .image-placeholder {
+            width: 80%;
+            height: 80%;
+            border: 2px dashed #cbd5e1;
+            border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        .character-container img {
-            width: 100%;
-            max-width: 250px;
-            height: auto;
-            border-radius: 12px;
-        }
-        .title-section {
+            color: #64748b;
+            font-size: 18px;
             text-align: center;
-            margin-bottom: 32px;
+            background: rgba(255,255,255,0.5);
         }
-        .title-section h1 {
-            color: #1f2937;
-            font-size: 32px;
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo svg {
+            width: 60px;
+            height: 60px;
+            color: #3b82f6;
+            margin: 0 auto 15px;
+        }
+        .logo h1 {
+            color: #1e40af;
+            font-size: 28px;
             font-weight: 700;
-            margin: 0 0 8px 0;
-        }
-        .title-section p {
-            color: #6b7280;
-            font-size: 16px;
             margin: 0;
-            font-weight: 400;
+        }
+        .logo p {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 5px 0 0;
         }
         .form-group {
             margin-bottom: 20px;
+            position: relative;
         }
-        .form-group input {
+        .form-group input,
+        .form-group select {
             width: 100%;
-            padding: 16px 20px;
+            padding: 15px 20px;
             border: 2px solid #e5e7eb;
             border-radius: 12px;
             font-size: 16px;
-            font-family: inherit;
             transition: all 0.3s ease;
-            background: #ffffff;
-            color: #374151;
+            background: #f9fafb;
         }
-        .form-group input:focus {
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: #3b82f6;
-            background: #ffffff;
+            background: white;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
-        .form-group input::placeholder {
-            color: #9ca3af;
-        }
-        .terms-group {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 24px;
-            gap: 12px;
-        }
-        .terms-group input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            margin-top: 2px;
-            accent-color: #3b82f6;
-        }
-        .terms-group label {
-            font-size: 14px;
+        .form-group label {
+            position: absolute;
+            top: 15px;
+            left: 20px;
             color: #6b7280;
-            line-height: 1.5;
-            margin: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            background: white;
+            padding: 0 5px;
         }
-        .terms-group label a {
+        .form-group input:focus + label,
+        .form-group input:not(:placeholder-shown) + label,
+        .form-group select:focus + label,
+        .form-group select:not([value=""]) + label {
+            top: -8px;
+            left: 15px;
+            font-size: 12px;
             color: #3b82f6;
-            text-decoration: none;
-            font-weight: 500;
         }
-        .terms-group label a:hover {
-            text-decoration: underline;
-        }
-        .signup-btn {
+        .register-btn {
             width: 100%;
-            padding: 16px;
-            background: #3b82f6;
+            padding: 15px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
             border: none;
             border-radius: 12px;
@@ -155,42 +140,22 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
             margin-bottom: 20px;
         }
-        .signup-btn:hover:not(:disabled) {
-            background: #2563eb;
-            transform: translateY(-1px);
+        .register-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
         }
-        .signup-btn:disabled {
+        .register-btn:disabled {
             opacity: 0.7;
             cursor: not-allowed;
             transform: none;
         }
-        .divider {
-            text-align: center;
-            margin: 24px 0;
-            position: relative;
-        }
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #e5e7eb;
-        }
-        .divider span {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 0 16px;
-            color: #6b7280;
-            font-size: 14px;
-            font-weight: 500;
-        }
         .google-btn {
             width: 100%;
-            padding: 16px;
+            padding: 15px;
             background: white;
             color: #3c4043;
             border: 1px solid #dadce0;
@@ -202,19 +167,40 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            margin-bottom: 20px;
         }
         .google-btn:hover {
             background: #f8f9fa;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .google-icon {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+        }
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #dadce0;
+        }
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            color: #6b7280;
+            font-size: 14px;
         }
         .login-link {
             text-align: center;
-            margin-top: 24px;
+            margin-top: 20px;
             color: #6b7280;
             font-size: 14px;
         }
@@ -228,8 +214,8 @@
         }
         .lazy-loader {
             display: inline-block;
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: white;
@@ -239,55 +225,62 @@
             to { transform: rotate(360deg); }
         }
         @media (max-width: 768px) {
-            .signup-card {
+            .register-container {
                 flex-direction: column;
                 max-width: 400px;
                 min-height: auto;
             }
-            .form-section {
-                padding: 30px 24px;
-            }
-            .character-section {
+            .image-section {
                 display: none;
             }
-            .title-section h1 {
-                font-size: 28px;
+            .form-section {
+                padding: 30px 20px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="signup-card">
+    <div class="register-container">
         <div class="form-section">
-            <div class="title-section">
-                <h1>Create Account</h1>
-                <p>Join us to voice your concerns</p>
+            <div class="logo">
+                <svg viewBox="0 0 40 40" fill="currentColor">
+                    <path d="M20 4C11.163 4 4 11.163 4 20s7.163 16 16 16 16-7.163 16-16S28.837 4 20 4zm0 28c-6.627 0-12-5.373-12-12S13.373 8 20 8s12 5.373 12 12-5.373 12-12 12z"/>
+                    <path d="M20 12c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8zm0 12c-2.206 0-4-1.794-4-4s1.794-4 4-4 4 1.794 4 4-1.794 4-4 4z"/>
+                    <circle cx="20" cy="20" r="2" fill="white"/>
+                </svg>
+                <h1>GrievMitra</h1>
+                <p>Create Your Account</p>
             </div>
 
             <form id="registerForm">
                 <div class="form-group">
-                    <input type="text" id="fullName" name="fullName" placeholder="Full Name" required />
+                    <input type="text" id="name" name="name" placeholder=" " required />
+                    <label for="name">Full Name</label>
                 </div>
 
                 <div class="form-group">
-                    <input type="email" id="email" name="email" placeholder="Email Address" required />
+                    <input type="email" id="email" name="email" placeholder=" " required />
+                    <label for="email">Email Address</label>
                 </div>
 
                 <div class="form-group">
-                    <input type="password" id="password" name="password" placeholder="Password" required />
+                    <input type="password" id="password" name="password" placeholder=" " required />
+                    <label for="password">Password</label>
                 </div>
 
-                <div class="terms-group">
-                    <input type="checkbox" id="terms" name="terms" required />
-                    <label for="terms">I agree to the <a href="#">Terms & Conditions</a></label>
+                <div class="form-group">
+                    <input type="tel" id="phone" name="phone" placeholder=" " />
+                    <label for="phone">Phone Number (Optional)</label>
                 </div>
 
-                <button type="submit" id="signupBtn" class="signup-btn">
-                    <span id="btnText">Sign Up</span>
+
+
+                <button type="submit" id="registerBtn" class="register-btn">
+                    <span id="btnText">Create Account</span>
                 </button>
 
                 <div class="divider">
-                    <span>OR</span>
+                    <span>or</span>
                 </div>
 
                 <button type="button" id="googleBtn" class="google-btn">
@@ -302,99 +295,62 @@
             </form>
 
             <div class="login-link">
-                Already have an account? <a href="login_screen.html">Log In</a>
+                Already have an account? <a href="login_screen.html">Sign In</a>
             </div>
         </div>
 
-        <div class="character-section">
-            <img src="../logo.jpg" alt="Friendly Indian Villager Character" style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px;">
+        <div class="image-section">
+            <img src="../logo.jpg" alt="GrievMitra Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px;">
         </div>
     </div>
 
-    <!-- Success Modal -->
-    <div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-xl text-center w-96">
-            <h2 id="successTitle" class="text-xl font-bold mb-3"></h2>
-            <p id="successMessage" class="mb-6"></p>
-            <button onclick="goToLogin()" class="bg-blue-600 text-white px-6 py-2 rounded">Go to Login</button>
-        </div>
-    </div>
+    <script type="module">
+        import { API_BASE_URL } from '../js/config.js';
 
-    <script>
-        document.getElementById('registerForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
+        document.getElementById("registerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const registerBtn = document.getElementById("registerBtn");
+            const btnText = document.getElementById("btnText");
+            const originalText = btnText.textContent;
+            btnText.innerHTML = '<span class="lazy-loader"></span>Creating Account...';
+            registerBtn.disabled = true;
 
-            const formData = new FormData(event.target);
-            const data = {
-                name: formData.get('fullName').trim(),
-                email: formData.get('email').trim(),
-                password: formData.get('password')
-            };
-
-            // Validation
-            if (!data.name || data.name.length < 2) {
-                alert('Please enter a valid full name (at least 2 characters).');
-                return;
-            }
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(data.email)) {
-                alert('Please enter a valid email address.');
-                return;
-            }
-            if (!data.password || data.password.length < 6) {
-                alert('Password must be at least 6 characters long.');
-                return;
-            }
-
-            // Disable button and show loader
-            const btn = document.getElementById('signupBtn');
-            const btnText = document.getElementById('btnText');
-            btn.disabled = true;
-            btnText.innerHTML = '<span class="lazy-loader"></span>Signing Up...';
+            const formData = {};
+            new FormData(e.target).forEach((val, key) => formData[key] = val);
 
             try {
-                const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-                const response = await fetch(`${apiBaseUrl}/auth/register`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
+                const res = await fetch(`${API_BASE_URL}/auth/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formData)
                 });
 
-                const result = await response.json();
+                const data = await res.json();
 
-                if (response.ok) {
-                    // Show success modal
-                    document.getElementById('successTitle').textContent = 'Registration Successful!';
-                    document.getElementById('successMessage').textContent = result.message || 'Your account has been created successfully. Please log in to continue.';
-                    document.getElementById('successModal').classList.remove('hidden');
+                if (res.ok) {
+                    // Redirect to OTP verification page
+                    window.location.href = `verify_otp.html?email=${encodeURIComponent(data.email)}`;
                 } else {
-                    alert(result.message || 'Registration failed. Please try again.');
+                    alert(data.error || "Registration failed. Please try again.");
                 }
             } catch (error) {
-                alert('An error occurred. Please check your connection and try again.');
+                console.error("Error during registration:", error);
+                alert("An error occurred. Please try again later.");
             } finally {
-                // Re-enable button
-                btn.disabled = false;
-                btnText.innerHTML = 'Sign Up';
+                btnText.textContent = originalText;
+                registerBtn.disabled = false;
             }
         });
 
-        function goToLogin() {
-            window.location.href = 'login_screen.html';
-        }
-
-        // Google Signup
+        // Google Registration (similar to login, but for new users)
         document.getElementById("googleBtn").addEventListener("click", (e) => {
-            e.preventDefault(); // Prevent form submission
+            e.preventDefault();
             // Clear any existing session data before Google Auth
             localStorage.removeItem("token");
             localStorage.removeItem("role");
             localStorage.removeItem("name");
             localStorage.removeItem("isLoggedIn");
-            const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-            window.location.href = `${apiBaseUrl}/auth/google`;
+            window.location.href = `${API_BASE_URL}/auth/google`;
         });
     </script>
 <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>

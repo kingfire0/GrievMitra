@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>GrievMitra Portal - Your Voice, Our Mission</title>
     <meta name="description"
         content="Transform your concerns into community change through India's most trusted digital grievance platform. Submit, track, and resolve grievances with complete transparency." />
@@ -57,6 +57,74 @@
 
         .fade-out {
             animation: fadeOutLoader 0.5s ease-out forwards;
+        }
+
+        /* Dynamic mobile responsiveness for 414x896 and other mobile devices */
+        @media (max-width: 640px) {
+            .mobile-menu-button {
+                padding: 0.5rem;
+            }
+
+            .mobile-auth-section {
+                padding: 0.75rem 1rem;
+            }
+
+            .mobile-login-register a {
+                display: block;
+                width: 100%;
+                text-align: center;
+                padding: 0.75rem 1rem;
+                margin-bottom: 0.5rem;
+                border-radius: 0.375rem;
+                font-weight: 500;
+                transition: all 0.2s ease;
+            }
+
+            .mobile-login-register a:first-child {
+                background-color: transparent;
+                color: #6b7280;
+                border: 1px solid #d1d5db;
+            }
+
+            .mobile-login-register a:first-child:hover {
+                background-color: #f3f4f6;
+                color: #374151;
+            }
+
+            .mobile-login-register a:last-child {
+                background-color: #3b82f6;
+                color: white;
+                border: none;
+            }
+
+            .mobile-login-register a:last-child:hover {
+                background-color: #2563eb;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 1023px) {
+            /* Tablet and larger mobile devices */
+            #auth-buttons {
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 896px) and (max-height: 414px) {
+            /* Specific handling for 414x896 viewport */
+            nav {
+                height: auto;
+                min-height: 3.5rem;
+            }
+
+            .nav-links {
+                font-size: 0.875rem;
+                padding: 0.5rem 0.75rem;
+            }
+
+            .mobile-menu {
+                max-height: 70vh;
+                overflow-y: auto;
+            }
         }
     </style>
 

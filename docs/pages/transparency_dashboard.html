@@ -161,6 +161,14 @@
 
     <!-- Navigation JavaScript -->
     <script>
+    // Immediately hide auth buttons to prevent flash of content
+    (function() {
+        const authButtons = document.getElementById('auth-buttons');
+        const mobileLoginRegister = document.getElementById('mobile-login-register');
+        if (authButtons) authButtons.style.display = 'none';
+        if (mobileLoginRegister) mobileLoginRegister.style.display = 'none';
+    })();
+
     document.addEventListener('DOMContentLoaded', function() {
         // Check authentication status
         const token = localStorage.getItem('token');
@@ -168,16 +176,32 @@
         const name = localStorage.getItem('name');
         const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-        if (token && isLoggedIn) {
-            // User is logged in
-            document.getElementById('user-menu').classList.remove('hidden');
-            document.getElementById('auth-buttons').classList.add('hidden');
+        // Get DOM elements
+        const userMenu = document.getElementById('user-menu');
+        const authButtons = document.getElementById('auth-buttons');
+        const mobileUserSection = document.getElementById('mobile-user-section');
+        const mobileLoginRegister = document.getElementById('mobile-login-register');
 
-            // Show mobile user section, hide login/register
-            const mobileUserSection = document.getElementById('mobile-user-section');
-            const mobileLoginRegister = document.getElementById('mobile-login-register');
-            if (mobileUserSection) mobileUserSection.classList.remove('hidden');
-            if (mobileLoginRegister) mobileLoginRegister.classList.add('hidden');
+        if (token && isLoggedIn) {
+            // User is logged in - HIDE login/register buttons, SHOW user menu
+            if (userMenu) {
+                userMenu.classList.remove('hidden');
+                userMenu.style.display = 'block';
+            }
+            if (authButtons) {
+                authButtons.classList.add('hidden');
+                authButtons.style.display = 'none';
+            }
+            
+            // Mobile: Show user section, hide login/register
+            if (mobileUserSection) {
+                mobileUserSection.classList.remove('hidden');
+                mobileUserSection.style.display = 'block';
+            }
+            if (mobileLoginRegister) {
+                mobileLoginRegister.classList.add('hidden');
+                mobileLoginRegister.style.display = 'none';
+            }
 
             // Set user information
             const userInitials = name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
@@ -191,18 +215,26 @@
             const userEmail = localStorage.getItem('email') || 'user@example.com';
             document.getElementById('dropdown-user-email').textContent = userEmail;
             document.getElementById('mobile-user-email').textContent = userEmail;
-
-
         } else {
-            // User is not logged in
-            document.getElementById('auth-buttons').classList.remove('hidden');
-            document.getElementById('user-menu').classList.add('hidden');
-
-            // Show mobile login/register, hide user section
-            const mobileUserSection = document.getElementById('mobile-user-section');
-            const mobileLoginRegister = document.getElementById('mobile-login-register');
-            if (mobileLoginRegister) mobileLoginRegister.classList.remove('hidden');
-            if (mobileUserSection) mobileUserSection.classList.add('hidden');
+            // User is not logged in - SHOW login/register buttons, HIDE user menu
+            if (authButtons) {
+                authButtons.classList.remove('hidden');
+                authButtons.style.display = 'flex';
+            }
+            if (userMenu) {
+                userMenu.classList.add('hidden');
+                userMenu.style.display = 'none';
+            }
+            
+            // Mobile: Show login/register, hide user section
+            if (mobileLoginRegister) {
+                mobileLoginRegister.classList.remove('hidden');
+                mobileLoginRegister.style.display = 'block';
+            }
+            if (mobileUserSection) {
+                mobileUserSection.classList.add('hidden');
+                mobileUserSection.style.display = 'none';
+            }
         }
 
         // Mobile menu toggle

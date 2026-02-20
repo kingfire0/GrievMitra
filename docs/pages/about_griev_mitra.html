@@ -250,6 +250,104 @@
     </script>
 
 
+    <!-- Statistics Section with Animated Counters -->
+    <section id="statistics-section" class="py-16 bg-gradient-to-br from-primary-600 to-secondary-700 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                    Our Impact in Numbers
+                </h2>
+                <p class="text-lg opacity-90 max-w-2xl mx-auto">
+                    Real-time statistics showcasing our commitment to transparent governance
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <!-- Grievances Resolved -->
+                <div class="text-center">
+                    <div class="counter-container">
+                        <div class="text-4xl md:text-5xl font-bold mb-2 counter" data-target="240000">0</div>
+                        <div class="text-lg opacity-80">Grievances Resolved</div>
+                    </div>
+                </div>
+
+                <!-- Active Users -->
+                <div class="text-center">
+                    <div class="counter-container">
+                        <div class="text-4xl md:text-5xl font-bold mb-2">
+                            <span class="counter" data-target="50000">0</span>+
+                        </div>
+                        <div class="text-lg opacity-80">Active Users</div>
+                    </div>
+                </div>
+
+                <!-- Satisfaction Rate -->
+                <div class="text-center">
+                    <div class="counter-container">
+                        <div class="text-4xl md:text-5xl font-bold mb-2">
+                            <span class="counter" data-target="94">0</span>%
+                        </div>
+                        <div class="text-lg opacity-80">Satisfaction Rate</div>
+                    </div>
+                </div>
+
+                <!-- States Covered -->
+                <div class="text-center">
+                    <div class="counter-container">
+                        <div class="text-4xl md:text-5xl font-bold mb-2">
+                            <span class="counter" data-target="28">0</span>
+                        </div>
+                        <div class="text-lg opacity-80">States Covered</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Counter Animation JavaScript -->
+    <script>
+        // Counter animation function
+        function animateCounters() {
+            const counters = document.querySelectorAll('.counter');
+            
+            counters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target'));
+                const duration = 2000;
+                const increment = target / (duration / 16);
+                let current = 0;
+
+                const updateCounter = () => {
+                    current += increment;
+                    if (current < target) {
+                        counter.textContent = Math.floor(current).toLocaleString();
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        counter.textContent = target.toLocaleString();
+                    }
+                };
+
+                updateCounter();
+            });
+        }
+
+        // Intersection Observer for triggering animation when section is visible
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    statsObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        // Observe the statistics section
+        const statsSection = document.getElementById('statistics-section');
+        if (statsSection) {
+            statsObserver.observe(statsSection);
+        }
+    </script>
+
+
     <!-- Hero Section -->
     <section class="relative bg-gradient-to-br from-primary-50 via-white to-success-50 py-16 lg:py-24">
         <div class="absolute inset-0 bg-white/80"></div>

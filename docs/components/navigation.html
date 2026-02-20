@@ -1,141 +1,145 @@
-<!-- Reusable Navigation Component -->
-<nav class="bg-white shadow-subtle sticky top-0 z-50 border-b border-gray-200">
+<!-- Reusable Navigation Component - Redesigned -->
+<nav class="bg-white/80 backdrop-blur-lg shadow-lg sticky top-0 z-50 border-b border-gray-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-            <!-- Logo -->
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <svg class="h-10 w-10 text-primary transition-transform duration-200 hover:scale-105" viewBox="0 0 40 40" fill="currentColor">
-                        <path d="M20 4C11.163 4 4 11.163 4 20s7.163 16 16 16 16-7.163 16-16S28.837 4 20 4zm0 28c-6.627 0-12-5.373-12-12S13.373 8 20 8s12 5.373 12 12-5.373 12-12 12z"/>
-                        <path d="M20 12c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8zm0 12c-2.206 0-4-1.794-4-4s1.794-4 4-4 4 1.794 4 4-1.794 4-4 4z"/>
-                        <circle cx="20" cy="20" r="2" fill="white"/>
-                    </svg>
+        <div class="flex justify-between items-center h-20">
+            <!-- Logo Section -->
+            <div class="flex items-center group">
+                <div class="relative">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-primary to-success rounded-full blur opacity-25 group-hover:opacity-50 transition duration-300"></div>
+                    <div class="relative">
+                        <svg class="h-12 w-12 text-primary transform group-hover:scale-110 transition-transform duration-300" viewBox="0 0 40 40" fill="currentColor">
+                            <path d="M20 4C11.163 4 4 11.163 4 20s7.163 16 16 16 16-7.163 16-16S28.837 4 20 4zm0 28c-6.627 0-12-5.373-12-12S13.373 8 20 8s12 5.373 12 12-5.373 12-12 12z"/>
+                            <path d="M20 12c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8zm0 12c-2.206 0-4-1.794-4-4s1.794-4 4-4 4 1.794 4 4-1.794 4-4 4z"/>
+                            <circle cx="20" cy="20" r="2" fill="white"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="ml-3">
-                    <h1 class="text-xl font-bold text-primary">GrievMitra</h1>
-                    <p class="text-xs text-text-secondary">Portal</p>
+                <div class="ml-4">
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">GrievMitra</h1>
+                    <p class="text-xs text-gray-400 -mt-1">Citizen Portal</p>
                 </div>
             </div>
 
-            <!-- Desktop Navigation -->
-            <div class="hidden md:block">
-                <div class="ml-10 flex items-baseline space-x-4">
-                    <a href="homepage.html" class="nav-link focus:outline-none text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-primary-50">Home</a>
-                    <a href="submit_grievance.html" class="nav-link focus:outline-none text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-primary-50">Submit Grievance</a>
-                    <a href="track_grievance.html" class="nav-link focus:outline-none text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-primary-50">Track Status</a>
-                    <a href="transparency_dashboard.html" class="nav-link focus:outline-none text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-primary-50">Transparency</a>
-                    <a href="about_griev_mitra.html" class="nav-link focus:outline-none text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-primary-50">About</a>
+            <!-- Desktop Navigation - Centered -->
+            <div class="hidden lg:flex items-center">
+                <div class="flex items-center space-x-1 bg-gray-50/50 rounded-full p-1.5">
+                    <a href="homepage.html" class="nav-link px-5 py-2.5 rounded-full text-sm font-medium text-gray-600 hover:text-primary hover:bg-white hover:shadow-md transition-all duration-300">Home</a>
+                    <a href="submit_grievance.html" class="nav-link px-5 py-2.5 rounded-full text-sm font-medium text-gray-600 hover:text-primary hover:bg-white hover:shadow-md transition-all duration-300">Submit</a>
+                    <a href="track_grievance.html" class="nav-link px-5 py-2.5 rounded-full text-sm font-medium text-gray-600 hover:text-primary hover:bg-white hover:shadow-md transition-all duration-300">Track</a>
+                    <a href="transparency_dashboard.html" class="nav-link px-5 py-2.5 rounded-full text-sm font-medium text-gray-600 hover:text-primary hover:bg-white hover:shadow-md transition-all duration-300">Transparency</a>
+                    <a href="about_griev_mitra.html" class="nav-link px-5 py-2.5 rounded-full text-sm font-medium text-gray-600 hover:text-primary hover:bg-white hover:shadow-md transition-all duration-300">About</a>
                 </div>
             </div>
 
             <!-- User Menu / Auth Buttons -->
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3">
                 <!-- User Menu (when logged in) -->
                 <div id="user-menu" class="hidden relative">
-                    <button id="user-menu-button" class="flex items-center space-x-2 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary p-1 hover:bg-gray-50 transition-colors duration-200">
-                        <div id="profile-photo" class="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-medium text-sm">
+                    <button id="user-menu-button" class="flex items-center space-x-2 bg-gradient-to-r from-primary/10 to-success/10 px-4 py-2 rounded-full hover:shadow-lg transition-all duration-300">
+                        <div id="profile-photo" class="h-9 w-9 rounded-full bg-gradient-to-r from-primary to-success flex items-center justify-center text-white font-bold text-sm shadow-md">
                             <span id="user-initials">U</span>
                         </div>
-                        <span id="user-display-name" class="hidden md:block text-text-primary font-medium"></span>
-                        <svg class="h-4 w-4 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
+                        <span id="user-display-name" class="hidden xl:block text-sm font-semibold text-gray-700"></span>
+                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
 
                     <!-- Dropdown Menu -->
-                    <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
-                        <div class="px-4 py-2 border-b border-gray-200">
-                            <p class="text-sm font-medium text-text-primary" id="dropdown-user-name">User Name</p>
-                            <p class="text-xs text-text-secondary" id="dropdown-user-email">user@example.com</p>
+                    <div id="user-dropdown" class="hidden absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+                        <div class="bg-gradient-to-r from-primary/5 to-success/5 px-4 py-3 border-b border-gray-100">
+                            <p class="text-sm font-bold text-gray-800" id="dropdown-user-name">User Name</p>
+                            <p class="text-xs text-gray-500" id="dropdown-user-email">user@example.com</p>
                         </div>
-                        <a href="#" class="block px-4 py-2 text-sm text-text-primary hover:bg-gray-50 transition-colors duration-200">
-                            <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                            My Profile
-                        </a>
-                        <a href="#" class="block px-4 py-2 text-sm text-text-primary hover:bg-gray-50 transition-colors duration-200">
-                            <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            My Grievances
-                        </a>
-                        <!-- Admin Dashboard link will be dynamically added here if user is admin -->
-                        <div class="border-t border-gray-200 my-1"></div>
-                        <button id="logout-link" class="w-full text-left px-4 py-2 text-sm text-error hover:bg-error-50 transition-colors duration-200">
-                            <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                            </svg>
-                            Logout
-                        </button>
+                        <div class="py-2">
+                            <a href="#" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary transition-colors">
+                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                My Profile
+                            </a>
+                            <a href="#" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary transition-colors">
+                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                My Grievances
+                            </a>
+                        </div>
+                        <div class="border-t border-gray-100">
+                            <button id="logout-link" class="w-full flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                Logout
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Auth Buttons (when not logged in) -->
                 <div id="auth-buttons" class="hidden md:flex items-center space-x-3">
-                    <a href="login_screen.html" id="login-link" class="text-text-secondary hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">Login</a>
-                    <a href="user_registration.html" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-600 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">Register</a>
+                    <a href="login_screen.html" id="login-link" class="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-primary transition-colors">Login</a>
+                    <a href="user_registration.html" class="px-6 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-primary to-primary/80 rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300">Register</a>
                 </div>
 
                 <!-- Mobile menu button -->
-                <div class="md:hidden">
-                    <button id="mobile-menu-button" class="text-text-secondary hover:text-primary p-2 rounded-md transition-colors duration-200">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
+                <div class="lg:hidden">
+                    <button id="mobile-menu-button" class="p-3 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-primary transition-all duration-200">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Mobile Navigation Menu -->
-        <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200 bg-white">
-            <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="homepage.html" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-primary hover:bg-primary-50 transition-colors duration-200">Home</a>
-                <a href="submit_grievance.html" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-primary hover:bg-primary-50 transition-colors duration-200">Submit Grievance</a>
-                <a href="track_grievance.html" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-primary hover:bg-primary-50 transition-colors duration-200">Track Status</a>
-                <a href="transparency_dashboard.html" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-primary hover:bg-primary-50 transition-colors duration-200">Transparency</a>
-                <a href="about_griev_mitra.html" class="mobile-nav-link block px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-primary hover:bg-primary-50 transition-colors duration-200">About</a>
+        <!-- Mobile Navigation Menu - Redesigned -->
+        <div id="mobile-menu" class="hidden lg:hidden bg-white/95 backdrop-blur-xl border-t border-gray-100 rounded-b-3xl shadow-2xl">
+            <div class="px-4 py-6 space-y-3">
+                <!-- Mobile Nav Links -->
+                <div class="space-y-2">
+                    <a href="homepage.html" class="mobile-nav-link flex items-center px-4 py-3 rounded-xl text-base font-medium text-gray-600 hover:text-primary hover:bg-primary/5 transition-colors">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                        Home
+                    </a>
+                    <a href="submit_grievance.html" class="mobile-nav-link flex items-center px-4 py-3 rounded-xl text-base font-medium text-gray-600 hover:text-primary hover:bg-primary/5 transition-colors">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Submit Grievance
+                    </a>
+                    <a href="track_grievance.html" class="mobile-nav-link flex items-center px-4 py-3 rounded-xl text-base font-medium text-gray-600 hover:text-primary hover:bg-primary/5 transition-colors">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        Track Status
+                    </a>
+                    <a href="transparency_dashboard.html" class="mobile-nav-link flex items-center px-4 py-3 rounded-xl text-base font-medium text-gray-600 hover:text-primary hover:bg-primary/5 transition-colors">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        Transparency
+                    </a>
+                    <a href="about_griev_mitra.html" class="mobile-nav-link flex items-center px-4 py-3 rounded-xl text-base font-medium text-gray-600 hover:text-primary hover:bg-primary/5 transition-colors">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        About
+                    </a>
+                </div>
 
                 <!-- Mobile Auth Buttons -->
-                <div id="mobile-auth-buttons" class="pt-4 pb-3 border-t border-gray-200">
+                <div id="mobile-auth-buttons" class="pt-4 border-t border-gray-100">
                     <!-- For not logged in -->
-                    <div id="mobile-login-register" class="space-y-2">
-                        <a href="login_screen.html" class="block px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-primary hover:bg-primary-50 transition-colors duration-200">Login</a>
-                        <a href="user_registration.html" class="block px-3 py-2 rounded-md text-base font-medium bg-primary text-white hover:bg-primary-600 transition-colors duration-200">Register</a>
+                    <div id="mobile-login-register" class="space-y-3">
+                        <a href="login_screen.html" class="flex items-center justify-center px-4 py-3 rounded-xl text-base font-medium text-gray-600 border border-gray-200 hover:border-primary hover:text-primary transition-colors">Login</a>
+                        <a href="user_registration.html" class="flex items-center justify-center px-4 py-3 rounded-xl text-base font-bold text-white bg-gradient-to-r from-primary to-primary/80 hover:shadow-lg transition-all">Register Now</a>
                     </div>
 
                     <!-- For logged in -->
                     <div id="mobile-user-section" class="hidden">
-                        <div class="flex items-center px-5">
-                            <div class="flex-shrink-0">
-                                <div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-medium">
-                                    <span id="mobile-user-initials">U</span>
-                                </div>
+                        <div class="flex items-center px-4 py-3 bg-gradient-to-r from-primary/5 to-success/5 rounded-xl mb-3">
+                            <div class="h-12 w-12 rounded-full bg-gradient-to-r from-primary to-success flex items-center justify-center text-white font-bold shadow-md">
+                                <span id="mobile-user-initials">U</span>
                             </div>
                             <div class="ml-3">
-                                <div id="mobile-user-name" class="text-base font-medium text-text-primary">User Name</div>
-                                <div id="mobile-user-email" class="text-sm font-medium text-text-secondary">user@example.com</div>
+                                <div id="mobile-user-name" class="text-base font-bold text-gray-800">User Name</div>
+                                <div id="mobile-user-email" class="text-sm text-gray-500">user@example.com</div>
                             </div>
                         </div>
-                        <div class="mt-3 space-y-1">
-                            <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-primary hover:bg-primary-50 transition-colors duration-200">
-                                <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                </svg>
+                        <div class="space-y-2">
+                            <a href="#" class="flex items-center px-4 py-2.5 rounded-xl text-base font-medium text-gray-600 hover:bg-primary/5 hover:text-primary transition-colors">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                 My Profile
                             </a>
-                            <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-primary hover:bg-primary-50 transition-colors duration-200">
-                                <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
+                            <a href="#" class="flex items-center px-4 py-2.5 rounded-xl text-base font-medium text-gray-600 hover:bg-primary/5 hover:text-primary transition-colors">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                 My Grievances
                             </a>
-                            <!-- Admin Dashboard link will be dynamically added here if user is admin -->
-                            <button id="logout-link-mobile-menu" class="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-error hover:bg-error-50 transition-colors duration-200">
-                                <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                                </svg>
+                            <button id="logout-link-mobile-menu" class="w-full flex items-center px-4 py-2.5 rounded-xl text-base font-medium text-red-600 hover:bg-red-50 transition-colors">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                                 Logout
                             </button>
                         </div>
@@ -149,24 +153,20 @@
 <!-- Navigation JavaScript -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Check authentication status
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
     const name = localStorage.getItem('name');
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
     if (token && isLoggedIn) {
-        // User is logged in
         document.getElementById('user-menu').classList.remove('hidden');
         document.getElementById('auth-buttons').classList.add('hidden');
 
-        // Show mobile user section, hide mobile login/register
         const mobileUserSection = document.getElementById('mobile-user-section');
         const mobileLoginRegister = document.getElementById('mobile-login-register');
         if (mobileUserSection) mobileUserSection.classList.remove('hidden');
         if (mobileLoginRegister) mobileLoginRegister.classList.add('hidden');
 
-        // Set user information
         const userInitials = name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
         document.getElementById('user-initials').textContent = userInitials;
         document.getElementById('mobile-user-initials').textContent = userInitials;
@@ -174,63 +174,40 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('dropdown-user-name').textContent = name || 'User';
         document.getElementById('mobile-user-name').textContent = name || 'User';
 
-        // Add admin dashboard link if user is admin
+        const userEmail = localStorage.getItem('email') || 'user@example.com';
+        document.getElementById('dropdown-user-email').textContent = userEmail;
+        document.getElementById('mobile-user-email').textContent = userEmail;
+
         if (role === 'admin') {
             const adminLink = document.createElement('a');
             adminLink.href = 'admin_dashboard.html';
-            adminLink.className = 'block px-4 py-2 text-sm text-text-primary hover:bg-gray-50 transition-colors duration-200';
-            adminLink.innerHTML = '<svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Admin Dashboard';
+            adminLink.className = 'flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary transition-colors';
+            adminLink.innerHTML = '<svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Admin Dashboard';
             const dropdown = document.getElementById('user-dropdown');
             const separator = dropdown.querySelector('.border-t');
-            if (separator) {
-                dropdown.insertBefore(adminLink, separator);
-            }
-            // Mobile
-            const mobileAdminLink = adminLink.cloneNode(true);
-            const mobileMenu = document.getElementById('mobile-menu');
-            const mobileSeparator = mobileMenu.querySelector('.border-t');
-            if (mobileSeparator) {
-                mobileMenu.insertBefore(mobileAdminLink, mobileSeparator);
-            }
+            if (separator) dropdown.insertBefore(adminLink, separator);
         }
-
     } else {
-        // User is not logged in
         document.getElementById('auth-buttons').classList.remove('hidden');
         document.getElementById('user-menu').classList.add('hidden');
-
-        // Show mobile login/register, hide mobile user section
         const mobileUserSection = document.getElementById('mobile-user-section');
         const mobileLoginRegister = document.getElementById('mobile-login-register');
         if (mobileLoginRegister) mobileLoginRegister.classList.remove('hidden');
         if (mobileUserSection) mobileUserSection.classList.add('hidden');
     }
 
-    // Mobile menu toggle
     const mobileMenuButton = document.getElementById('mobile-menu-button');
     const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuButton?.addEventListener('click', function() { mobileMenu.classList.toggle('hidden'); });
 
-    mobileMenuButton?.addEventListener('click', function() {
-        mobileMenu.classList.toggle('hidden');
-    });
-
-    // User dropdown toggle
     const userMenuButton = document.getElementById('user-menu-button');
     const userDropdown = document.getElementById('user-dropdown');
+    userMenuButton?.addEventListener('click', function(e) { e.stopPropagation(); userDropdown.classList.toggle('hidden'); });
 
-    userMenuButton?.addEventListener('click', function(e) {
-        e.stopPropagation();
-        userDropdown.classList.toggle('hidden');
-    });
-
-    // Close dropdown when clicking outside
     document.addEventListener('click', function(e) {
-        if (!userMenuButton?.contains(e.target)) {
-            userDropdown?.classList.add('hidden');
-        }
+        if (!userMenuButton?.contains(e.target)) userDropdown?.classList.add('hidden');
     });
 
-    // Logout functionality
     const logoutButtons = document.querySelectorAll('#logout-link, #logout-link-mobile-menu');
     logoutButtons.forEach(button => {
         button?.addEventListener('click', function(e) {
@@ -240,15 +217,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Highlight current page in navigation
     const currentPath = window.location.pathname.split('/').pop() || 'homepage.html';
     const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
-
     navLinks.forEach(link => {
         const href = link.getAttribute('href');
         if (href === currentPath) {
-            link.classList.add('text-primary', 'bg-primary-50');
-            link.classList.remove('text-text-secondary');
+            link.classList.add('text-primary', 'bg-primary/10');
+            link.classList.remove('text-gray-600');
         }
     });
 });

@@ -148,13 +148,20 @@ function renderGrievancesTable(grievances) {
                 <div class="text-xs text-gray-400">${createdDate}</div>
             </td>
             <td class="p-3 text-sm">
-                <select id="status-${g._id}" class="border rounded px-2 py-1 text-sm mb-1">
+<select id="dept-${g._id}" class="border rounded px-2 py-1 text-xs mb-1 w-full">
+                    <option value="">Department</option>
+                    <option value="Public Works" ${g.department === "Public Works" ? "selected" : ""}>Public Works</option>
+                    <option value="Health" ${g.department === "Health" ? "selected" : ""}>Health</option>
+                    <option value="Revenue" ${g.department === "Revenue" ? "selected" : ""}>Revenue</option>
+                    <option value="Education" ${g.department === "Education" ? "selected" : ""}>Education</option>
+                </select>
+                <select id="status-${g._id}" class="border rounded px-2 py-1 text-xs mb-1 w-full">
                     <option value="submitted" ${g.status === "submitted" ? "selected" : ""}>Submitted</option>
                     <option value="in_progress" ${g.status === "in_progress" ? "selected" : ""}>In Progress</option>
                     <option value="resolved" ${g.status === "resolved" ? "selected" : ""}>Resolved</option>
                     <option value="rejected" ${g.status === "rejected" ? "selected" : ""}>Rejected</option>
                 </select>
-                <button class="bg-primary text-white px-2 py-1 rounded text-xs block w-full mt-1 hover:bg-primary-700" onclick="updateStatus('${g._id}')">Update</button>
+                <button class="bg-primary text-white px-2 py-1 rounded text-xs block w-full mt-1 hover:bg-primary-700" onclick="updateGrievance('${g._id}')">Update</button>
             </td>
         `;
         tableBody.appendChild(row);

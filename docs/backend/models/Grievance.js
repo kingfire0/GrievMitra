@@ -60,6 +60,24 @@ const GrievanceSchema = new mongoose.Schema({
     enum: ["submitted", "in_progress", "resolved", "rejected"],
     default: "submitted"
   },
+  department: {
+    type: String,
+    enum: ["Public Works", "Health", "Revenue", "Education", "Transport", "Water Supply", "Electricity", "Other"],
+    default: null
+  },
+  assignedTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null
+  },
+  assignedAt: {
+    type: Date,
+    default: null
+  },
+  notes: {
+    type: String,
+    default: ""
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -703,7 +703,7 @@ app.put("/admin/grievances/:id/status", authenticate, async (req, res) => {
 // Submit grievance (Citizen/Leader)
 app.post("/grievances/create", authenticate, async (req, res) => {
   try {
-    const { category, subject, description, location } = req.body;
+    const { category, subject, description, location, priority = "medium" } = req.body;
 
     const refId = "GM-" + Date.now();
 
@@ -714,6 +714,7 @@ app.post("/grievances/create", authenticate, async (req, res) => {
       subject,
       description,
       location,
+      priority,
       status: "submitted"
     });
 
@@ -723,7 +724,38 @@ app.post("/grievances/create", authenticate, async (req, res) => {
   }
 });
 
-// Track grievance by reference ID
+// Track grievance by reference ID (public endpoint - no auth required)
+app.get("/api/track/:refId", async (req, res) => {
+  try {
+    const grievance = await Grievance.findOne({ reference_id: req.params.refId })
+      .populate("user", "name email phone");
+
+    if (!grievance) {
+      return res.status(404).json({ error: "Grievance not found. Please check your tracking ID." });
+    }
+
+    // Return simplified data for public tracking
+    res.json({
+      reference_id: grievance.reference_id,
+      category: grievance.category,
+      subject: grievance.subject,
+      description: grievance.description,
+      status: grievance.status,
+      priority: grievance.priority,
+      createdAt: grievance.createdAt,
+      updatedAt: grievance.updatedAt,
+      location: grievance.location,
+      user: {
+        name: grievance.user?.name || "Anonymous",
+        phone: grievance.user?.phone || ""
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Legacy track endpoint
 app.get("/grievances/:refId", async (req, res) => {
   try {
     const grievance = await Grievance.findOne({ reference_id: req.params.refId })

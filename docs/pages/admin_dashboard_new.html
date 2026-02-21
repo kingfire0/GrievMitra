@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - GrievMitra Portal</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (!token || role !== 'admin') {
+        alert('Access denied. Admin login required.');
+        window.location.href = 'login_screen.html';
+        return;
+    }
+    
+    // Set user info
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user) {
+        document.getElementById('welcome-message').textContent = 'Welcome, ' + user.name;
+        document.getElementById('profile-name').textContent = user.name;
+        document.getElementById('dropdown-profile-name').textContent = user.name;
+        const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+        document.getElementById('profile-initials').textContent = initials;
+        document.getElementById('dropdown-profile-initials').textContent = initials;
+    }
+    
+    // Set last login time
+    const now = new Date();
+    document.getElementById('last-login').textContent = 'Today at ' + now.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+    
+    // Load all dashboard data
+    loadDashboardStats();
+    loadPriorityGrievances();
+    loadTeamPerformance();
+    loadRecentActivity();
+    loadDepartmentPerformance();
+    
+    // Auto-refresh every 60 seconds
+    setInterval(function() {
+        loadDashboardStats();
+        loadPriorityGrievances();
+        loadRecentActivity();
+    }, 60000);
+});
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('user');
+    window.location.href = 'login_screen.html';
+}
+
+document.getElementById('logout-link').addEventListener('click', logout);
+
+async function loadDashboardStats() {
+    try {
+        const token = localStorage.getItem('token');
+        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
+        const res = await fetch(apiBaseUrl + '/admin/dashboard-stats', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        
+        if (!res.ok) throw new Error('Failed');
+        const stats = await res.json();
+        
+        // Update stats cards
+        var cards = document.querySelectorAll('.grid > .card');
+        if (cards[0]) {
+            cards[0].querySelector('.text-3xl').textContent = stats.pending || 0;
+            cards[0].querySelector('.text-text-secondary:last-child').textContent = (stats.urgent || 0) + ' urgent';
+        }
+        if (cards[1]) {
+            cards[1].querySelector('.text-3xl').textContent = stats.resolvedToday || 0;
+            cards[1].querySelector('.text-text-secondary:last-child').textContent = (stats.trend > 0 ? '+' : '') + (stats.trend || 0) + '% from yesterday';
+        }
+        if (cards[2]) cards[2].querySelector('.text-3xl').textContent = stats.avgResolutionDays || 0;
+        if (cards[3]) cards[3].querySelector('.text-3xl').textContent = stats.satisfaction || '0.0';
+        
+    } catch(err) {
+        console.log('Stats error - showing defaults');
+    }
+}
+
+async function loadPriorityGrievances() {
+    try {
+        const token = localStorage.getItem('token');
+        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
+        const res = await fetch(apiBaseUrl + '/admin/priority-grievances', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        
+        if (!res.ok) throw new Error('Failed');
+        const grievances = await res.json();
+        
+        var container = document.getElementById('priority-cases-container');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        if (!grievances || grievances.length === 0) {
+            container.innerHTML = '<div class="text-center py-8 text-text-secondary"><p class="text-lg font-semibold">No urgent cases!</p><p>All caught up.</p></div>';
+            return;
+        }
+        
+        grievances.forEach(function(g) {
+            var priorityClass = (g.priority === 'urgent' || g.priority === 'high') ? 'border-error-200 bg-error-50' : 'border-warning-200 bg-warning-50';
+            var badgeClass = (g.priority === 'urgent' || g.priority === 'high') ? 'status-error' : 'status-warning';
+            var statusText = (g.priority === 'urgent' || g.priority === 'high') ? 'URGENT' : 'HIGH';
+            var userName = g.user ? g.user.name : 'Unknown';
+            var userInitials = userName.split(' ').map(function(n) { return n[0]; }).join('').toUpperCase();
+            
+            container.innerHTML += '<div class="border rounded-lg p-4 ' + priorityClass + '">' +
+                '<div class="flex items-start justify-between mb-3">' +
+                '<div class="flex items-center space-x-3">' +
+                '<div class="status-badge ' + badgeClass + '">' + statusText + '</div>' +
+                '<span class="text-sm text-text-secondary">' + g.reference_id + '</span></div></div>' +
+                '<h3 class="font-semibold text-text-primary mb-2">' + g.subject + '</h3>' +
+                '<p class="text-text-secondary text-sm mb-3">' + (g.description || 'No description') + '</p>' +
+                '<div class="flex items-center justify-between">' +
+                '<div class="flex items-center space-x-2">' +
+                '<div class="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center">' +
+                '<span class="text-primary text-xs font-semibold">' + userInitials + '</span></div>' +
+                '<span class="text-sm text-text-secondary">' + userName + '</span></div>' +
+                '<button class="bg-primary text-white px-3 py-1 rounded text-sm" onclick="viewGrievance(\'' + g._id + '\')">Take Action</button></div></div>';
+        });
+        
+    } catch(err) {
+        console.log('Priority grievances error');
+    }
+}
+
+async function loadTeamPerformance() {
+    try {
+        const token = localStorage.getItem('token');
+        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
+        const res = await fetch(apiBaseUrl + '/admin/team-performance', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        
+        if (!res.ok) throw new Error('Failed');
+        const team = await res.json();
+        
+        var container = document.getElementById('team-performance-container');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        team.forEach(function(member) {
+            var initials = member.name.split(' ').map(function(n) { return n[0]; }).join('').toUpperCase();
+            var perfColor = member.performance >= 90 ? 'text-success' : member.performance >= 70 ? 'text-primary' : 'text-warning';
+            
+            container.innerHTML += '<div class="flex items-center justify-between">' +
+                '<div class="flex items-center space-x-3">' +
+                '<div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">' +
+                '<span class="text-primary font-semibold text-sm">' + initials + '</span></div>' +
+                '<div><div class="font-medium text-text-primary text-sm">' + member.name + '</div>' +
+                '<div class="text-text-secondary text-xs">' + member.department + '</div></div></div>' +
+                '<div class="text-right"><div class="' + perfColor + ' font-semibold text-sm">' + member.performance + '%</div>' +
+                '<div class="text-text-secondary text-xs">' + member.resolved + ' resolved</div></div></div>';
+        });
+        
+    } catch(err) {
+        console.log('Team performance error');
+    }
+}
+
+async function loadRecentActivity() {
+    try {
+        const token = localStorage.getItem('token');
+        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
+        const res = await fetch(apiBaseUrl + '/admin/recent-activity', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        
+        if (!res.ok) throw new Error('Failed');
+        const activities = await res.json();
+        
+        var container = document.getElementById('recent-activity-container');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        var iconColors = { 'submitted': 'bg-primary', 'progress': 'bg-warning', 'resolved': 'bg-success', 'rejected': 'bg-error' };
+        
+        activities.slice(0, 10).forEach(function(activity) {
+            var timeAgo = getTimeAgo(new Date(activity.timestamp));
+            var colorClass = iconColors[activity.icon] || 'bg-primary';
+            
+            container.innerHTML += '<div class="flex items-start space-x-3">' +
+                '<div class="w-2 h-2 ' + colorClass + ' rounded-full mt-2"></div>' +
+                '<div><p class="text-sm text-text-primary">' + activity.action + '</p>' +
+                '<p class="text-xs text-text-secondary">' + timeAgo + '</p></div></div>';
+        });
+        
+    } catch(err) {
+        console.log('Recent activity error');
+    }
+}
+
+async function loadDepartmentPerformance() {
+    try {
+        const token = localStorage.getItem('token');
+        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
+        const res = await fetch(apiBaseUrl + '/admin/department-performance', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        
+        if (!res.ok) throw new Error('Failed');
+        const departments = await res.json();
+        
+        var container = document.getElementById('department-performance-container');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        departments.slice(0, 5).forEach(function(dept) {
+            var perfColor = dept.performance >= 90 ? 'text-success' : dept.performance >= 70 ? 'text-primary' : 'text-warning';
+            var barColor = dept.performance >= 90 ? 'bg-success' : dept.performance >= 70 ? 'bg-primary' : 'bg-warning';
+            
+            container.innerHTML += '<div><div class="flex justify-between mb-2">' +
+                '<span class="text-sm text-text-secondary">' + dept.department + '</span>' +
+                '<span class="text-sm font-semibold ' + perfColor + '">' + dept.performance + '%</span></div>' +
+                '<div class="progress-bar"><div class="progress-fill ' + barColor + '" style="width:' + dept.performance + '%"></div></div></div>';
+        });
+        
+    } catch(err) {
+        console.log('Department performance error');
+    }
+}
+
+function getTimeAgo(date) {
+    var diff = new Date() - date;
+    var minutes = Math.floor(diff / 60000);
+    var hours = Math.floor(minutes / 60);
+    var days = Math.floor(hours / 24);
+    
+    if (days > 0) return days + ' day' + (days > 1 ? 's' : '') + ' ago';
+    if (hours > 0) return hours + ' hour' + (hours > 1 ? 's' : '') + ' ago';
+    if (minutes > 0) return minutes + ' minute' + (minutes > 1 ? 's' : '') + ' ago';
+    return 'Just now';
+}
+
+function viewGrievance(id) {
+    window.location.href = 'admin_grievances.html?id=' + id;
+}
+
+function exportToCSV() {
+    alert('Export feature - Coming soon!');
+}
+</script>
+</head>
+<body class="bg-surface">
+    <!--#include file="components/navigation.html" -->
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Welcome Section -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 id="welcome-message" class="text-3xl font-bold text-text-primary mb-2">Welcome</h1>
+                    <p class="text-text-secondary">District Collector • <span id="last-login">Today</span></p>
+                </div>
+                <div class="mt-4 md:mt-0 flex space-x-3">
+                    <button class="btn-primary inline-flex items-center">New Assignment</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-text-secondary text-sm font-medium">Pending Cases</p>
+                        <p class="text-3xl font-bold text-warning">0</p>
+                        <p class="text-text-secondary text-sm">0 urgent</p>
+                    </div>
+                    <div class="w-12 h-12 bg-warning-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-text-secondary text-sm font-medium">Resolved Today</p>
+                        <p class="text-3xl font-bold text-success">0</p>
+                        <p class="text-text-secondary text-sm">0% from yesterday</p>
+                    </div>
+                    <div class="w-12 h-12 bg-success-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-text-secondary text-sm font-medium">Avg Resolution</p>
+                        <p class="text-3xl font-bold text-primary">0</p>
+                        <p class="text-text-secondary text-sm">days</p>
+                    </div>
+                    <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-text-secondary text-sm font-medium">Satisfaction</p>
+                        <p class="text-3xl font-bold text-accent">0.0</p>
+                        <p class="text-text-secondary text-sm">out of 5.0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Priority Cases -->
+            <div class="lg:col-span-2">
+                <div class="card">
+                    <h2 class="text-xl font-semibold text-text-primary mb-6">Priority Cases</h2>
+                    <div class="space-y-4" id="priority-cases-container">
+                        <div class="text-center py-8 text-text-secondary"><p>Loading...</p></div>
+                    </div>
+                    <div class="mt-6 text-center">
+                        <button class="text-primary font-semibold" onclick="window.location.href='admin_grievances.html'">View All Cases</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">Team Performance</h3>
+                    <div class="space-y-4" id="team-performance-container">
+                        <div class="text-center py-4"><p>Loading...</p></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">Recent Activity</h3>
+                    <div class="space-y-3" id="recent-activity-container">
+                        <div class="text-center py-4"><p>Loading...</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics -->
+        <div class="mt-8">
+            <div class="card">
+                <h2 class="text-xl font-semibold text-text-primary mb-6">Performance Analytics</h2>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-semibold text-text-primary mb-4">Resolution Trend</h3>
+                        <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                            <p class="text-text-secondary">Chart will appear here</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-text-primary mb-4">Department Performance</h3>
+                        <div class="space-y-4" id="department-performance-container">
+                            <div class="text-center py-4"><p>Loading...</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <include src="components/footer.html">
+</body>
+</html>

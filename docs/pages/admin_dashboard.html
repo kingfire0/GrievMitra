@@ -8,16 +8,17 @@
     <link rel="stylesheet" href="../css/main.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Chart.js for interactive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fgrievmitra7175back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
 <script>
 window.addEventListener('DOMContentLoaded', function() {
     const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role'); // 'admin' or 'citizen' or 'leader'
+    const role = localStorage.getItem('role');
     if (!token || role !== 'admin') {
         alert('Access denied. Admin login required.');
         window.location.href = 'login_screen.html';
     } else {
-        // Show user menu and admin elements
         document.getElementById('user-menu').classList.remove('hidden');
         document.getElementById('register-link').classList.add('hidden');
         document.getElementById('login-link').classList.add('hidden');
@@ -25,15 +26,11 @@ window.addEventListener('DOMContentLoaded', function() {
         document.getElementById('logout-link-mobile').classList.remove('hidden');
         document.getElementById('logout-link-mobile-menu').classList.remove('hidden');
 
-
-        // Populate user info
         const user = JSON.parse(localStorage.getItem('user'));
         if (user) {
             document.getElementById('welcome-message').textContent = `Welcome, ${user.name}`;
             document.getElementById('profile-name').textContent = user.name;
             document.getElementById('dropdown-profile-name').textContent = user.name;
-
-            // Profile photo and initials
             if (user.profilePhoto) {
                 document.getElementById('profile-photo').src = user.profilePhoto;
                 document.getElementById('profile-photo').classList.remove('hidden');
@@ -45,10 +42,16 @@ window.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('dropdown-profile-initials').textContent = initials;
             }
         }
+        
+        loadDashboardStats();
+        loadPriorityGrievances();
+        loadTeamPerformance();
+        loadRecentActivity();
+        loadDepartmentPerformance();
+        loadGrievances();
     }
 });
 
-// Logout function
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
@@ -56,475 +59,298 @@ function logout() {
     window.location.href = 'login_screen.html';
 }
 
-// Profile dropdown toggle
 document.getElementById('profile-dropdown-btn').addEventListener('click', function() {
     document.getElementById('profile-dropdown').classList.toggle('hidden');
 });
 
-// Close dropdown when clicking outside
 document.addEventListener('click', function(e) {
     if (!document.getElementById('profile-dropdown-btn').contains(e.target)) {
         document.getElementById('profile-dropdown').classList.add('hidden');
     }
 });
 
-// Add event listeners for logout
 document.getElementById('logout-link').addEventListener('click', logout);
 document.getElementById('logout-link-mobile').addEventListener('click', logout);
 document.getElementById('logout-link-mobile-menu').addEventListener('click', logout);
-</script>
-</head>
-<body class="bg-surface">
-    <!--#include file="components/navigation.html" -->
 
-    <!-- Dashboard Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Welcome Section -->
-        <div class="mb-8">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-text-primary mb-2">Welcome back, Amit Kumar</h1>
-                    <p class="text-text-secondary">District Collector • Last login: Today at 9:15 AM</p>
-                </div>
-                <div class="mt-4 md:mt-0 flex space-x-3">
-                    <button class="btn-primary inline-flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                        New Assignment
-                    </button>
-                    <button class="bg-white text-primary border-2 border-primary px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-all duration-300 inline-flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                        </svg>
-                        Generate Report
-                    </button>
-                </div>
-            </div>
-        </div>
+async function loadDashboardStats() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
 
-        <!-- Key Metrics Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Pending Cases -->
-            <div class="card hover:shadow-modal transition-all duration-300">
+    try {
+        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+        const res = await fetch(`${apiBaseUrl}/admin/dashboard-stats`, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!res.ok) throw new Error("Failed to fetch stats");
+        const stats = await res.json();
+        
+        // Update dashboard with real data
+        const statCards = document.querySelectorAll('.grid > .card');
+        if (statCards[0]) {
+            statCards[0].querySelector('.text-3xl').textContent = stats.pending || 0;
+            statCards[0].querySelector('.text-text-secondary:last-child').textContent = `${stats.urgent || 0} urgent`;
+        }
+        if (statCards[1]) {
+            statCards[1].querySelector('.text-3xl').textContent = stats.resolvedToday || 0;
+            statCards[1].querySelector('.text-text-secondary:last-child').textContent = 
+                `${stats.trend > 0 ? '+' : ''}${stats.trend || 0}% from yesterday`;
+        }
+        if (statCards[2]) {
+            statCards[2].querySelector('.text-3xl').textContent = stats.avgResolutionDays || 0;
+        }
+        if (statCards[3]) {
+            statCards[3].querySelector('.text-3xl').textContent = stats.satisfaction || '0.0';
+        }
+        
+    } catch (err) {
+        console.error('Error loading dashboard stats:', err);
+        // Show fallback values when API fails
+        showFallbackStats();
+    }
+}
+
+function showFallbackStats() {
+    const statCards = document.querySelectorAll('.grid > .card');
+    if (statCards[0]) {
+        statCards[0].querySelector('.text-3xl').textContent = '0';
+        statCards[0].querySelector('.text-text-secondary:last-child').textContent = 'No data';
+    }
+    if (statCards[1]) {
+        statCards[1].querySelector('.text-3xl').textContent = '0';
+        statCards[1].querySelector('.text-text-secondary:last-child').textContent = 'No data';
+    }
+    if (statCards[2]) {
+        statCards[2].querySelector('.text-3xl').textContent = '0';
+    }
+    if (statCards[3]) {
+        statCards[3].querySelector('.text-3xl').textContent = '0.0';
+    }
+}
+
+async function loadPriorityGrievances() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+        const res = await fetch(`${apiBaseUrl}/admin/priority-grievances`, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!res.ok) throw new Error("Failed to fetch priority grievances");
+        const grievances = await res.json();
+        renderPriorityGrievances(grievances);
+        
+    } catch (err) {
+        console.error('Error loading priority grievances:', err);
+    }
+}
+
+function renderPriorityGrievances(grievances) {
+    const container = document.getElementById('priority-cases-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (grievances.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-text-secondary">
+                <svg class="w-16 h-16 mx-auto mb-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-lg font-semibold">No urgent cases!</p>
+                <p>All priority grievances have been resolved.</p>
+            </div>`;
+        return;
+    }
+
+    grievances.forEach(g => {
+        const priorityClass = g.priority === 'urgent' || g.priority === 'high' ? 'border-error-200 bg-error-50' : 'border-warning-200 bg-warning-50';
+        const badgeClass = g.priority === 'urgent' || g.priority === 'high' ? 'status-error' : 'status-warning';
+        const statusText = g.priority === 'urgent' || g.priority === 'high' ? 'URGENT' : 'HIGH';
+        
+        const userName = g.user?.name || 'Unknown';
+        const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+
+        const html = `
+            <div class="border rounded-lg p-4 ${priorityClass}">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="status-badge ${badgeClass}">${statusText}</div>
+                        <span class="text-sm text-text-secondary">${g.reference_id}</span>
+                    </div>
+                </div>
+                <h3 class="font-semibold text-text-primary mb-2">${g.subject}</h3>
+                <p class="text-text-secondary text-sm mb-3">${g.description || 'No description'}</p>
                 <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-text-secondary text-sm font-medium">Pending Cases</p>
-                        <p class="text-3xl font-bold text-warning">23</p>
-                        <p class="text-text-secondary text-sm">5 urgent</p>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center">
+                            <span class="text-primary text-xs font-semibold">${userInitials}</span>
+                        </div>
+                        <span class="text-sm text-text-secondary">${userName}</span>
                     </div>
-                    <div class="w-12 h-12 bg-warning-100 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
+                    <button class="bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary-700" onclick="viewGrievance('${g._id}')">Take Action</button>
                 </div>
-            </div>
-
-            <!-- Resolved Today -->
-            <div class="card hover:shadow-modal transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-text-secondary text-sm font-medium">Resolved Today</p>
-                        <p class="text-3xl font-bold text-success">8</p>
-                        <p class="text-text-secondary text-sm">+12% from yesterday</p>
-                    </div>
-                    <div class="w-12 h-12 bg-success-100 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Average Resolution Time -->
-            <div class="card hover:shadow-modal transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-text-secondary text-sm font-medium">Avg Resolution</p>
-                        <p class="text-3xl font-bold text-primary">3.2</p>
-                        <p class="text-text-secondary text-sm">days</p>
-                    </div>
-                    <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Satisfaction Score -->
-            <div class="card hover:shadow-modal transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-text-secondary text-sm font-medium">Satisfaction</p>
-                        <p class="text-3xl font-bold text-accent">4.7</p>
-                        <p class="text-text-secondary text-sm">out of 5.0</p>
-                    </div>
-                    <div class="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Dashboard Grid -->
-        <div class="grid lg:grid-cols-3 gap-8">
-            <!-- Priority Cases -->
-            <div class="lg:col-span-2">
-                <div class="card">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-semibold text-text-primary">Priority Cases</h2>
-                        <div class="flex space-x-2">
-                            <button class="text-text-secondary hover:text-primary transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z"/>
-                                </svg>
-                            </button>
-                            <button class="text-text-secondary hover:text-primary transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <!-- Urgent Case 1 -->
-                        <div class="border border-error-200 rounded-lg p-4 bg-error-50">
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="flex items-center space-x-3">
-                                    <div class="status-badge status-error">
-                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                        </svg>
-                                        URGENT
-                                    </div>
-                                    <span class="text-sm text-text-secondary">GRV-2025-001247</span>
-                                </div>
-                                <span class="text-sm text-error font-medium">Due in 6 hours</span>
-                            </div>
-                            <h3 class="font-semibold text-text-primary mb-2">Water Supply Disruption - Sector 15</h3>
-                            <p class="text-text-secondary text-sm mb-3">Complete water outage affecting 2,500+ residents. Multiple complaints received. Media attention.</p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-2">
-                                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3" alt="Citizen" class="w-6 h-6 rounded-full object-cover" onerror="this.src='https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'; this.onerror=null;" />
-                                    <span class="text-sm text-text-secondary">Rajesh Sharma</span>
-                                </div>
-                                <div class="flex space-x-2">
-                                    <button class="bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary-700 transition-colors">
-                                        Take Action
-                                    </button>
-                                    <button class="text-primary hover:text-primary-700 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- High Priority Case -->
-                        <div class="border border-warning-200 rounded-lg p-4 bg-warning-50">
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="flex items-center space-x-3">
-                                    <div class="status-badge status-warning">
-                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                                        </svg>
-                                        HIGH
-                                    </div>
-                                    <span class="text-sm text-text-secondary">GRV-2025-001248</span>
-                                </div>
-                                <span class="text-sm text-warning font-medium">Due in 2 days</span>
-                            </div>
-                            <h3 class="font-semibold text-text-primary mb-2">Road Safety - Pothole Repairs</h3>
-                            <p class="text-text-secondary text-sm mb-3">Multiple potholes on MG Road causing accidents. Requires immediate attention from PWD.</p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-2">
-                                    <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Citizen" class="w-6 h-6 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1494790108755-2616b612b786?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3'; this.onerror=null;" />
-                                    <span class="text-sm text-text-secondary">Priya Krishnan</span>
-                                </div>
-                                <div class="flex space-x-2">
-                                    <button class="bg-secondary text-white px-3 py-1 rounded text-sm hover:bg-secondary-700 transition-colors">
-                                        Assign Team
-                                    </button>
-                                    <button class="text-secondary hover:text-secondary-700 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Normal Priority Case -->
-                        <div class="border border-border rounded-lg p-4 bg-white">
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="flex items-center space-x-3">
-                                    <div class="status-badge bg-primary-50 text-primary-700 border-primary-200">
-                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/>
-                                        </svg>
-                                        NORMAL
-                                    </div>
-                                    <span class="text-sm text-text-secondary">GRV-2025-001249</span>
-                                </div>
-                                <span class="text-sm text-text-secondary">Due in 5 days</span>
-                            </div>
-                            <h3 class="font-semibold text-text-primary mb-2">Birth Certificate Delay</h3>
-                            <p class="text-text-secondary text-sm mb-3">Application pending for 3 weeks. Requires verification from registrar office.</p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-2">
-                                    <img src="https://images.pixabay.com/photo/2016/11/18/19/07/happy-1836445_1280.jpg" alt="Citizen" class="w-6 h-6 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3'; this.onerror=null;" />
-                                    <span class="text-sm text-text-secondary">Amit Mehta</span>
-                                </div>
-                                <div class="flex space-x-2">
-                                    <button class="bg-success text-white px-3 py-1 rounded text-sm hover:bg-success-700 transition-colors">
-                                        Process
-                                    </button>
-                                    <button class="text-success hover:text-success-700 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-6 text-center">
-                        <button class="text-primary font-semibold hover:text-primary-700 transition-colors inline-flex items-center">
-                            View All Cases
-                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Sidebar -->
-            <div class="space-y-6">
-                <!-- Quick Actions -->
-                <div class="card">
-                    <h3 class="text-lg font-semibold text-text-primary mb-4">Quick Actions</h3>
-                    <div class="space-y-3">
-                        <button class="w-full bg-primary-50 text-primary p-3 rounded-lg hover:bg-primary-100 transition-colors text-left flex items-center">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            Bulk Assignment
-                        </button>
-                        <button class="w-full bg-success-50 text-success p-3 rounded-lg hover:bg-success-100 transition-colors text-left flex items-center">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                            Generate Templates
-                        </button>
-                        <button class="w-full bg-warning-50 text-warning p-3 rounded-lg hover:bg-warning-100 transition-colors text-left flex items-center">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM10.07 2.82l3.93 3.93-3.93 3.93-3.93-3.93 3.93-3.93z"/>
-                            </svg>
-                            Escalate Cases
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Team Performance -->
-                <div class="card">
-                    <h3 class="text-lg font-semibold text-text-primary mb-4">Team Performance</h3>
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-success-100 rounded-full flex items-center justify-center">
-                                    <span class="text-success font-semibold text-sm">SK</span>
-                                </div>
-                                <div>
-                                    <div class="font-medium text-text-primary text-sm">Suresh Kumar</div>
-                                    <div class="text-text-secondary text-xs">PWD Officer</div>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-success font-semibold text-sm">98%</div>
-                                <div class="text-text-secondary text-xs">12 resolved</div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                                    <span class="text-primary font-semibold text-sm">RG</span>
-                                </div>
-                                <div>
-                                    <div class="font-medium text-text-primary text-sm">Ravi Gupta</div>
-                                    <div class="text-text-secondary text-xs">Health Dept</div>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-primary font-semibold text-sm">94%</div>
-                                <div class="text-text-secondary text-xs">8 resolved</div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 bg-warning-100 rounded-full flex items-center justify-center">
-                                    <span class="text-warning font-semibold text-sm">MS</span>
-                                </div>
-                                <div>
-                                    <div class="font-medium text-text-primary text-sm">Maya Singh</div>
-                                    <div class="text-text-secondary text-xs">Revenue Dept</div>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-warning font-semibold text-sm">87%</div>
-                                <div class="text-text-secondary text-xs">6 resolved</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Activity -->
-                <div class="card">
-                    <h3 class="text-lg font-semibold text-text-primary mb-4">Recent Activity</h3>
-                    <div class="space-y-3">
-                        <div class="flex items-start space-x-3">
-                            <div class="w-2 h-2 bg-success rounded-full mt-2"></div>
-                            <div>
-                                <p class="text-sm text-text-primary">Case GRV-2025-001245 resolved</p>
-                                <p class="text-xs text-text-secondary">2 minutes ago</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <div class="w-2 h-2 bg-primary rounded-full mt-2"></div>
-                            <div>
-                                <p class="text-sm text-text-primary">New case assigned to PWD team</p>
-                                <p class="text-xs text-text-secondary">15 minutes ago</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <div class="w-2 h-2 bg-warning rounded-full mt-2"></div>
-                            <div>
-                                <p class="text-sm text-text-primary">Escalation alert for case GRV-2025-001240</p>
-                                <p class="text-xs text-text-secondary">1 hour ago</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Performance Analytics -->
-        <div class="mt-8">
-            <div class="card">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-semibold text-text-primary">Performance Analytics</h2>
-                    <div class="flex space-x-2">
-                        <button class="text-text-secondary hover:text-primary transition-colors px-3 py-1 rounded border border-border">
-                            This Week
-                        </button>
-                        <button class="bg-primary text-white px-3 py-1 rounded">
-                            This Month
-                        </button>
-                        <button class="text-text-secondary hover:text-primary transition-colors px-3 py-1 rounded border border-border">
-                            This Year
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid md:grid-cols-2 gap-8">
-                    <!-- Resolution Trend Chart -->
-                    <div>
-                        <h3 class="font-semibold text-text-primary mb-4">Resolution Trend</h3>
-                        <div class="h-64 bg-gradient-to-br from-primary-50 to-success-50 rounded-lg flex items-center justify-center">
-                            <div class="text-center">
-                                <svg class="w-16 h-16 text-primary mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                </svg>
-                                <p class="text-primary font-semibold">Interactive Chart</p>
-                                <p class="text-text-secondary text-sm">Resolution trends over time</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Department Performance -->
-                    <div>
-                        <h3 class="font-semibold text-text-primary mb-4">Department Performance</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <div class="flex justify-between mb-2">
-                                    <span class="text-sm text-text-secondary">Public Works Department</span>
-                                    <span class="text-sm font-semibold text-success">94%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill bg-success" style="width: 94%"></div>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="flex justify-between mb-2">
-                                    <span class="text-sm text-text-secondary">Health Department</span>
-                                    <span class="text-sm font-semibold text-primary">91%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 91%"></div>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="flex justify-between mb-2">
-                                    <span class="text-sm text-text-secondary">Revenue Department</span>
-                                    <span class="text-sm font-semibold text-warning">87%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill bg-warning" style="width: 87%"></div>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="flex justify-between mb-2">
-                                    <span class="text-sm text-text-secondary">Education Department</span>
-                                    <span class="text-sm font-semibold text-secondary">89%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill bg-secondary" style="width: 89%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer Component -->
-    <include src="components/footer.html">
-
-    <script>
-  // Mobile menu toggle
-  function toggleMobileMenu() {
-    const menu = document.getElementById('mobile-menu');
-    menu.classList.toggle('hidden');
-  }
-
-  // Notifications toggle
-  function toggleNotifications() {
-    alert('Notifications panel would open here');
-  }
-
-  // Smooth scrolling for anchor links
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-      e.preventDefault();
-      const target = document.querySelector(this.getAttribute('href'));
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+            </div>`;
+        container.innerHTML += html;
     });
-  });
+}
 
-  // ✅ Load grievances from backend
-  async function loadGrievances() {
+async function loadTeamPerformance() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+        const res = await fetch(`${apiBaseUrl}/admin/team-performance`, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!res.ok) throw new Error("Failed to fetch team performance");
+        const team = await res.json();
+        renderTeamPerformance(team);
+        
+    } catch (err) {
+        console.error('Error loading team performance:', err);
+    }
+}
+
+function renderTeamPerformance(team) {
+    const container = document.getElementById('team-performance-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    team.forEach(member => {
+        const initials = member.name.split(' ').map(n => n[0]).join('').toUpperCase();
+        const performanceColor = member.performance >= 90 ? 'text-success' : member.performance >= 70 ? 'text-primary' : 'text-warning';
+        
+        const html = `
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                        <span class="text-primary font-semibold text-sm">${initials}</span>
+                    </div>
+                    <div>
+                        <div class="font-medium text-text-primary text-sm">${member.name}</div>
+                        <div class="text-text-secondary text-xs">${member.department}</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="${performanceColor} font-semibold text-sm">${member.performance}%</div>
+                    <div class="text-text-secondary text-xs">${member.resolved} resolved</div>
+                </div>
+            </div>`;
+        container.innerHTML += html;
+    });
+}
+
+async function loadRecentActivity() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+        const res = await fetch(`${apiBaseUrl}/admin/recent-activity`, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!res.ok) throw new Error("Failed to fetch recent activity");
+        const activities = await res.json();
+        renderRecentActivity(activities);
+        
+    } catch (err) {
+        console.error('Error loading recent activity:', err);
+    }
+}
+
+function renderRecentActivity(activities) {
+    const container = document.getElementById('recent-activity-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    const iconColors = { 'submitted': 'bg-primary', 'progress': 'bg-warning', 'resolved': 'bg-success', 'rejected': 'bg-error' };
+
+    activities.slice(0, 10).forEach(activity => {
+        const timeAgo = getTimeAgo(new Date(activity.timestamp));
+        const colorClass = iconColors[activity.icon] || 'bg-primary';
+        
+        const html = `
+            <div class="flex items-start space-x-3">
+                <div class="w-2 h-2 ${colorClass} rounded-full mt-2"></div>
+                <div>
+                    <p class="text-sm text-text-primary">${activity.action}</p>
+                    <p class="text-xs text-text-secondary">${timeAgo}</p>
+                </div>
+            </div>`;
+        container.innerHTML += html;
+    });
+}
+
+async function loadDepartmentPerformance() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+        const res = await fetch(`${apiBaseUrl}/admin/department-performance`, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!res.ok) throw new Error("Failed to fetch department performance");
+        const departments = await res.json();
+        renderDepartmentPerformance(departments);
+        
+    } catch (err) {
+        console.error('Error loading department performance:', err);
+    }
+}
+
+function renderDepartmentPerformance(departments) {
+    const container = document.getElementById('department-performance-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    departments.slice(0, 5).forEach(dept => {
+        const perfColor = dept.performance >= 90 ? 'text-success' : dept.performance >= 70 ? 'text-primary' : 'text-warning';
+        const barColor = dept.performance >= 90 ? 'bg-success' : dept.performance >= 70 ? 'bg-primary' : 'bg-warning';
+
+        const html = `
+            <div>
+                <div class="flex justify-between mb-2">
+                    <span class="text-sm text-text-secondary">${dept.department}</span>
+                    <span class="text-sm font-semibold ${perfColor}">${dept.performance}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill ${barColor}" style="width: ${dept.performance}%"></div>
+                </div>
+            </div>`;
+        container.innerHTML += html;
+    });
+}
+
+function getTimeAgo(date) {
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    return 'Just now';
+}
+
+function viewGrievance(id) {
+    window.location.href = `admin_grievances.html?id=${id}`;
+}
+
+async function loadGrievances() {
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Unauthorized! Please login as admin.");
@@ -543,12 +369,13 @@ document.getElementById('logout-link-mobile-menu').addEventListener('click', log
       renderGrievances(grievances);
     } catch (err) {
       console.error(err);
-      alert("Error loading grievances");
     }
-  }
+}
 
-  function renderGrievances(grievances) {
+function renderGrievances(grievances) {
   const tableBody = document.getElementById("grievanceTableBody");
+  if (!tableBody) return;
+  
   tableBody.innerHTML = "";
 
   if (grievances.length === 0) {
@@ -566,29 +393,27 @@ document.getElementById('logout-link-mobile-menu').addEventListener('click', log
       <td class="p-2">${g.category}</td>
       <td class="p-2">${g.subject}</td>
       <td class="p-2">${g.status}</td>
-      <td class="p-2">${g.user?.name || "Unknown"} (${g.user?.email || ""})</td>
+      <td class="p-2">${g.user?.name || "Unknown"}</td>
       <td class="p-2">
         <select id="status-${g._id}" class="border p-1 rounded">
-          <option value="Pending" ${g.status === "Pending" ? "selected" : ""}>Pending</option>
-          <option value="In Progress" ${g.status === "In Progress" ? "selected" : ""}>In Progress</option>
-          <option value="Resolved" ${g.status === "Resolved" ? "selected" : ""}>Resolved</option>
-          <option value="Rejected" ${g.status === "Rejected" ? "selected" : ""}>Rejected</option>
+          <option value="submitted" ${g.status === "submitted" ? "selected" : ""}>Submitted</option>
+          <option value="in_progress" ${g.status === "in_progress" ? "selected" : ""}>In Progress</option>
+          <option value="resolved" ${g.status === "resolved" ? "selected" : ""}>Resolved</option>
+          <option value="rejected" ${g.status === "rejected" ? "selected" : ""}>Rejected</option>
         </select>
-        <button class="bg-blue-500 text-white px-2 py-1 rounded ml-2"
-          onclick="updateStatus('${g._id}')">Update</button>
-      </td>
-    `;
+        <button class="bg-blue-500 text-white px-2 py-1 rounded ml-2" onclick="updateStatus('${g._id}')">Update</button>
+      </td>`;
     tableBody.appendChild(row);
   });
 }
 
-// ✅ Function to call backend and update status
 async function updateStatus(grievanceId) {
   const token = localStorage.getItem("token");
   const newStatus = document.getElementById(`status-${grievanceId}`).value;
 
   try {
-    const res = await fetch(`http://localhost:5000/admin/grievances/${grievanceId}/status`, {
+    const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+    const res = await fetch(`${apiBaseUrl}/admin/grievances/${grievanceId}/status`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -596,18 +421,252 @@ async function updateStatus(grievanceId) {
       },
       body: JSON.stringify({ status: newStatus })
     });
-    const data = await res.json();
-    if (data.success) {
+    if (res.ok) {
       alert("Status updated successfully!");
-      loadGrievances(); // reload table
-    } else {
-      alert("Error: " + data.message);
+      loadGrievances();
+      loadDashboardStats();
+      loadRecentActivity();
     }
   } catch (err) {
     console.error(err);
-    alert("Server error while updating status.");
+    alert("Error updating status");
   }
 }
+
+function exportToCSV() {
+    const table = document.querySelector('table');
+    if (!table) return;
+    
+    let csv = [];
+    const rows = table.querySelectorAll('tr');
+    
+    rows.forEach(row => {
+        const cols = row.querySelectorAll('td, th');
+        const rowData = [];
+        cols.forEach(col => rowData.push('"' + col.textContent.trim() + '"'));
+        csv.push(rowData.join(','));
+    });
+    
+    const csvFile = new Blob([csv.join('\n')], {type: "text/csv"});
+    const downloadLink = document.createElement("a");
+    downloadLink.download = "grievances_export.csv";
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+}
+
+</script>
+</head>
+<body class="bg-surface">
+    <!--#include file="components/navigation.html" -->
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Welcome Section -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 id="welcome-message" class="text-3xl font-bold text-text-primary mb-2">Welcome back</h1>
+                    <p class="text-text-secondary">District Collector • <span id="last-login">Loading...</span></p>
+                </div>
+                <div class="mt-4 md:mt-0 flex space-x-3">
+                    <button class="btn-primary inline-flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        New Assignment
+                    </button>
+                    <button class="bg-white text-primary border-2 border-primary px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-all duration-300 inline-flex items-center" onclick="exportToCSV()">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                        Generate Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Metrics Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Pending Cases -->
+            <div class="card hover:shadow-modal transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-text-secondary text-sm font-medium">Pending Cases</p>
+                        <p class="text-3xl font-bold text-warning">...</p>
+                        <p class="text-text-secondary text-sm">loading...</p>
+                    </div>
+                    <div class="w-12 h-12 bg-warning-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resolved Today -->
+            <div class="card hover:shadow-modal transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-text-secondary text-sm font-medium">Resolved Today</p>
+                        <p class="text-3xl font-bold text-success">...</p>
+                        <p class="text-text-secondary text-sm">loading...</p>
+                    </div>
+                    <div class="w-12 h-12 bg-success-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Average Resolution Time -->
+            <div class="card hover:shadow-modal transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-text-secondary text-sm font-medium">Avg Resolution</p>
+                        <p class="text-3xl font-bold text-primary">...</p>
+                        <p class="text-text-secondary text-sm">days</p>
+                    </div>
+                    <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Satisfaction Score -->
+            <div class="card hover:shadow-modal transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-text-secondary text-sm font-medium">Satisfaction</p>
+                        <p class="text-3xl font-bold text-accent">...</p>
+                        <p class="text-text-secondary text-sm">out of 5.0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Priority Cases -->
+            <div class="lg:col-span-2">
+                <div class="card">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-semibold text-text-primary">Priority Cases</h2>
+                        <div class="flex space-x-2">
+                            <button class="text-text-secondary hover:text-primary transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-4" id="priority-cases-container">
+                        <div class="text-center py-8">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                            <p class="text-text-secondary mt-2">Loading priority cases...</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 text-center">
+<button class="text-primary font-semibold hover:text-primary-700 transition-colors inline-flex items-center" onclick="window.location.href='admin_grievances.html'">
+                            View All Cases
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="space-y-6">
+                <!-- Quick Actions -->
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">Quick Actions</h3>
+                    <div class="space-y-3">
+                        <button class="w-full bg-primary-50 text-primary p-3 rounded-lg hover:bg-primary-100 transition-colors text-left flex items-center">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Bulk Assignment
+                        </button>
+                        <button class="w-full bg-success-50 text-success p-3 rounded-lg hover:bg-success-100 transition-colors text-left flex items-center" onclick="exportToCSV()">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            Export Data
+                        </button>
+                        <button class="w-full bg-warning-50 text-warning p-3 rounded-lg hover:bg-warning-100 transition-colors text-left flex items-center">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM10.07 2.82l3.93 3.93-3.93 3.93-3.93-3.93 3.93-3.93z"/></svg>
+                            Escalate Cases
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Team Performance -->
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">Team Performance</h3>
+                    <div class="space-y-4" id="team-performance-container">
+                        <div class="text-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div></div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4">Recent Activity</h3>
+                    <div class="space-y-3" id="recent-activity-container">
+                        <div class="text-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Analytics -->
+        <div class="mt-8">
+            <div class="card">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-text-primary">Performance Analytics</h2>
+                    <div class="flex space-x-2">
+                        <button class="text-text-secondary hover:text-primary transition-colors px-3 py-1 rounded border border-border">This Week</button>
+                        <button class="bg-primary text-white px-3 py-1 rounded">This Month</button>
+                        <button class="text-text-secondary hover:text-primary transition-colors px-3 py-1 rounded border border-border">This Year</button>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-semibold text-text-primary mb-4">Resolution Trend</h3>
+                        <div class="h-64 bg-gradient-to-br from-primary-50 to-success-50 rounded-lg flex items-center justify-center">
+                            <p class="text-text-secondary">Chart visualization</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-text-primary mb-4">Department Performance</h3>
+                        <div class="space-y-4" id="department-performance-container">
+                            <div class="text-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <include src="components/footer.html">
+
+    <script>
+  function toggleMobileMenu() {
+    const menu = document.getElementById('mobile-menu');
+    menu.classList.toggle('hidden');
+  }
+
+  function toggleNotifications() {
+    alert('Notifications panel would open here');
+  }
+
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  const now = new Date();
+  const loginTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  const lastLoginEl = document.getElementById('last-login');
+  if (lastLoginEl) lastLoginEl.textContent = `Today at ${loginTime}`;
+
+  // Auto-refresh dashboard every 60 seconds
+  setInterval(() => {
+      loadDashboardStats();
+      loadPriorityGrievances();
+  }, 60000);
 
 </script>
 

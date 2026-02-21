@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>All Grievances - Admin | GrievMitra Portal</title>
+    <meta name="description" content="View and manage all grievances in the GrievMitra system">
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fgrievmitra7175back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (!token || role !== 'admin') {
+        alert('Access denied. Admin login required.');
+        window.location.href = 'login_screen.html';
+    } else {
+        document.getElementById('user-menu').classList.remove('hidden');
+        document.getElementById('register-link').classList.add('hidden');
+        document.getElementById('login-link').classList.add('hidden');
+        document.getElementById('logout-link').classList.remove('hidden');
+        document.getElementById('logout-link-mobile').classList.remove('hidden');
+        document.getElementById('logout-link-mobile-menu').classList.remove('hidden');
+
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user) {
+            document.getElementById('profile-name').textContent = user.name;
+            document.getElementById('dropdown-profile-name').textContent = user.name;
+            const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            document.getElementById('profile-initials').textContent = initials;
+            document.getElementById('dropdown-profile-initials').textContent = initials;
+        }
+
+        loadAllGrievances();
+    }
+});
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('user');
+    window.location.href = 'login_screen.html';
+}
+
+document.getElementById('profile-dropdown-btn')?.addEventListener('click', function() {
+    document.getElementById('profile-dropdown').classList.toggle('hidden');
+});
+
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('profile-dropdown');
+    const btn = document.getElementById('profile-dropdown-btn');
+    if (btn && !btn.contains(e.target)) {
+        dropdown?.classList.add('hidden');
+    }
+});
+
+document.getElementById('logout-link')?.addEventListener('click', logout);
+document.getElementById('logout-link-mobile')?.addEventListener('click', logout);
+
+async function loadAllGrievances(filters = {}) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+        
+        // Build query params
+        const params = new URLSearchParams();
+        if (filters.status) params.append('status', filters.status);
+        if (filters.category) params.append('category', filters.category);
+        if (filters.search) params.append('search', filters.search);
+        if (filters.priority) params.append('priority', filters.priority);
+        
+        const queryString = params.toString();
+        const url = queryString 
+            ? `${apiBaseUrl}/admin/grievances/filter?${queryString}` 
+            : `${apiBaseUrl}/admin/grievances`;
+        
+        const res = await fetch(url, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!res.ok) throw new Error("Failed to fetch grievances");
+        
+        const data = await res.json();
+        const grievances = data.grievances || data;
+        
+        renderGrievancesTable(grievances);
+        
+    } catch (err) {
+        console.error('Error loading grievances:', err);
+        document.getElementById('grievanceTableBody').innerHTML = 
+            `<tr><td colspan="8" class="text-center p-4 text-error">Error loading grievances</td></tr>`;
+    }
+}
+
+function renderGrievancesTable(grievances) {
+    const tableBody = document.getElementById('grievanceTableBody');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '';
+
+    if (!grievances || grievances.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center p-4">No grievances found</td></tr>`;
+        return;
+    }
+
+    const statusColors = {
+        'submitted': 'bg-yellow-100 text-yellow-800',
+        'in_progress': 'bg-blue-100 text-blue-800',
+        'resolved': 'bg-green-100 text-green-800',
+        'rejected': 'bg-red-100 text-red-800'
+    };
+
+    const priorityColors = {
+        'low': 'bg-gray-100 text-gray-800',
+        'medium': 'bg-orange-100 text-orange-800',
+        'high': 'bg-red-100 text-red-800',
+        'urgent': 'bg-red-200 text-red-900'
+    };
+
+    grievances.forEach((g, index) => {
+        const row = document.createElement('tr');
+        row.className = 'border-b hover:bg-gray-50';
+        
+        const statusClass = statusColors[g.status] || 'bg-gray-100 text-gray-800';
+        const priorityClass = priorityColors[g.priority] || 'bg-gray-100 text-gray-800';
+        const userName = g.user?.name || 'Unknown';
+        const userEmail = g.user?.email || '';
+        const createdDate = new Date(g.createdAt).toLocaleDateString();
+
+        row.innerHTML = `
+            <td class="p-3 text-sm">${index + 1}</td>
+            <td class="p-3 text-sm font-mono">${g.reference_id}</td>
+            <td class="p-3 text-sm">${g.category || '-'}</td>
+            <td class="p-3 text-sm max-w-xs truncate">${g.subject}</td>
+            <td class="p-3 text-sm">
+                <span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${g.status}</span>
+            </td>
+            <td class="p-3 text-sm">
+                <span class="px-2 py-1 rounded-full text-xs font-medium ${priorityClass}">${g.priority || 'medium'}</span>
+            </td>
+            <td class="p-3 text-sm">
+                <div class="font-medium">${userName}</div>
+                <div class="text-xs text-gray-500">${userEmail}</div>
+                <div class="text-xs text-gray-400">${createdDate}</div>
+            </td>
+            <td class="p-3 text-sm">
+                <select id="status-${g._id}" class="border rounded px-2 py-1 text-sm mb-1">
+                    <option value="submitted" ${g.status === "submitted" ? "selected" : ""}>Submitted</option>
+                    <option value="in_progress" ${g.status === "in_progress" ? "selected" : ""}>In Progress</option>
+                    <option value="resolved" ${g.status === "resolved" ? "selected" : ""}>Resolved</option>
+                    <option value="rejected" ${g.status === "rejected" ? "selected" : ""}>Rejected</option>
+                </select>
+                <button class="bg-primary text-white px-2 py-1 rounded text-xs block w-full mt-1 hover:bg-primary-700" onclick="updateStatus('${g._id}')">Update</button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+async function updateStatus(grievanceId) {
+    const token = localStorage.getItem('token');
+    const newStatus = document.getElementById(`status-${grievanceId}`)?.value;
+    
+    if (!newStatus) {
+        alert('Could not get status value');
+        return;
+    }
+
+    if (!confirm('Are you sure you want to update this grievance status?')) return;
+
+    try {
+        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+        
+        // Convert display value to database value if needed
+        let statusValue = newStatus;
+        if (newStatus === 'In Progress') statusValue = 'in_progress';
+        
+        const res = await fetch(`${apiBaseUrl}/admin/grievances/${grievanceId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ status: statusValue })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+            alert('Status updated successfully!');
+            // Reload the table without filters to see updated status
+            loadAllGrievances();
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        alert('Error updating status. Please check console for details.');
+    }
+}
+
+function applyFilters() {
+    let status = document.getElementById('filterStatus')?.value || '';
+    const category = document.getElementById('filterCategory')?.value || '';
+    const search = document.getElementById('searchInput')?.value || '';
+    const priority = document.getElementById('filterPriority')?.value || '';
+    
+    // Convert display values to database values
+    if (status === 'In Progress') status = 'in_progress';
+    
+    loadAllGrievances({ status, category, search, priority });
+}
+
+function exportToCSV() {
+    const rows = document.querySelectorAll('table tr');
+    if (!rows.length) return;
+    
+    let csv = [];
+    rows.forEach(row => {
+        const cols = row.querySelectorAll('td, th');
+        const rowData = [];
+        cols.forEach(col => rowData.push('"' + col.textContent.trim() + '"'));
+        csv.push(rowData.join(','));
+    });
+    
+    const csvFile = new Blob([csv.join('\n')], {type: 'text/csv'});
+    const downloadLink = document.createElement('a');
+    downloadLink.download = 'all_grievances.csv';
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.click();
+}
+
+function clearFilters() {
+    document.getElementById('filterStatus').value = '';
+    document.getElementById('filterCategory').value = '';
+    document.getElementById('filterPriority').value = '';
+    document.getElementById('searchInput').value = '';
+    loadAllGrievances();
+}
+
+</script>
+</head>
+<body class="bg-surface">
+    <!--#include file="components/navigation.html" -->
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-text-primary">All Grievances</h1>
+                <p class="text-text-secondary mt-1">View and manage all grievances in the system</p>
+            </div>
+            <div class="mt-4 md:mt-0 flex space-x-3">
+                <button onclick="exportToCSV()" class="bg-success text-white px-4 py-2 rounded-lg hover:bg-success-700 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Export CSV
+                </button>
+                <a href="admin_dashboard.html" class="bg-white text-primary border-2 border-primary px-4 py-2 rounded-lg hover:bg-primary-50 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-6">
+            <div class="flex flex-wrap items-end gap-4">
+                <div class="flex-1 min-w-[150px]">
+                    <label class="text-sm font-medium text-text-secondary mb-1 block">Search</label>
+                    <input type="text" id="searchInput" placeholder="Search by ID, subject..." 
+                           class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                <div class="min-w-[150px]">
+                    <label class="text-sm font-medium text-text-secondary mb-1 block">Status</label>
+                    <select id="filterStatus" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">All Statuses</option>
+                        <option value="submitted">Submitted</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="min-w-[150px]">
+                    <label class="text-sm font-medium text-text-secondary mb-1 block">Category</label>
+                    <select id="filterCategory" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">All Categories</option>
+                        <option value="Infrastructure">Infrastructure</option>
+                        <option value="Health">Health</option>
+                        <option value="Education">Education</option>
+                        <option value="Sanitation">Sanitation</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Revenue">Revenue</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="min-w-[150px]">
+                    <label class="text-sm font-medium text-text-secondary mb-1 block">Priority</label>
+                    <select id="filterPriority" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">All Priorities</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="applyFilters()" class="btn-primary px-4 py-2">Filter</button>
+                    <button onclick="clearFilters()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">Clear</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grievances Table -->
+        <div class="card overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">#</th>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">Reference ID</th>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">Category</th>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">Subject</th>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">Status</th>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">Priority</th>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">Citizen Info</th>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grievanceTableBody">
+                        <tr>
+                            <td colspan="8" class="text-center p-4">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                                <p class="text-text-secondary mt-2">Loading grievances...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <include src="components/footer.html">
+
+    <script>
+  function toggleMobileMenu() {
+    document.getElementById('mobile-menu').classList.toggle('hidden');
+  }
+
+  document.getElementById('logout-link')?.addEventListener('click', logout);
+  document.getElementById('logout-link-mobile')?.addEventListener('click', logout);
+  document.getElementById('logout-link-mobile-menu')?.addEventListener('click', logout);
+
+  // Add enter key search
+  document.getElementById('searchInput')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') applyFilters();
+  });
+</script>
+
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>

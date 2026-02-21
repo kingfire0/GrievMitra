@@ -27,12 +27,14 @@ Backend API for the Grievance Management System built with Node.js, Express, and
 ## Local Development
 
 1. Install dependencies:
-```bash
+```
+bash
 npm install
 ```
 
 2. Create `.env` file with your environment variables:
-```env
+```
+env
 PORT=5000
 MONGODB_URI=your_mongodb_atlas_connection_string
 JWT_SECRET=your_jwt_secret_key
@@ -40,7 +42,8 @@ NODE_ENV=development
 ```
 
 3. Start the server:
-```bash
+```
+bash
 npm start
 # or for development
 npm run dev
@@ -62,7 +65,7 @@ npm run dev
 3. **Environment Variables:**
    - Go to your project → Variables
    - Add these variables:
-     - `MONGODB_URI` = `mongodb+srv://spygamerz945_db_user:SANJAY456.00@grivemitra.v6l6wi7.mongodb.net/grievmitra`
+     - `MONGODB_URI` = `your_mongodb_atlas_connection_string`
      - `JWT_SECRET` = `your_secure_jwt_secret_here`
      - `NODE_ENV` = `production`
 
@@ -72,37 +75,43 @@ npm run dev
 ### 2. Heroku
 
 1. **Install Heroku CLI:**
-```bash
+```
+bash
 npm install -g heroku
 heroku login
 ```
 
 2. **Create Heroku app:**
-```bash
+```
+bash
 heroku create grievmitra-backend
 ```
 
 3. **Set environment variables:**
-```bash
-heroku config:set MONGODB_URI="mongodb+srv://spygamerz945_db_user:SANJAY456.00@grivemitra.v6l6wi7.mongodb.net/grievmitra"
+```
+bash
+heroku config:set MONGODB_URI="your_mongodb_atlas_connection_string"
 heroku config:set JWT_SECRET="your_secure_jwt_secret_here"
 heroku config:set NODE_ENV="production"
 ```
 
 4. **Deploy:**
-```bash
+```
+bash
 git push heroku main
 ```
 
 ### 3. Vercel
 
 1. **Install Vercel CLI:**
-```bash
+```
+bash
 npm install -g vercel
 ```
 
 2. **Deploy:**
-```bash
+```
+bash
 vercel
 ```
 

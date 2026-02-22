@@ -62,8 +62,8 @@ const GrievanceSchema = new mongoose.Schema({
   },
   department: {
     type: String,
-    enum: ["Public Works", "Health", "Revenue", "Education", "Transport", "Water Supply", "Electricity", "Other"],
-    default: null
+    enum: ["Public Works", "Health", "Revenue", "Education", "Transport", "Water Supply", "Electricity", "Environment", "Safety", "Other", ""],
+    default: ""
   },
   assignedTo: {
     type: mongoose.Schema.Types.ObjectId,

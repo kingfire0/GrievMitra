@@ -437,18 +437,12 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="space-y-6">
                 <!-- Category (editable in step 2) -->
                 <div>
-                    <label for="step2-category" class="block text-sm font-medium text-text-primary mb-2">
+<label class="block text-sm font-medium text-text-primary mb-2">
                         Category <span class="text-error">*</span>
                     </label>
-                    <select id="step2-category" class="form-input">
-                        <option value="">Select Category</option>
-                        <option value="infrastructure">Infrastructure</option>
-                        <option value="public-services">Public Services</option>
-                        <option value="corruption">Corruption</option>
-                        <option value="environmental">Environmental</option>
-                        <option value="safety">Safety & Security</option>
-                        <option value="other">Other Issues</option>
-                    </select>
+                    <div id="step2-category-display" class="form-input bg-gray-50 font-medium">
+                        Select in Step 1
+                    </div>
                 </div>
 
                 <!-- Subject -->
@@ -1153,9 +1147,8 @@ function validateAfterAutoFill() {
             const subject = document.getElementById('subject').value.trim();
             const description = document.getElementById('description').value.trim();
             const priority = document.querySelector('input[name="priority"]:checked');
-            const category = document.getElementById('step2-category').value;
 
-            const isValid = subject.length > 0 && description.length > 10 && priority && category;
+            const isValid = subject.length > 0 && description.length > 10 && priority && selectedCategory;
             document.getElementById('next-step-2').disabled = !isValid;
 
             return isValid;
@@ -1626,8 +1619,16 @@ document.getElementById("next-step-3").addEventListener("click", () => {
 });
 
 function fillReviewData() {
-    // Fetch TEXT fields from Step 1 & Step 2 (already working in your project)
-    const category = document.getElementById("category")?.value || "";
+    // Use selectedCategory from Step 1
+    const categoryNames = {
+        'infrastructure': 'Infrastructure',
+        'public-services': 'Public Services',
+        'corruption': 'Corruption',
+        'environmental': 'Environmental',
+        'safety': 'Safety & Security',
+        'other': 'Other Issues'
+    };
+    const category = categoryNames[selectedCategory] || selectedCategory;
     const subject = document.getElementById("subject")?.value || "";
     const description = document.getElementById("description")?.value || "";
 

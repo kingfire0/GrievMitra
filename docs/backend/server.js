@@ -1,4 +1,4 @@
-const express = require("express");
+gconst express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -708,7 +708,20 @@ app.put("/admin/grievances/:id/status", authenticate, async (req, res) => {
 // Submit grievance (Citizen/Leader)
 app.post("/grievances/create", authenticate, async (req, res) => {
   try {
-    const { category, subject, description, location, priority = "medium" } = req.body;
+    const { category, subject, description, location, priority = "medium", department } = req.body;
+
+    // Map category to department if not explicitly provided
+    const categoryToDepartmentMap = {
+      'infrastructure': 'Public Works',
+      'public-services': 'Revenue',
+      'corruption': 'Other',
+      'environmental': 'Environment',
+      'safety': 'Safety',
+      'other': 'Other'
+    };
+
+    // Use provided department or map from category
+    const resolvedDepartment = department || categoryToDepartmentMap[category] || 'Other';
 
     const refId = "GM-" + Date.now();
 
@@ -720,6 +733,7 @@ app.post("/grievances/create", authenticate, async (req, res) => {
       description,
       location,
       priority,
+      department: resolvedDepartment,
       status: "submitted"
     });
 

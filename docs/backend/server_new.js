@@ -1,4 +1,4 @@
-const express = require("express");
+ const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -136,7 +136,7 @@ app.post("/auth/verify-otp", async (req, res) => {
     await user.save();
 
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: "1h" });
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5000";
+    const frontendUrl = getFrontendUrl(req);
     res.redirect(`${frontendUrl}/pages/auth_callback.html?token=${token}&role=${user.role}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}`);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -162,14 +162,43 @@ app.post("/auth/login", async (req, res) => {
 
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"], prompt: 'select_account' }));
 
+// Helper function to get frontend URL for redirects - works better on mobile
+function getFrontendUrl(req) {
+  // Check if FRONTEND_URL is set
+  if (process.env.FRONTEND_URL) {
+    return process.env.FRONTEND_URL;
+  }
+  
+  // Try to get from request headers
+  const origin = req.get('origin');
+  const referer = req.get('Referer');
+  
+  if (origin) {
+    return origin;
+  }
+  
+  if (referer) {
+    try {
+      const refererUrl = new URL(referer);
+      return `${refererUrl.protocol}//${refererUrl.host}`;
+    } catch (e) {
+      // Fall through to default
+    }
+  }
+  
+  // Default fallback
+  return "http://localhost:5000";
+}
+
 app.get("/auth/google/callback", passport.authenticate("google", { failureRedirect: "/pages/login_screen.html" }), (req, res) => {
+  const frontendUrl = getFrontendUrl(req);
+  
   if (!req.user.isVerified) {
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5000";
     res.redirect(`${frontendUrl}/pages/verify_otp.html?email=${encodeURIComponent(req.user.email)}`);
     return;
   }
+  
   const token = jwt.sign({ id: req.user._id, role: req.user.role }, JWT_SECRET, { expiresIn: "1h" });
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5000";
   res.redirect(`${frontendUrl}/pages/auth_callback.html?token=${token}&role=${req.user.role}&name=${encodeURIComponent(req.user.name)}&email=${encodeURIComponent(req.user.email)}`);
 });
 
@@ -364,7 +393,21 @@ app.put("/admin/grievances/:id/status", authenticate, async (req, res) => {
 // GRIEVANCE ROUTES
 app.post("/grievances/create", authenticate, async (req, res) => {
   try {
-    const { category, subject, description, location, priority = "medium" } = req.body;
+    const { category, subject, description, location, priority = "medium", department } = req.body;
+
+    // Map category to department if not explicitly provided
+    const categoryToDepartmentMap = {
+      'infrastructure': 'Public Works',
+      'public-services': 'Revenue',
+      'corruption': 'Other',
+      'environmental': 'Environment',
+      'safety': 'Safety',
+      'other': 'Other'
+    };
+
+    // Use provided department or map from category
+    const resolvedDepartment = department || categoryToDepartmentMap[category] || 'Other';
+
     const refId = "GM-" + Date.now();
     const grievance = await Grievance.create({
       reference_id: refId,
@@ -374,6 +417,7 @@ app.post("/grievances/create", authenticate, async (req, res) => {
       description,
       location,
       priority,
+      department: resolvedDepartment,
       status: "submitted"
     });
     res.json({ message: "Grievance submitted", reference_id: refId, grievance });

@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('dropdown-user-email').textContent = userEmail;
         document.getElementById('mobile-user-email').textContent = userEmail;
 
-        if (role === 'admin') {
+if (role === 'admin') {
             const adminLink = document.createElement('a');
             adminLink.href = 'admin_dashboard.html';
             adminLink.className = 'flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary transition-colors';
@@ -186,6 +186,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const dropdown = document.getElementById('user-dropdown');
             const separator = dropdown.querySelector('.border-t');
             if (separator) dropdown.insertBefore(adminLink, separator);
+        }
+        
+        if (role === 'officer' || role === 'admin') {
+            const officerLink = document.createElement('a');
+            officerLink.href = 'officer_dashboard.html';
+            officerLink.className = 'flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary transition-colors';
+            officerLink.innerHTML = '<svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>Officer Dashboard';
+            const dropdown = document.getElementById('user-dropdown');
+            const separator = dropdown.querySelector('.border-t');
+if (separator) dropdown.insertBefore(officerLink, separator);
         }
     } else {
         document.getElementById('auth-buttons').classList.remove('hidden');

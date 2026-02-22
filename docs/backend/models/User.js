@@ -28,9 +28,9 @@ const UserSchema = new mongoose.Schema({
     required: false,
     trim: true
   },
-  role: {
+role: {
     type: String,
-    enum: ["citizen", "leader", "admin"],
+    enum: ["citizen", "leader", "admin", "officer"],
     default: "citizen"
   },
   profilePhotoUrl: {

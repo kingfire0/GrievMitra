@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Officer Dashboard - GrievMitra Portal</title>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fgrievmitra7175back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (!token || (role !== 'officer' && role !== 'admin')) {
+        alert('Access denied. Officer login required.');
+        window.location.href = 'login_screen.html';
+    } else {
+        document.getElementById('user-menu').classList.remove('hidden');
+        document.getElementById('register-link').classList.add('hidden');
+        document.getElementById('login-link').classList.add('hidden');
+        document.getElementById('logout-link').classList.remove('hidden');
+        document.getElementById('logout-link-mobile').classList.remove('hidden');
+
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user) {
+            document.getElementById('welcome-message').textContent = `Welcome, ${user.name}`;
+            document.getElementById('profile-name').textContent = user.name;
+            const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            document.getElementById('profile-initials').textContent = initials;
+        }
+        
+        loadOfficerGrievances();
+    }
+});
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('user');
+    window.location.href = 'login_screen.html';
+}
+
+document.getElementById('logout-link')?.addEventListener('click', logout);
+document.getElementById('logout-link-mobile')?.addEventListener('click', logout);
+
+async function loadOfficerGrievances() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
+        const res = await fetch(apiBaseUrl + '/officer/grievances', {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!res.ok) throw new Error("Failed to fetch grievances");
+        
+        const grievances = await res.json();
+        renderGrievances(grievances);
+        updateStats(grievances);
+        
+    } catch (err) {
+        console.error('Error loading grievances:', err);
+        document.getElementById('grievanceTableBody').innerHTML = 
+            `<tr><td colspan="7" class="text-center p-4 text-error">Error loading grievances</td></tr>`;
+    }
+}
+
+function updateStats(grievances) {
+    const total = grievances.length;
+    const pending = grievances.filter(g => g.status === 'submitted').length;
+    const inProgress = grievances.filter(g => g.status === 'in_progress').length;
+    const resolved = grievances.filter(g => g.status === 'resolved').length;
+
+    document.getElementById('total-cases').textContent = total;
+    document.getElementById('pending-cases').textContent = pending;
+    document.getElementById('in-progress-cases').textContent = inProgress;
+    document.getElementById('resolved-cases').textContent = resolved;
+}
+
+function renderGrievances(grievances) {
+    const tableBody = document.getElementById('grievanceTableBody');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '';
+
+    if (!grievances || grievances.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-text-secondary">No grievances assigned to you yet.</td></tr>`;
+        return;
+    }
+
+    const statusColors = {
+        'submitted': 'bg-yellow-100 text-yellow-800',
+        'in_progress': 'bg-blue-100 text-blue-800',
+        'resolved': 'bg-green-100 text-green-800',
+        'rejected': 'bg-red-100 text-red-800'
+    };
+
+    grievances.forEach((g, index) => {
+        const row = document.createElement('tr');
+        row.className = 'border-b hover:bg-gray-50';
+        
+        const statusClass = statusColors[g.status] || 'bg-gray-100 text-gray-800';
+        const statusText = g.status === 'in_progress' ? 'In Progress' : g.status.charAt(0).toUpperCase() + g.status.slice(1);
+        const userName = g.user?.name || 'Unknown';
+        const userPhone = g.user?.phone || '';
+        const createdDate = new Date(g.createdAt).toLocaleDateString();
+
+        row.innerHTML = `
+            <td class="p-3 text-sm">${index + 1}</td>
+            <td class="p-3 text-sm font-mono">${g.reference_id}</td>
+            <td class="p-3 text-sm">${g.category || '-'}</td>
+            <td class="p-3 text-sm max-w-xs truncate">${g.subject}</td>
+            <td class="p-3 text-sm">
+                <span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${statusText}</span>
+            </td>
+            <td class="p-3 text-sm">
+                <div class="font-medium">${userName}</div>
+                <div class="text-xs text-gray-500">${userPhone}</div>
+                <div class="text-xs text-gray-400">${createdDate}</div>
+            </td>
+            <td class="p-3 text-sm">
+                <textarea id="notes-${g._id}" class="border rounded px-2 py-1 text-xs w-full mb-2" rows="2" placeholder="Add notes...">${g.notes || ''}</textarea>
+                <select id="status-${g._id}" class="border rounded px-2 py-1 text-xs mb-1 w-full">
+                    <option value="submitted" ${g.status === "submitted" ? "selected" : ""}>Submitted</option>
+                    <option value="in_progress" ${g.status === "in_progress" ? "selected" : ""}>In Progress</option>
+                    <option value="resolved" ${g.status === "resolved" ? "selected" : ""}>Resolved</option>
+                    <option value="rejected" ${g.status === "rejected" ? "selected" : ""}>Rejected</option>
+                </select>
+                <button class="bg-primary text-white px-3 py-1 rounded text-xs w-full hover:bg-primary-700" onclick="updateGrievance('${g._id}')">Update</button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+async function updateGrievance(grievanceId) {
+    const token = localStorage.getItem('token');
+    const newStatus = document.getElementById(`status-${grievanceId}`)?.value;
+    const notes = document.getElementById(`notes-${grievanceId}`)?.value;
+    
+    if (!newStatus) {
+        alert('Could not get status value');
+        return;
+    }
+
+    try {
+        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
+        
+        const res = await fetch(apiBaseUrl + '/officer/grievances/' + grievanceId, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ status: newStatus, notes: notes })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+            alert('Updated successfully!');
+            loadOfficerGrievances();
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        alert('Error updating. Please check console.');
+    }
+}
+
+function filterGrievances() {
+    const status = document.getElementById('filterStatus')?.value || '';
+    // For now just reload all - can be enhanced with API filtering
+    loadOfficerGrievances();
+}
+
+</script>
+</head>
+<body class="bg-surface">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-subtle sticky top-0 z-50 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="homepage.html" class="flex items-center">
+                        <svg class="h-8 w-8 text-primary" viewBox="0 0 40 40" fill="currentColor">
+                            <path d="M20 4C11.163 4 4 11.163 4 20s7.163 16 16 16 16-7.163 16-16S28.837 4 20 4z"/>
+                        </svg>
+                        <span class="ml-2 text-xl font-bold text-primary">GrievMitra</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="user-menu" class="hidden relative">
+                        <button class="flex items-center space-x-2 text-sm">
+                            <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-medium">
+                                <span id="profile-initials">O</span>
+                            </div>
+                            <span id="profile-name" class="text-text-primary font-medium">Officer</span>
+                        </button>
+                    </div>
+                    <a href="login_screen.html" id="login-link" class="text-text-secondary hover:text-primary">Login</a>
+                    <a href="user_registration.html" id="register-link" class="bg-primary text-white px-4 py-2 rounded-lg">Register</a>
+                    <button id="logout-link" class="text-error hover:text-error-700 hidden">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Welcome Section -->
+        <div class="mb-8">
+            <h1 id="welcome-message" class="text-3xl font-bold text-text-primary mb-2">Welcome, Officer</h1>
+            <p class="text-text-secondary">Manage your assigned grievances</p>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="card">
+                <div class="text-center">
+                    <p class="text-text-secondary text-sm">Total Assigned</p>
+                    <p id="total-cases" class="text-3xl font-bold text-primary">0</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="text-center">
+                    <p class="text-text-secondary text-sm">Pending</p>
+                    <p id="pending-cases" class="text-3xl font-bold text-warning">0</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="text-center">
+                    <p class="text-text-secondary text-sm">In Progress</p>
+                    <p id="in-progress-cases" class="text-3xl font-bold text-primary">0</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="text-center">
+                    <p class="text-text-secondary text-sm">Resolved</p>
+                    <p id="resolved-cases" class="text-3xl font-bold text-success">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="card mb-6">
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="min-w-[150px]">
+                    <label class="text-sm font-medium text-text-secondary mb-1 block">Filter by Status</label>
+                    <select id="filterStatus" onchange="filterGrievances()" class="w-full border rounded-lg px-3 py-2">
+                        <option value="">All Statuses</option>
+                        <option value="submitted">Submitted</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="flex-1"></div>
+                <button onclick="loadOfficerGrievances()" class="btn-primary px-4 py-2">Refresh</button>
+            </div>
+        </div>
+
+        <!-- Grievances Table -->
+        <div class="card overflow-hidden">
+            <div class="p-4 border-b">
+                <h2 class="text-lg font-semibold text-text-primary">My Assigned Grievances</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">#</th>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">Reference ID</th>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">Category</th>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">Subject</th>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">Status</th>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">Citizen Info</th>
+                            <th class="p-3 text-left text-xs font-semibold text-text-secondary uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grievanceTableBody">
+                        <tr>
+                            <td colspan="7" class="text-center p-4">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                                <p class="text-text-secondary mt-2">Loading your assigned grievances...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <p class="text-center text-text-secondary text-sm">© 2025 GrievMitra. All rights reserved.</p>
+        </div>
+    </footer>
+
+<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+</body>
+</html>

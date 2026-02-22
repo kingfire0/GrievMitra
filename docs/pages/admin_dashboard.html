@@ -43,11 +43,12 @@ window.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        loadDashboardStats();
+loadDashboardStats();
         loadPriorityGrievances();
         loadTeamPerformance();
         loadRecentActivity();
         loadDepartmentPerformance();
+        loadOfficers();
         loadGrievances();
     }
 });
@@ -372,6 +373,26 @@ async function loadGrievances() {
     }
 }
 
+// Load officers for assignment dropdown
+let officersList = [];
+
+async function loadOfficers() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
+        const res = await fetch(apiBaseUrl + '/admin/officers', {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!res.ok) throw new Error("Failed to fetch officers");
+        officersList = await res.json();
+    } catch (err) {
+        console.error('Error loading officers:', err);
+    }
+}
+
 function renderGrievances(grievances) {
   const tableBody = document.getElementById("grievanceTableBody");
   if (!tableBody) return;
@@ -379,13 +400,21 @@ function renderGrievances(grievances) {
   tableBody.innerHTML = "";
 
   if (grievances.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-4">No grievances found</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="8" class="text-center p-4">No grievances found</td></tr>`;
     return;
   }
+
+  // Build officer options for dropdown
+  const officerOptions = officersList.map(o => 
+    `<option value="${o._id}">${o.name}</option>`
+  ).join('');
 
   grievances.forEach((g, index) => {
     const row = document.createElement("tr");
     row.className = "border-b";
+
+    // Check if already assigned
+    const assignedOfficer = g.assignedTo?.name || 'Not Assigned';
 
     row.innerHTML = `
       <td class="p-2">${index + 1}</td>
@@ -394,6 +423,14 @@ function renderGrievances(grievances) {
       <td class="p-2">${g.subject}</td>
       <td class="p-2">${g.status}</td>
       <td class="p-2">${g.user?.name || "Unknown"}</td>
+      <td class="p-2">
+        <select id="officer-${g._id}" class="border p-1 rounded text-sm mb-1 w-full">
+          <option value="">-- Select Officer --</option>
+          ${officerOptions}
+        </select>
+        <button class="bg-green-500 text-white px-2 py-1 rounded text-xs block w-full mb-1" onclick="assignOfficer('${g._id}')">Assign</button>
+        <span class="text-xs text-gray-500">Currently: ${assignedOfficer}</span>
+      </td>
       <td class="p-2">
         <select id="status-${g._id}" class="border p-1 rounded">
           <option value="submitted" ${g.status === "submitted" ? "selected" : ""}>Submitted</option>
@@ -405,6 +442,41 @@ function renderGrievances(grievances) {
       </td>`;
     tableBody.appendChild(row);
   });
+}
+
+// Assign grievance to an officer
+async function assignOfficer(grievanceId) {
+    const token = localStorage.getItem('token');
+    const officerId = document.getElementById('officer-' + grievanceId)?.value;
+
+    if (!officerId) {
+        alert('Please select an officer first');
+        return;
+    }
+
+    try {
+        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
+        const res = await fetch(apiBaseUrl + '/admin/grievances/' + grievanceId + '/assign', {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({ officerId: officerId })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+            alert('Successfully assigned to ' + (data.grievance?.assignedTo?.name || 'officer') + '!');
+            loadGrievances();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to assign'));
+        }
+    } catch (err) {
+        console.error('Error assigning officer:', err);
+        alert('Error assigning officer');
+    }
 }
 
 async function updateStatus(grievanceId) {
@@ -469,8 +541,8 @@ function exportToCSV() {
                     <h1 id="welcome-message" class="text-3xl font-bold text-text-primary mb-2">Welcome back</h1>
                     <p class="text-text-secondary">District Collector • <span id="last-login">Loading...</span></p>
                 </div>
-                <div class="mt-4 md:mt-0 flex space-x-3">
-                    <button class="btn-primary inline-flex items-center">
+<div class="mt-4 md:mt-0 flex space-x-3">
+                    <button class="btn-primary inline-flex items-center" onclick="openNewAssignmentModal()">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         New Assignment
                     </button>

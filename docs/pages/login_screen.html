@@ -335,8 +335,10 @@
                     localStorage.setItem("email", data.email);
                     localStorage.setItem("isLoggedIn", "true");
 
-                    if (data.role === "admin") {
+if (data.role === "admin") {
                         window.location.href = "admin_dashboard.html";
+                    } else if (data.role === "officer") {
+                        window.location.href = "officer_dashboard.html";
                     } else {
                         window.location.href = "homepage.html";
                     }

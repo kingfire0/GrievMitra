@@ -19,11 +19,21 @@ window.addEventListener('DOMContentLoaded', function() {
         document.getElementById('user-menu').classList.remove('hidden');
         document.getElementById('register-link').classList.add('hidden');
         document.getElementById('login-link').classList.add('hidden');
-        document.getElementById('logout-link').classList.remove('hidden');
+document.getElementById('logout-link').classList.remove('hidden');
         document.getElementById('logout-link-mobile').classList.remove('hidden');
 
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (user) {
+        // Get user data from localStorage (stored during login)
+        const name = localStorage.getItem('name');
+        const userObj = localStorage.getItem('user');
+        
+        if (name) {
+            document.getElementById('welcome-message').textContent = `Welcome, ${name}`;
+            document.getElementById('profile-name').textContent = name;
+            const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
+            document.getElementById('profile-initials').textContent = initials;
+        } else if (userObj) {
+            // Fallback to user object if stored
+            const user = JSON.parse(userObj);
             document.getElementById('welcome-message').textContent = `Welcome, ${user.name}`;
             document.getElementById('profile-name').textContent = user.name;
             const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();

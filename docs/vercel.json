@@ -1,34 +1,25 @@
 {
   "version": 2,
-  "functions": {
-    "api/index.js": {
-      "includeFiles": "backend/**"
-    }
-  },
   "rewrites": [
     {
-      "source": "/api/(.*)",
+      "source": "/api/:path*",
       "destination": "/api/index.js"
     },
     {
-      "source": "/auth/(.*)",
+      "source": "/auth/:path*",
       "destination": "/api/index.js"
     },
     {
-      "source": "/admin/(.*)",
+      "source": "/admin/:path*",
       "destination": "/api/index.js"
     },
     {
-      "source": "/grievances/(.*)",
+      "source": "/grievances/:path*",
       "destination": "/api/index.js"
     },
     {
-      "source": "/officer/(.*)",
+      "source": "/officer/:path*",
       "destination": "/api/index.js"
-    },
-    {
-      "source": "/((?!api/|auth/|admin/|grievances/|officer/).*)",
-      "destination": "/index.html"
     }
   ],
   "env": {

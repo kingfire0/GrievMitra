@@ -27,13 +27,17 @@ app.use(session({
   cookie: { secure: false } // Set to true in production with HTTPS
 }));
 
-// Serve static files from the parent directory (docs)
-app.use(express.static(path.join(__dirname, '..')));
+// Only serve static files in local development (not in Vercel)
+if (!process.env.VERCEL) {
+  // Serve static files from the parent directory (docs)
+  app.use(express.static(path.join(__dirname, '..')));
 
-// Serve index.html at root route
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'index.html'));
-});
+  // Serve index.html at root route
+  app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
+  });
+}
+
 
 // MongoDB Atlas Connection
 

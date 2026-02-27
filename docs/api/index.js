@@ -3,5 +3,7 @@
 
 const app = require('../backend/server.js');
 
-// Export the Express app for Vercel serverless
-module.exports = app;
+// Vercel serverless function handler
+module.exports = (req, res) => {
+  return app(req, res);
+};

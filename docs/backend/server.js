@@ -1,4 +1,4 @@
-gconst express = require("express");
+const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -593,13 +593,13 @@ app.get("/admin/department-performance", authenticate, async (req, res) => {
 
     // Get category-wise performance (using category as department proxy)
     const categories = ["Public Works", "Health", "Revenue", "Education", "Transport", "Water Supply", "Electricity", "Other"];
-    
+
     const departmentStats = await Promise.all(
       categories.map(async (category) => {
         const total = await Grievance.countDocuments({ category });
         const resolved = await Grievance.countDocuments({ category, status: "resolved" });
         const pending = await Grievance.countDocuments({ category, status: { $in: ["submitted", "in_progress"] } });
-        
+
         const performance = total > 0 ? Math.round((resolved / total) * 100) : 0;
 
         return {
@@ -622,6 +622,74 @@ app.get("/admin/department-performance", authenticate, async (req, res) => {
       { department: "Education", total: 22, resolved: 19, pending: 3, performance: 89 },
       { department: "Transport", total: 18, resolved: 16, pending: 2, performance: 89 }
     ]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get grievances awaiting admin review (work submitted by officers)
+app.get("/admin/pending-reviews", authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") return res.status(403).json({ error: "Access denied" });
+
+    const grievances = await Grievance.find({
+      adminReviewStatus: "pending",
+      workSubmittedAt: { $exists: true, $ne: null }
+    })
+    .populate("user", "name email")
+    .populate("assignedTo", "name email")
+    .sort({ workSubmittedAt: -1 });
+
+    res.json(grievances);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin review grievance work completion
+app.put("/admin/grievances/:id/review", authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") return res.status(403).json({ error: "Access denied" });
+
+    const { status, comment } = req.body;
+
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({ error: "Invalid review status" });
+    }
+
+    const grievance = await Grievance.findById(req.params.id);
+
+    if (!grievance) {
+      return res.status(404).json({ error: "Grievance not found" });
+    }
+
+    if (grievance.adminReviewStatus !== "pending") {
+      return res.status(400).json({ error: "Grievance is not pending review" });
+    }
+
+    grievance.adminReviewStatus = status;
+    grievance.adminReviewComment = comment || "";
+
+    if (status === "approved") {
+      grievance.status = "resolved";
+      grievance.completedAt = new Date();
+    } else if (status === "rejected") {
+      // Reset to in_progress so officer can resubmit
+      grievance.status = "in_progress";
+      grievance.adminReviewStatus = "";
+      grievance.adminReviewComment = "";
+    }
+
+    await grievance.save();
+
+    const populatedGrievance = await Grievance.findById(grievance._id)
+      .populate("user", "name email")
+      .populate("assignedTo", "name email");
+
+    res.json({
+      message: `Work ${status} successfully`,
+      grievance: populatedGrievance
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

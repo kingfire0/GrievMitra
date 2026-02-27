@@ -19,7 +19,7 @@ window.addEventListener('DOMContentLoaded', function() {
         document.getElementById('user-menu').classList.remove('hidden');
         document.getElementById('register-link').classList.add('hidden');
         document.getElementById('login-link').classList.add('hidden');
-document.getElementById('logout-link').classList.remove('hidden');
+        document.getElementById('logout-link').classList.remove('hidden');
         document.getElementById('logout-link-mobile').classList.remove('hidden');
 
         // Get user data from localStorage (stored during login)
@@ -54,6 +54,9 @@ function logout() {
 document.getElementById('logout-link')?.addEventListener('click', logout);
 document.getElementById('logout-link-mobile')?.addEventListener('click', logout);
 
+// Store grievances globally for modal access
+let currentGrievances = [];
+
 async function loadOfficerGrievances() {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -67,13 +70,14 @@ async function loadOfficerGrievances() {
         if (!res.ok) throw new Error("Failed to fetch grievances");
         
         const grievances = await res.json();
+        currentGrievances = grievances;
         renderGrievances(grievances);
         updateStats(grievances);
         
     } catch (err) {
         console.error('Error loading grievances:', err);
         document.getElementById('grievanceTableBody').innerHTML = 
-            `<tr><td colspan="7" class="text-center p-4 text-error">Error loading grievances</td></tr>`;
+            `<tr><td colspan="9" class="text-center p-4 text-error">Error loading grievances</td></tr>`;
     }
 }
 
@@ -96,7 +100,7 @@ function renderGrievances(grievances) {
     tableBody.innerHTML = '';
 
     if (!grievances || grievances.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-text-secondary">No grievances assigned to you yet.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="9" class="text-center p-8 text-text-secondary">No grievances assigned to you yet.</td></tr>`;
         return;
     }
 
@@ -107,15 +111,57 @@ function renderGrievances(grievances) {
         'rejected': 'bg-red-100 text-red-800'
     };
 
+    const reviewStatusColors = {
+        'pending': 'bg-orange-100 text-orange-800',
+        'approved': 'bg-green-100 text-green-800',
+        'rejected': 'bg-red-100 text-red-800',
+        '': 'bg-gray-100 text-gray-800'
+    };
+
     grievances.forEach((g, index) => {
         const row = document.createElement('tr');
         row.className = 'border-b hover:bg-gray-50';
         
         const statusClass = statusColors[g.status] || 'bg-gray-100 text-gray-800';
         const statusText = g.status === 'in_progress' ? 'In Progress' : g.status.charAt(0).toUpperCase() + g.status.slice(1);
+        
+        // Calculate photo count
+        const workPhotos = g.workPhotos || [];
+        const completionPhotos = g.completionPhotos || [];
+        const totalPhotos = workPhotos.length + completionPhotos.length;
+        const canResolve = totalPhotos >= 3;
+        
+        // Review status badge
+        let reviewBadge = '';
+        if (g.adminReviewStatus === 'pending') {
+            reviewBadge = `<span class="ml-1 px-1 py-0.5 bg-orange-100 text-orange-800 text-xs rounded">Pending Review</span>`;
+        } else if (g.adminReviewStatus === 'rejected') {
+            reviewBadge = `<span class="ml-1 px-1 py-0.5 bg-red-100 text-red-800 text-xs rounded">Rejected</span>`;
+        }
+
         const userName = g.user?.name || 'Unknown';
         const userPhone = g.user?.phone || '';
         const createdDate = new Date(g.createdAt).toLocaleDateString();
+
+        // Determine action buttons based on status
+        let actionButtons = '';
+        if (g.status === 'resolved') {
+            actionButtons = `<span class="text-success text-xs font-medium">✓ Completed</span>`;
+        } else {
+            actionButtons = `
+                <button class="bg-blue-500 text-white px-2 py-1 rounded text-xs w-full mb-1 hover:bg-blue-600" onclick="openPhotoUploadModal('${g._id}')">
+                    📷 Upload Photos (${totalPhotos}/3)
+                </button>
+                ${canResolve ? `
+                <button class="bg-success text-white px-2 py-1 rounded text-xs w-full mb-1 hover:bg-green-600" onclick="submitForReview('${g._id}')">
+                    ✅ Submit for Review
+                </button>
+                ` : `<button class="bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs w-full mb-1 cursor-not-allowed" disabled>
+                    Submit (need ${3 - totalPhotos} more photos)
+                </button>`}
+                <button class="bg-primary text-white px-2 py-1 rounded text-xs w-full hover:bg-primary-700" onclick="saveNotes('${g._id}')">Save Notes</button>
+            `;
+        }
 
         row.innerHTML = `
             <td class="p-3 text-sm">${index + 1}</td>
@@ -124,6 +170,7 @@ function renderGrievances(grievances) {
             <td class="p-3 text-sm max-w-xs truncate">${g.subject}</td>
             <td class="p-3 text-sm">
                 <span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${statusText}</span>
+                ${reviewBadge}
             </td>
             <td class="p-3 text-sm">
                 <div class="font-medium">${userName}</div>
@@ -131,18 +178,182 @@ function renderGrievances(grievances) {
                 <div class="text-xs text-gray-400">${createdDate}</div>
             </td>
             <td class="p-3 text-sm">
-                <textarea id="notes-${g._id}" class="border rounded px-2 py-1 text-xs w-full mb-2" rows="2" placeholder="Add notes...">${g.notes || ''}</textarea>
-                <select id="status-${g._id}" class="border rounded px-2 py-1 text-xs mb-1 w-full">
-                    <option value="submitted" ${g.status === "submitted" ? "selected" : ""}>Submitted</option>
-                    <option value="in_progress" ${g.status === "in_progress" ? "selected" : ""}>In Progress</option>
-                    <option value="resolved" ${g.status === "resolved" ? "selected" : ""}>Resolved</option>
-                    <option value="rejected" ${g.status === "rejected" ? "selected" : ""}>Rejected</option>
-                </select>
-                <button class="bg-primary text-white px-3 py-1 rounded text-xs w-full hover:bg-primary-700" onclick="updateGrievance('${g._id}')">Update</button>
+                <textarea id="notes-${g._id}" class="border rounded px-2 py-1 text-xs w-full mb-2" rows="2" placeholder="Add work notes...">${g.notes || ''}</textarea>
+            </td>
+            <td class="p-3 text-sm">
+                <div class="text-xs">
+                    <span class="font-medium">Photos:</span> ${totalPhotos}/3
+                    ${!canResolve ? `<span class="text-warning ml-1">⚠️ Need ${3 - totalPhotos} more</span>` : '<span class="text-success ml-1">✓</span>'}
+                </div>
+                ${g.adminReviewComment ? `<div class="text-xs text-gray-500 mt-1 italic">"${g.adminReviewComment}"</div>` : ''}
+            </td>
+            <td class="p-3 text-sm">
+                ${actionButtons}
             </td>
         `;
         tableBody.appendChild(row);
     });
+}
+
+// Open photo upload modal
+function openPhotoUploadModal(grievanceId) {
+    const grievance = currentGrievances.find(g => g._id === grievanceId);
+    if (!grievance) return;
+    
+    document.getElementById('modal-grievance-id').value = grievanceId;
+    document.getElementById('modal-grievance-ref').textContent = grievance.reference_id;
+    document.getElementById('modal-grievance-subject').textContent = grievance.subject;
+    
+    // Show existing photos
+    const existingPhotos = [...(grievance.workPhotos || []), ...(grievance.completionPhotos || [])];
+    const photoPreview = document.getElementById('photo-preview');
+    if (existingPhotos.length > 0) {
+        photoPreview.innerHTML = existingPhotos.map((photo, idx) => 
+            `<div class="inline-block m-1"><img src="${photo}" class="w-20 h-20 object-cover rounded border" /></div>`
+        ).join('');
+    } else {
+        photoPreview.innerHTML = '<p class="text-gray-400 text-sm">No photos uploaded yet</p>';
+    }
+    
+    // Reset file input
+    document.getElementById('photo-input').value = '';
+    document.getElementById('upload-progress').classList.add('hidden');
+    document.getElementById('photo-error').classList.add('hidden');
+    
+    document.getElementById('photo-upload-modal').classList.remove('hidden');
+}
+
+// Close modal
+function closePhotoModal() {
+    document.getElementById('photo-upload-modal').classList.add('hidden');
+}
+
+// Handle photo upload
+async function uploadPhotos() {
+    const grievanceId = document.getElementById('modal-grievance-id').value;
+    const fileInput = document.getElementById('photo-input');
+    const files = fileInput.files;
+    
+    if (files.length === 0) {
+        document.getElementById('photo-error').textContent = 'Please select at least one photo';
+        document.getElementById('photo-error').classList.remove('hidden');
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+    const uploadProgress = document.getElementById('upload-progress');
+    const photoError = document.getElementById('photo-error');
+    
+    uploadProgress.classList.remove('hidden');
+    photoError.classList.add('hidden');
+    
+    try {
+        // Convert images to base64
+        const photos = [];
+        for (let i = 0; i < files.length; i++) {
+            const base64 = await fileToBase64(files[i]);
+            photos.push(base64);
+        }
+        
+        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
+        const res = await fetch(apiBaseUrl + '/officer/grievances/' + grievanceId + '/upload-photos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ photos: photos, isCompletion: false })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+            alert(`Uploaded ${data.photosUploaded} photos! Total: ${data.totalPhotos}/3`);
+            closePhotoModal();
+            loadOfficerGrievances();
+        } else {
+            photoError.textContent = data.error || 'Upload failed';
+            photoError.classList.remove('hidden');
+        }
+    } catch (err) {
+        console.error('Error uploading photos:', err);
+        photoError.textContent = 'Error uploading photos';
+        photoError.classList.remove('hidden');
+    } finally {
+        uploadProgress.classList.add('hidden');
+    }
+}
+
+// Helper function to convert file to base64
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
+// Submit grievance for admin review
+async function submitForReview(grievanceId) {
+    if (!confirm('Are you sure you want to submit this grievance for admin review? You must have uploaded at least 3 photos of the completed work.')) {
+        return;
+    }
+    
+    const token = localStorage.getItem('token');
+    
+    try {
+        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
+        const res = await fetch(apiBaseUrl + '/officer/grievances/' + grievanceId + '/submit-for-review', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({})
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+            alert('Successfully submitted for admin review!');
+            loadOfficerGrievances();
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+        }
+    } catch (err) {
+        console.error('Error submitting for review:', err);
+        alert('Error submitting for review');
+    }
+}
+
+// Save notes only
+async function saveNotes(grievanceId) {
+    const notes = document.getElementById(`notes-${grievanceId}`)?.value;
+    const token = localStorage.getItem('token');
+    
+    try {
+        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
+        const res = await fetch(apiBaseUrl + '/officer/grievances/' + grievanceId, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ notes: notes })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+            alert('Notes saved successfully!');
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+        }
+    } catch (err) {
+        console.error('Error saving notes:', err);
+        alert('Error saving notes');
+    }
 }
 
 async function updateGrievance(grievanceId) {
@@ -310,6 +521,64 @@ function filterGrievances() {
             <p class="text-center text-text-secondary text-sm">© 2025 GrievMitra. All rights reserved.</p>
         </div>
     </footer>
+
+    <!-- Photo Upload Modal -->
+    <div id="photo-upload-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-full mx-4 max-w-lg max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-text-primary">Upload Work Photos</h3>
+                    <button onclick="closePhotoModal()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="mb-4">
+                    <p class="text-sm text-text-secondary">Reference: <span id="modal-grievance-ref" class="font-mono font-medium"></span></p>
+                    <p class="text-sm text-text-secondary">Subject: <span id="modal-grievance-subject" class="font-medium"></span></p>
+                    <input type="hidden" id="modal-grievance-id" value="">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-text-primary mb-2">Upload Photos (min 3 required)</label>
+                    <input type="file" id="photo-input" accept="image/*" multiple class="w-full border rounded-lg px-3 py-2">
+                    <p class="text-xs text-text-secondary mt-1">You can select multiple images at once</p>
+                </div>
+                
+                <!-- Photo Preview -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-text-primary mb-2">Existing Photos</label>
+                    <div id="photo-preview" class="min-h-[100px] border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-wrap content-start">
+                        <p class="text-gray-400 text-sm">No photos uploaded yet</p>
+                    </div>
+                </div>
+                
+                <!-- Upload Progress -->
+                <div id="upload-progress" class="hidden mb-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                        <span class="text-sm text-text-secondary">Uploading photos...</span>
+                    </div>
+                </div>
+                
+                <!-- Error Message -->
+                <div id="photo-error" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-sm text-red-600"></p>
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button onclick="uploadPhotos()" class="flex-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-700">
+                        Upload Photos
+                    </button>
+                    <button onclick="closePhotoModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
 </body>

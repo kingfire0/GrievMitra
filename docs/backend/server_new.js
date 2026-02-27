@@ -505,6 +505,266 @@ app.get("/grievances/user", authenticate, async (req, res) => {
   }
 });
 
+// ============================================
+// OFFICER API ROUTES - Photo Upload & Work Update
+// ============================================
+
+// Get officer's assigned grievances with all details
+app.get("/officer/grievances", authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== "officer" && req.user.role !== "admin") {
+      return res.status(403).json({ error: "Access denied. Officer login required." });
+    }
+
+    const grievances = await Grievance.find({ assignedTo: req.user.id })
+      .populate("user", "name email phone")
+      .sort({ createdAt: -1 });
+
+    res.json(grievances);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update officer's assigned grievance (with photo upload logic)
+app.put("/officer/grievances/:id", authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== "officer" && req.user.role !== "admin") {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    const { status, notes, workPhotos, submitForReview } = req.body;
+
+    const grievance = await Grievance.findById(req.params.id);
+
+    if (!grievance) {
+      return res.status(404).json({ error: "Grievance not found" });
+    }
+
+    // Verify the grievance is assigned to this officer (or admin can update any)
+    if (req.user.role !== "admin" && grievance.assignedTo?.toString() !== req.user.id) {
+      return res.status(403).json({ error: "This grievance is not assigned to you" });
+    }
+
+    // Update notes
+    if (notes) grievance.notes = notes;
+    
+    // Update work photos if provided
+    if (workPhotos && Array.isArray(workPhotos)) {
+      grievance.workPhotos = [...(grievance.workPhotos || []), ...workPhotos];
+    }
+
+    // Handle status update
+    if (status) {
+      // Validation: Cannot resolve without minimum 3 photos
+      if (status === "resolved") {
+        const photoCount = (grievance.workPhotos || []).length + (grievance.completionPhotos || []).length;
+        if (photoCount < 3) {
+          return res.status(400).json({ 
+            error: "Cannot resolve grievance. Minimum 3 photos of work completion are required.",
+            photosUploaded: photoCount,
+            photosRequired: 3
+          });
+        }
+        
+        // If submitting for review (not auto-resolve), set workSubmittedAt
+        if (submitForReview) {
+          grievance.workSubmittedAt = new Date();
+          grievance.adminReviewStatus = "pending";
+          grievance.status = "in_progress"; // Keep in progress until admin approves
+        } else {
+          // Direct resolve (admin can do this)
+          grievance.status = "resolved";
+          grievance.completedAt = new Date();
+          grievance.adminReviewStatus = "approved";
+        }
+      } else {
+        grievance.status = status;
+      }
+    }
+
+    await grievance.save();
+
+    res.json({ message: "Grievance updated successfully", grievance });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Upload work/completion photos for a grievance
+app.post("/officer/grievances/:id/upload-photos", authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== "officer" && req.user.role !== "admin") {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    const { photos, isCompletion } = req.body;
+
+    const grievance = await Grievance.findById(req.params.id);
+
+    if (!grievance) {
+      return res.status(404).json({ error: "Grievance not found" });
+    }
+
+    // Verify assignment
+    if (req.user.role !== "admin" && grievance.assignedTo?.toString() !== req.user.id) {
+      return res.status(403).json({ error: "This grievance is not assigned to you" });
+    }
+
+    if (!photos || !Array.isArray(photos) || photos.length === 0) {
+      return res.status(400).json({ error: "No photos provided" });
+    }
+
+    // Add photos to appropriate array
+    if (isCompletion) {
+      grievance.completionPhotos = [...(grievance.completionPhotos || []), ...photos];
+    } else {
+      grievance.workPhotos = [...(grievance.workPhotos || []), ...photos];
+    }
+
+    await grievance.save();
+
+    const totalPhotos = (grievance.workPhotos?.length || 0) + (grievance.completionPhotos?.length || 0);
+
+    res.json({ 
+      message: "Photos uploaded successfully",
+      photosUploaded: photos.length,
+      totalPhotos: totalPhotos,
+      minPhotosRequired: 3,
+      canResolve: totalPhotos >= 3,
+      grievance 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Submit grievance for admin review (with minimum photos check)
+app.post("/officer/grievances/:id/submit-for-review", authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== "officer" && req.user.role !== "admin") {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    const grievance = await Grievance.findById(req.params.id);
+
+    if (!grievance) {
+      return res.status(404).json({ error: "Grievance not found" });
+    }
+
+    // Verify assignment
+    if (req.user.role !== "admin" && grievance.assignedTo?.toString() !== req.user.id) {
+      return res.status(403).json({ error: "This grievance is not assigned to you" });
+    }
+
+    // Check minimum photos requirement
+    const totalPhotos = (grievance.workPhotos?.length || 0) + (grievance.completionPhotos?.length || 0);
+    if (totalPhotos < 3) {
+      return res.status(400).json({ 
+        error: "Cannot submit for review. Minimum 3 photos are required.",
+        photosUploaded: totalPhotos,
+        photosRequired: 3
+      });
+    }
+
+    // Submit for review
+    grievance.workSubmittedAt = new Date();
+    grievance.adminReviewStatus = "pending";
+    grievance.status = "in_progress";
+    
+    await grievance.save();
+
+    res.json({ 
+      message: "Grievance submitted for admin review",
+      grievance 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================
+// ADMIN API ROUTES - Review Officer Work
+// ============================================
+
+// Get grievances pending review
+app.get("/admin/grievances/pending-review", authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") return res.status(403).json({ error: "Access denied" });
+
+    const grievances = await Grievance.find({ 
+      adminReviewStatus: "pending",
+      workSubmittedAt: { $ne: null }
+    })
+    .populate("user", "name email phone")
+    .populate("assignedTo", "name email")
+    .sort({ workSubmittedAt: -1 });
+
+    res.json(grievances);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin review and approve/reject completion
+app.post("/admin/grievances/:id/review", authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") return res.status(403).json({ error: "Access denied" });
+
+    const { action, comment } = req.body;
+
+    const grievance = await Grievance.findById(req.params.id)
+      .populate("user", "name email")
+      .populate("assignedTo", "name email");
+
+    if (!grievance) {
+      return res.status(404).json({ error: "Grievance not found" });
+    }
+
+    if (action === "approve") {
+      grievance.status = "resolved";
+      grievance.adminReviewStatus = "approved";
+      grievance.adminReviewComment = comment || "Work completed satisfactorily";
+      grievance.completedAt = new Date();
+    } else if (action === "reject") {
+      grievance.status = "in_progress";
+      grievance.adminReviewStatus = "rejected";
+      grievance.adminReviewComment = comment || "Work not satisfactory. Please redo.";
+      grievance.workSubmittedAt = null;
+    } else {
+      return res.status(400).json({ error: "Invalid action. Use 'approve' or 'reject'" });
+    }
+
+    await grievance.save();
+
+    res.json({ 
+      message: action === "approve" ? "Grievance resolved and closed" : "Grievance returned to officer for revision",
+      grievance 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get single grievance details (for admin review modal)
+app.get("/admin/grievances/:id", authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") return res.status(403).json({ error: "Access denied" });
+
+    const grievance = await Grievance.findById(req.params.id)
+      .populate("user", "name email phone")
+      .populate("assignedTo", "name email");
+
+    if (!grievance) {
+      return res.status(404).json({ error: "Grievance not found" });
+    }
+
+    res.json(grievance);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);

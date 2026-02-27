@@ -78,6 +78,37 @@ const GrievanceSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  // Work photos uploaded by officer
+  workPhotos: [{
+    type: String,
+    default: []
+  }],
+  // Completion photos (final evidence)
+  completionPhotos: [{
+    type: String,
+    default: []
+  }],
+  // Timestamp when work was submitted for review
+  workSubmittedAt: {
+    type: Date,
+    default: null
+  },
+  // Admin review status
+  adminReviewStatus: {
+    type: String,
+    enum: ["pending", "approved", "rejected", ""],
+    default: ""
+  },
+  // Admin comments on review
+  adminReviewComment: {
+    type: String,
+    default: ""
+  },
+  // Date when admin approved completion
+  completedAt: {
+    type: Date,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

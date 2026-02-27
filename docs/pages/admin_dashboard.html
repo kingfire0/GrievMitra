@@ -43,13 +43,14 @@ window.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-loadDashboardStats();
+        loadDashboardStats();
         loadPriorityGrievances();
         loadTeamPerformance();
         loadRecentActivity();
         loadDepartmentPerformance();
         loadOfficers();
         loadGrievances();
+        loadPendingReviews();
     }
 });
 
@@ -508,17 +509,17 @@ async function updateStatus(grievanceId) {
 function exportToCSV() {
     const table = document.querySelector('table');
     if (!table) return;
-    
+
     let csv = [];
     const rows = table.querySelectorAll('tr');
-    
+
     rows.forEach(row => {
         const cols = row.querySelectorAll('td, th');
         const rowData = [];
         cols.forEach(col => rowData.push('"' + col.textContent.trim() + '"'));
         csv.push(rowData.join(','));
     });
-    
+
     const csvFile = new Blob([csv.join('\n')], {type: "text/csv"});
     const downloadLink = document.createElement("a");
     downloadLink.download = "grievances_export.csv";
@@ -526,6 +527,317 @@ function exportToCSV() {
     downloadLink.style.display = "none";
     document.body.appendChild(downloadLink);
     downloadLink.click();
+}
+
+// Load pending reviews for admin review
+async function loadPendingReviews() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+        const res = await fetch(`${apiBaseUrl}/admin/grievances/pending-review`, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch pending reviews");
+        const grievances = await res.json();
+        renderPendingReviews(grievances);
+
+    } catch (err) {
+        console.error('Error loading pending reviews:', err);
+    }
+}
+
+// Render pending reviews in the sidebar
+function renderPendingReviews(grievances) {
+    const container = document.getElementById('recent-activity-container');
+    if (!container) return;
+
+    if (grievances.length === 0) {
+        container.innerHTML = '<p class="text-sm text-text-secondary">No grievances pending review</p>';
+        return;
+    }
+
+    container.innerHTML = '';
+
+    grievances.slice(0, 5).forEach(g => {
+        const html = `
+            <div class="flex items-start space-x-3 p-2 border rounded hover:bg-gray-50 cursor-pointer" onclick="openReviewModal('${g._id}')">
+                <div class="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+                <div class="flex-1">
+                    <p class="text-sm text-text-primary font-medium">${g.reference_id}</p>
+                    <p class="text-xs text-text-secondary">${g.subject}</p>
+                    <p class="text-xs text-orange-600">Pending Review</p>
+                </div>
+            </div>`;
+        container.innerHTML += html;
+    });
+}
+
+// Open review modal for admin
+function openReviewModal(grievanceId) {
+    // Fetch grievance details
+    const token = localStorage.getItem('token');
+    const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+
+    fetch(`${apiBaseUrl}/admin/grievances/${grievanceId}`, {
+        headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => res.json())
+    .then(grievance => {
+        // Populate modal
+        document.getElementById('review-grievance-id').value = grievance._id;
+        document.getElementById('review-reference').textContent = grievance.reference_id;
+        document.getElementById('review-subject').textContent = grievance.subject;
+        document.getElementById('review-description').textContent = grievance.description;
+        document.getElementById('review-category').textContent = grievance.category;
+        document.getElementById('review-priority').textContent = grievance.priority;
+        document.getElementById('review-assigned-to').textContent = grievance.assignedTo?.name || 'Unknown';
+        document.getElementById('review-submitted-at').textContent = new Date(grievance.workSubmittedAt).toLocaleString();
+
+        // Show photos
+        const photoContainer = document.getElementById('review-photos');
+        const allPhotos = [...(grievance.workPhotos || []), ...(grievance.completionPhotos || [])];
+        if (allPhotos.length > 0) {
+            photoContainer.innerHTML = allPhotos.map(photo =>
+                `<div class="inline-block m-2"><img src="${photo}" class="w-24 h-24 object-cover rounded border" /></div>`
+            ).join('');
+        } else {
+            photoContainer.innerHTML = '<p class="text-gray-400 text-sm">No photos uploaded</p>';
+        }
+
+        // Show notes
+        document.getElementById('review-notes').textContent = grievance.notes || 'No notes provided';
+
+        document.getElementById('review-modal').classList.remove('hidden');
+    })
+    .catch(err => {
+        console.error('Error loading grievance details:', err);
+        alert('Error loading grievance details');
+    });
+}
+
+// Close review modal
+function closeReviewModal() {
+    document.getElementById('review-modal').classList.add('hidden');
+}
+
+// Submit admin review
+function submitReview(action) {
+    const grievanceId = document.getElementById('review-grievance-id').value;
+    const comment = document.getElementById('admin-comment').value;
+
+    const token = localStorage.getItem('token');
+    const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+
+    fetch(`${apiBaseUrl}/admin/grievances/${grievanceId}/review`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ action, comment })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.message) {
+            alert(data.message);
+            closeReviewModal();
+            loadPendingReviews();
+            loadDashboardStats();
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(err => {
+        console.error('Error submitting review:', err);
+        alert('Error submitting review');
+    });
+}
+
+// Load pending reviews for admin approval
+async function loadPendingReviews() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+        const res = await fetch(`${apiBaseUrl}/admin/pending-reviews`, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch pending reviews");
+        const grievances = await res.json();
+        renderPendingReviews(grievances);
+    } catch (err) {
+        console.error('Error loading pending reviews:', err);
+    }
+}
+
+function renderPendingReviews(grievances) {
+    const container = document.getElementById('pending-reviews-container');
+    if (!container) return;
+
+    // Also update the badge count
+    const badge = document.getElementById('pending-reviews-badge');
+    if (badge) {
+        badge.textContent = grievances.length;
+        badge.classList.toggle('hidden', grievances.length === 0);
+    }
+
+    if (grievances.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-text-secondary">
+                <svg class="w-16 h-16 mx-auto mb-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-lg font-semibold">No pending reviews!</p>
+                <p>All work submissions have been reviewed.</p>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = '';
+    grievances.forEach(g => {
+        const userName = g.user?.name || 'Unknown';
+        const officerName = g.assignedTo?.name || 'Unassigned';
+        const submittedDate = g.workSubmittedAt ? new Date(g.workSubmittedAt).toLocaleDateString() : 'N/A';
+
+        const html = `
+            <div class="border rounded-lg p-4 bg-warning-50 border-warning-200">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="status-badge status-warning">PENDING REVIEW</div>
+                        <span class="text-sm text-text-secondary">${g.reference_id}</span>
+                    </div>
+                    <span class="text-xs text-text-secondary">Submitted: ${submittedDate}</span>
+                </div>
+                <h3 class="font-semibold text-text-primary mb-2">${g.subject}</h3>
+                <p class="text-text-secondary text-sm mb-3">${g.description || 'No description'}</p>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-xs text-text-secondary">
+                            <span class="font-medium">Citizen:</span> ${userName}
+                        </div>
+                        <div class="text-xs text-text-secondary">
+                            <span class="font-medium">Officer:</span> ${officerName}
+                        </div>
+                    </div>
+                    <button class="bg-warning text-white px-3 py-1 rounded text-sm hover:bg-warning-600" onclick="openReviewModal('${g._id}')">Review Work</button>
+                </div>
+            </div>`;
+        container.innerHTML += html;
+    });
+}
+
+let currentReviewGrievance = null;
+
+function openReviewModal(grievanceId) {
+    const modal = document.getElementById('review-modal');
+    if (!modal) return;
+
+    // Load grievance details for review
+    loadGrievanceForReview(grievanceId);
+    modal.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+}
+
+async function loadGrievanceForReview(grievanceId) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+        const res = await fetch(`${apiBaseUrl}/admin/grievances`, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch grievance");
+        const grievances = await res.json();
+        const grievance = grievances.find(g => g._id === grievanceId);
+
+        if (grievance) {
+            currentReviewGrievance = grievance;
+            displayGrievanceForReview(grievance);
+        }
+    } catch (err) {
+        console.error('Error loading grievance for review:', err);
+    }
+}
+
+function displayGrievanceForReview(g) {
+    // Update modal content
+    document.getElementById('review-grievance-id').textContent = g.reference_id || g._id;
+    document.getElementById('review-grievance-subject').textContent = g.subject;
+    document.getElementById('review-grievance-description').textContent = g.description;
+    document.getElementById('review-grievance-category').textContent = g.category;
+    document.getElementById('review-grievance-priority').textContent = g.priority;
+    document.getElementById('review-grievance-status').textContent = g.status;
+    document.getElementById('review-grievance-officer').textContent = g.assignedTo?.name || 'Not Assigned';
+    document.getElementById('review-grievance-citizen').textContent = g.user?.name || 'Unknown';
+
+    // Show work photos if available
+    const photosContainer = document.getElementById('review-work-photos');
+    if (photosContainer && g.workPhotos && g.workPhotos.length > 0) {
+        photosContainer.innerHTML = g.workPhotos.map(photo =>
+            `<img src="${photo}" alt="Work photo" class="w-32 h-32 object-cover rounded-lg border" />`
+        ).join('');
+    } else if (photosContainer) {
+        photosContainer.innerHTML = '<p class="text-text-secondary text-sm">No work photos submitted</p>';
+    }
+
+    // Show notes if available
+    const notesElement = document.getElementById('review-grievance-notes');
+    if (notesElement) {
+        notesElement.textContent = g.notes || 'No notes from officer';
+    }
+}
+
+function closeReviewModal() {
+    const modal = document.getElementById('review-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+    document.body.classList.remove('modal-open');
+    currentReviewGrievance = null;
+
+    // Clear form
+    document.getElementById('review-comment').value = '';
+}
+
+async function submitReview(status) {
+    const token = localStorage.getItem('token');
+    if (!token || !currentReviewGrievance) return;
+
+    const comment = document.getElementById('review-comment').value;
+
+    try {
+        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+        const res = await fetch(`${apiBaseUrl}/admin/grievances/${currentReviewGrievance._id}/review`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({ status, comment })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert(`Work ${status} successfully!`);
+            closeReviewModal();
+            loadPendingReviews();
+            loadDashboardStats();
+            loadGrievances();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to submit review'));
+        }
+    } catch (err) {
+        console.error('Error submitting review:', err);
+        alert('Error submitting review');
+    }
 }
 
 </script>
@@ -704,6 +1016,91 @@ function exportToCSV() {
                             <div class="text-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div></div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Review Modal -->
+    <div id="review-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-text-primary">Review Work Completion</h2>
+                    <button onclick="closeReviewModal()" class="text-text-secondary hover:text-text-primary">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Grievance Details -->
+                <div class="mb-6 p-4 bg-surface rounded-lg">
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <span class="text-text-secondary">Reference ID:</span>
+                            <span id="review-reference" class="font-semibold ml-2"></span>
+                        </div>
+                        <div>
+                            <span class="text-text-secondary">Category:</span>
+                            <span id="review-category" class="font-semibold ml-2"></span>
+                        </div>
+                        <div>
+                            <span class="text-text-secondary">Priority:</span>
+                            <span id="review-priority" class="font-semibold ml-2"></span>
+                        </div>
+                        <div>
+                            <span class="text-text-secondary">Citizen:</span>
+                            <span id="review-assigned-to" class="font-semibold ml-2"></span>
+                        </div>
+                        <div>
+                            <span class="text-text-secondary">Submitted:</span>
+                            <span id="review-submitted-at" class="font-semibold ml-2"></span>
+                        </div>
+                        <div>
+                            <span class="text-text-secondary">Status:</span>
+                            <span class="font-semibold ml-2 px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">Pending Review</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subject and Description -->
+                <div class="mb-6">
+                    <h3 id="review-subject" class="font-semibold text-lg text-text-primary mb-2"></h3>
+                    <p id="review-description" class="text-text-secondary text-sm"></p>
+                </div>
+
+                <!-- Work Photos -->
+                <div class="mb-6">
+                    <h4 class="font-semibold text-text-primary mb-3">Work Photos Submitted</h4>
+                    <div id="review-photos" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <!-- Photos will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Officer Notes -->
+                <div class="mb-6">
+                    <h4 class="font-semibold text-text-primary mb-2">Officer Notes</h4>
+                    <p id="review-notes" class="text-text-secondary text-sm bg-surface p-4 rounded-lg border-l-4 border-primary"></p>
+                </div>
+
+                <!-- Admin Comment -->
+                <div class="mb-6">
+                    <label class="block text-text-primary font-medium mb-2">Admin Comments (Optional)</label>
+                    <textarea id="admin-comment" rows="4" class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Add your review comments or feedback for the officer..."></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeReviewModal()" class="px-6 py-2 border border-gray-300 rounded-lg text-text-secondary hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button onclick="submitReview('rejected')" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                        Reject & Request Changes
+                    </button>
+                    <button onclick="submitReview('approved')" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                        Approve & Complete
+                    </button>
                 </div>
             </div>
         </div>

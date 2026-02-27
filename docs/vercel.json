@@ -8,8 +8,31 @@
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/api/(.*)",
       "dest": "backend/server.js"
+    },
+    {
+      "src": "/auth/(.*)",
+      "dest": "backend/server.js"
+    },
+    {
+      "src": "/admin/(.*)",
+      "dest": "backend/server.js"
+    },
+    {
+      "src": "/grievances/(.*)",
+      "dest": "backend/server.js"
+    },
+    {
+      "src": "/officer/(.*)",
+      "dest": "backend/server.js"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "env": {

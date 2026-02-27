@@ -30,7 +30,13 @@ app.use(session({
 // Serve static files from the parent directory (docs)
 app.use(express.static(path.join(__dirname, '..')));
 
+// Serve index.html at root route
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
+
 // MongoDB Atlas Connection
+
 const MONGODB_URI = process.env.MONGODB_URI;
 mongoose.connect(MONGODB_URI)
   .then(() => console.log("✅ MongoDB Atlas connected"))
@@ -1255,9 +1261,16 @@ app.put("/admin/grievances/:id/assign", authenticate, async (req, res) => {
 });
 
 //-------------------------------------------------------------
-// SERVER START
+// VERCEL SERVERLESS EXPORT
 //-------------------------------------------------------------
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
-});
+module.exports = app;
+
+//-------------------------------------------------------------
+// SERVER START (for local development)
+//-------------------------------------------------------------
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+  });
+}

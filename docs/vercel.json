@@ -5,14 +5,10 @@
   "github": {
     "autoJobCancelation": false
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/((?!api|css|js|public|components|pages).*)",
-      "dest": "/index.html"
+      "source": "/:path*",
+      "destination": "/:path*"
     }
   ]
 }

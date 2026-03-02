@@ -1,14 +1,1 @@
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": ".",
-  "framework": null,
-  "github": {
-    "autoJobCancelation": false
-  },
-  "rewrites": [
-    {
-      "source": "/:path*",
-      "destination": "/:path*"
-    }
-  ]
-}
+{}

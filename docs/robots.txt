@@ -1,4 +1,25 @@
+# GrievMitra Portal Robots.txt
+# Optimized for Vercel deployment
+
 User-agent: *
 Allow: /
 
-Sitemap: https://grievmitra.onrender.com/sitemap.xml
+# Disallow access to private/admin areas
+Disallow: /api/
+Disallow: /backend/
+Disallow: /netlify/
+Disallow: /components/
+Disallow: /css/
+Disallow: /js/
+Disallow: /public/
+Disallow: /query
+
+# Sitemap location
+Sitemap: https://grievmitra.vercel.app/sitemap.xml
+
+# Crawl-delay (optional, Vercel handles this automatically)
+# Crawl-delay: 1
+
+# Host directive (for search engines)
+Host: https://grievmitra.vercel.app
+

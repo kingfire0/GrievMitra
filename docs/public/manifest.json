@@ -1,15 +1,54 @@
 {
-  "short_name": "grievmitra-portal",
-  "name": "grievmitra-portal",
+  "name": "GrievMitra Portal - Digital Grievance Management System",
+  "short_name": "GrievMitra",
+  "description": "Transform your concerns into community change through India's most trusted digital grievance platform. Submit, track, and resolve grievances with complete transparency.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "/favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "type": "image/x-icon",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "categories": ["government", "business", "productivity"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "screenshots": [],
+  " shortcuts": [
+    {
+      "name": "Submit Grievance",
+      "short_name": "Submit",
+      "description": "File a new grievance",
+      "url": "/pages/submit_grievance.html",
+      "icons": [{ "src": "/favicon.ico", "sizes": "96x96" }]
+    },
+    {
+      "name": "Track Status",
+      "short_name": "Track",
+      "description": "Track your grievance status",
+      "url": "/pages/track_grievance.html",
+      "icons": [{ "src": "/favicon.ico", "sizes": "96x96" }]
+    }
+  ]
 }
+

@@ -18,40 +18,56 @@ window.addEventListener('DOMContentLoaded', function() {
     if (!token || role !== 'admin') {
         alert('Access denied. Admin login required.');
         window.location.href = 'login_screen.html';
-    } else {
-        document.getElementById('user-menu').classList.remove('hidden');
-        document.getElementById('register-link').classList.add('hidden');
-        document.getElementById('login-link').classList.add('hidden');
-        document.getElementById('logout-link').classList.remove('hidden');
-        document.getElementById('logout-link-mobile').classList.remove('hidden');
-        document.getElementById('logout-link-mobile-menu').classList.remove('hidden');
+        return;
+    }
 
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (user) {
-            document.getElementById('welcome-message').textContent = `Welcome, ${user.name}`;
-            document.getElementById('profile-name').textContent = user.name;
-            document.getElementById('dropdown-profile-name').textContent = user.name;
-            if (user.profilePhoto) {
-                document.getElementById('profile-photo').src = user.profilePhoto;
-                document.getElementById('profile-photo').classList.remove('hidden');
-                document.getElementById('dropdown-profile-photo').src = user.profilePhoto;
-                document.getElementById('dropdown-profile-photo').classList.remove('hidden');
-            } else {
-                const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
-                document.getElementById('profile-initials').textContent = initials;
-                document.getElementById('dropdown-profile-initials').textContent = initials;
-            }
+    // Set user info from localStorage
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user) {
+        document.getElementById('welcome-message').textContent = `Welcome, ${user.name}`;
+        document.getElementById('profile-name').textContent = user.name;
+        document.getElementById('dropdown-profile-name').textContent = user.name;
+        const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+        document.getElementById('profile-initials').textContent = initials;
+        document.getElementById('dropdown-profile-initials').textContent = initials;
+        if (user.profilePhoto) {
+            document.getElementById('profile-photo').src = user.profilePhoto;
+            document.getElementById('profile-photo').classList.remove('hidden');
+            document.getElementById('dropdown-profile-photo').src = user.profilePhoto;
+            document.getElementById('dropdown-profile-photo').classList.remove('hidden');
         }
-        
+    }
+    
+    // Show/hide nav items based on auth
+    document.getElementById('user-menu').classList.remove('hidden');
+    document.getElementById('register-link').classList.add('hidden');
+    document.getElementById('login-link').classList.add('hidden');
+    document.getElementById('logout-link').classList.remove('hidden');
+    document.getElementById('logout-link-mobile').classList.remove('hidden');
+    document.getElementById('logout-link-mobile-menu').classList.remove('hidden');
+
+    // Set last login time
+    const now = new Date();
+    const loginTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    const lastLoginEl = document.getElementById('last-login');
+    if (lastLoginEl) lastLoginEl.textContent = `Today at ${loginTime}`;
+    
+    // Load all dashboard data
+    loadDashboardStats();
+    loadPriorityGrievances();
+    loadTeamPerformance();
+    loadRecentActivity();
+    loadDepartmentPerformance();
+    loadOfficers();
+    loadGrievances();
+    loadPendingReviews();
+    
+    // Auto-refresh every 60 seconds
+    setInterval(function() {
         loadDashboardStats();
         loadPriorityGrievances();
-        loadTeamPerformance();
         loadRecentActivity();
-        loadDepartmentPerformance();
-        loadOfficers();
-        loadGrievances();
-        loadPendingReviews();
-    }
+    }, 60000);
 });
 
 function logout() {
@@ -61,6 +77,7 @@ function logout() {
     window.location.href = 'login_screen.html';
 }
 
+// Profile dropdown toggle
 document.getElementById('profile-dropdown-btn').addEventListener('click', function() {
     document.getElementById('profile-dropdown').classList.toggle('hidden');
 });
@@ -75,6 +92,7 @@ document.getElementById('logout-link').addEventListener('click', logout);
 document.getElementById('logout-link-mobile').addEventListener('click', logout);
 document.getElementById('logout-link-mobile-menu').addEventListener('click', logout);
 
+// ============ Dashboard Stats ============
 async function loadDashboardStats() {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -108,7 +126,6 @@ async function loadDashboardStats() {
         
     } catch (err) {
         console.error('Error loading dashboard stats:', err);
-        // Show fallback values when API fails
         showFallbackStats();
     }
 }
@@ -131,6 +148,7 @@ function showFallbackStats() {
     }
 }
 
+// ============ Priority Grievances ============
 async function loadPriorityGrievances() {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -200,6 +218,7 @@ function renderPriorityGrievances(grievances) {
     });
 }
 
+// ============ Team Performance ============
 async function loadTeamPerformance() {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -230,8 +249,8 @@ function renderTeamPerformance(team) {
         const performanceColor = member.performance >= 90 ? 'text-success' : member.performance >= 70 ? 'text-primary' : 'text-warning';
         
         const html = `
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
+           flex items-center justify-between">
+                 <div class="<div class="flex items-center space-x-3">
                     <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
                         <span class="text-primary font-semibold text-sm">${initials}</span>
                     </div>
@@ -249,6 +268,7 @@ function renderTeamPerformance(team) {
     });
 }
 
+// ============ Recent Activity ============
 async function loadRecentActivity() {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -292,6 +312,7 @@ function renderRecentActivity(activities) {
     });
 }
 
+// ============ Department Performance ============
 async function loadDepartmentPerformance() {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -335,23 +356,27 @@ function renderDepartmentPerformance(departments) {
     });
 }
 
-function getTimeAgo(date) {
-    const now = new Date();
-    const diff = now - date;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
+// ============ Officers List ============
+let officersList = [];
 
-    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
-    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-    return 'Just now';
+async function loadOfficers() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
+        const res = await fetch(apiBaseUrl + '/admin/officers', {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        
+        if (!res.ok) throw new Error("Failed to fetch officers");
+        officersList = await res.json();
+    } catch (err) {
+        console.error('Error loading officers:', err);
+    }
 }
 
-function viewGrievance(id) {
-    window.location.href = `admin_grievances.html?id=${id}`;
-}
-
+// ============ Grievances Management ============
 async function loadGrievances() {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -371,26 +396,6 @@ async function loadGrievances() {
       renderGrievances(grievances);
     } catch (err) {
       console.error(err);
-    }
-}
-
-// Load officers for assignment dropdown
-let officersList = [];
-
-async function loadOfficers() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
-        const res = await fetch(apiBaseUrl + '/admin/officers', {
-            headers: { "Authorization": "Bearer " + token }
-        });
-        
-        if (!res.ok) throw new Error("Failed to fetch officers");
-        officersList = await res.json();
-    } catch (err) {
-        console.error('Error loading officers:', err);
     }
 }
 
@@ -414,7 +419,6 @@ function renderGrievances(grievances) {
     const row = document.createElement("tr");
     row.className = "border-b";
 
-    // Check if already assigned
     const assignedOfficer = g.assignedTo?.name || 'Not Assigned';
 
     row.innerHTML = `
@@ -480,6 +484,7 @@ async function assignOfficer(grievanceId) {
     }
 }
 
+// Update grievance status
 async function updateStatus(grievanceId) {
   const token = localStorage.getItem("token");
   const newStatus = document.getElementById(`status-${grievanceId}`).value;
@@ -506,170 +511,29 @@ async function updateStatus(grievanceId) {
   }
 }
 
-function exportToCSV() {
-    const table = document.querySelector('table');
-    if (!table) return;
-
-    let csv = [];
-    const rows = table.querySelectorAll('tr');
-
-    rows.forEach(row => {
-        const cols = row.querySelectorAll('td, th');
-        const rowData = [];
-        cols.forEach(col => rowData.push('"' + col.textContent.trim() + '"'));
-        csv.push(rowData.join(','));
-    });
-
-    const csvFile = new Blob([csv.join('\n')], {type: "text/csv"});
-    const downloadLink = document.createElement("a");
-    downloadLink.download = "grievances_export.csv";
-    downloadLink.href = window.URL.createObjectURL(csvFile);
-    downloadLink.style.display = "none";
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-}
-
-// Load pending reviews for admin review
+// ============ Pending Reviews ============
 async function loadPendingReviews() {
     const token = localStorage.getItem('token');
     if (!token) return;
 
     try {
         const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-        const res = await fetch(`${apiBaseUrl}/admin/grievances/pending-review`, {
+        
+        // Try both endpoints
+        let res = await fetch(`${apiBaseUrl}/admin/grievances/pending-review`, {
             headers: { "Authorization": "Bearer " + token }
         });
+        
+        if (!res.ok) {
+            res = await fetch(`${apiBaseUrl}/admin/pending-reviews`, {
+                headers: { "Authorization": "Bearer " + token }
+            });
+        }
 
         if (!res.ok) throw new Error("Failed to fetch pending reviews");
         const grievances = await res.json();
         renderPendingReviews(grievances);
 
-    } catch (err) {
-        console.error('Error loading pending reviews:', err);
-    }
-}
-
-// Render pending reviews in the sidebar
-function renderPendingReviews(grievances) {
-    const container = document.getElementById('recent-activity-container');
-    if (!container) return;
-
-    if (grievances.length === 0) {
-        container.innerHTML = '<p class="text-sm text-text-secondary">No grievances pending review</p>';
-        return;
-    }
-
-    container.innerHTML = '';
-
-    grievances.slice(0, 5).forEach(g => {
-        const html = `
-            <div class="flex items-start space-x-3 p-2 border rounded hover:bg-gray-50 cursor-pointer" onclick="openReviewModal('${g._id}')">
-                <div class="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
-                <div class="flex-1">
-                    <p class="text-sm text-text-primary font-medium">${g.reference_id}</p>
-                    <p class="text-xs text-text-secondary">${g.subject}</p>
-                    <p class="text-xs text-orange-600">Pending Review</p>
-                </div>
-            </div>`;
-        container.innerHTML += html;
-    });
-}
-
-// Open review modal for admin
-function openReviewModal(grievanceId) {
-    // Fetch grievance details
-    const token = localStorage.getItem('token');
-    const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-
-    fetch(`${apiBaseUrl}/admin/grievances/${grievanceId}`, {
-        headers: { "Authorization": "Bearer " + token }
-    })
-    .then(res => res.json())
-    .then(grievance => {
-        // Populate modal
-        document.getElementById('review-grievance-id').value = grievance._id;
-        document.getElementById('review-reference').textContent = grievance.reference_id;
-        document.getElementById('review-subject').textContent = grievance.subject;
-        document.getElementById('review-description').textContent = grievance.description;
-        document.getElementById('review-category').textContent = grievance.category;
-        document.getElementById('review-priority').textContent = grievance.priority;
-        document.getElementById('review-assigned-to').textContent = grievance.assignedTo?.name || 'Unknown';
-        document.getElementById('review-submitted-at').textContent = new Date(grievance.workSubmittedAt).toLocaleString();
-
-        // Show photos
-        const photoContainer = document.getElementById('review-photos');
-        const allPhotos = [...(grievance.workPhotos || []), ...(grievance.completionPhotos || [])];
-        if (allPhotos.length > 0) {
-            photoContainer.innerHTML = allPhotos.map(photo =>
-                `<div class="inline-block m-2"><img src="${photo}" class="w-24 h-24 object-cover rounded border" /></div>`
-            ).join('');
-        } else {
-            photoContainer.innerHTML = '<p class="text-gray-400 text-sm">No photos uploaded</p>';
-        }
-
-        // Show notes
-        document.getElementById('review-notes').textContent = grievance.notes || 'No notes provided';
-
-        document.getElementById('review-modal').classList.remove('hidden');
-    })
-    .catch(err => {
-        console.error('Error loading grievance details:', err);
-        alert('Error loading grievance details');
-    });
-}
-
-// Close review modal
-function closeReviewModal() {
-    document.getElementById('review-modal').classList.add('hidden');
-}
-
-// Submit admin review
-function submitReview(action) {
-    const grievanceId = document.getElementById('review-grievance-id').value;
-    const comment = document.getElementById('admin-comment').value;
-
-    const token = localStorage.getItem('token');
-    const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-
-    fetch(`${apiBaseUrl}/admin/grievances/${grievanceId}/review`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify({ action, comment })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.message) {
-            alert(data.message);
-            closeReviewModal();
-            loadPendingReviews();
-            loadDashboardStats();
-        } else {
-            alert('Error: ' + (data.error || 'Unknown error'));
-        }
-    })
-    .catch(err => {
-        console.error('Error submitting review:', err);
-        alert('Error submitting review');
-    });
-}
-
-// Load pending reviews for admin approval
-async function loadPendingReviews() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-        const res = await fetch(`${apiBaseUrl}/admin/pending-reviews`, {
-            headers: { "Authorization": "Bearer " + token }
-        });
-
-        if (!res.ok) throw new Error("Failed to fetch pending reviews");
-        const grievances = await res.json();
-        renderPendingReviews(grievances);
     } catch (err) {
         console.error('Error loading pending reviews:', err);
     }
@@ -679,7 +543,7 @@ function renderPendingReviews(grievances) {
     const container = document.getElementById('pending-reviews-container');
     if (!container) return;
 
-    // Also update the badge count
+    // Also update badge count if exists
     const badge = document.getElementById('pending-reviews-badge');
     if (badge) {
         badge.textContent = grievances.length;
@@ -737,7 +601,6 @@ function openReviewModal(grievanceId) {
     const modal = document.getElementById('review-modal');
     if (!modal) return;
 
-    // Load grievance details for review
     loadGrievanceForReview(grievanceId);
     modal.classList.remove('hidden');
     document.body.classList.add('modal-open');
@@ -767,7 +630,6 @@ async function loadGrievanceForReview(grievanceId) {
 }
 
 function displayGrievanceForReview(g) {
-    // Update modal content
     document.getElementById('review-grievance-id').textContent = g.reference_id || g._id;
     document.getElementById('review-grievance-subject').textContent = g.subject;
     document.getElementById('review-grievance-description').textContent = g.description;
@@ -777,7 +639,7 @@ function displayGrievanceForReview(g) {
     document.getElementById('review-grievance-officer').textContent = g.assignedTo?.name || 'Not Assigned';
     document.getElementById('review-grievance-citizen').textContent = g.user?.name || 'Unknown';
 
-    // Show work photos if available
+    // Work photos
     const photosContainer = document.getElementById('review-work-photos');
     if (photosContainer && g.workPhotos && g.workPhotos.length > 0) {
         photosContainer.innerHTML = g.workPhotos.map(photo =>
@@ -787,7 +649,7 @@ function displayGrievanceForReview(g) {
         photosContainer.innerHTML = '<p class="text-text-secondary text-sm">No work photos submitted</p>';
     }
 
-    // Show notes if available
+    // Notes
     const notesElement = document.getElementById('review-grievance-notes');
     if (notesElement) {
         notesElement.textContent = g.notes || 'No notes from officer';
@@ -801,8 +663,6 @@ function closeReviewModal() {
     }
     document.body.classList.remove('modal-open');
     currentReviewGrievance = null;
-
-    // Clear form
     document.getElementById('review-comment').value = '';
 }
 
@@ -840,10 +700,184 @@ async function submitReview(status) {
     }
 }
 
+// ============ Utility Functions ============
+function getTimeAgo(date) {
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    return 'Just now';
+}
+
+function viewGrievance(id) {
+    window.location.href = `admin_grievances.html?id=${id}`;
+}
+
+// Export to CSV
+function exportToCSV() {
+    const table = document.querySelector('table');
+    if (!table) return;
+
+    let csv = [];
+    const rows = table.querySelectorAll('tr');
+
+    rows.forEach(row => {
+        const cols = row.querySelectorAll('td, th');
+        const rowData = [];
+        cols.forEach(col => rowData.push('"' + col.textContent.trim() + '"'));
+        csv.push(rowData.join(','));
+    });
+
+    const csvFile = new Blob([csv.join('\n')], {type: "text/csv"});
+    const downloadLink = document.createElement("a");
+    downloadLink.download = "grievances_export.csv";
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+}
+
+// Mobile menu toggle
+function toggleMobileMenu() {
+    const menu = document.getElementById('mobile-menu');
+    menu.classList.toggle('hidden');
+}
 </script>
 </head>
 <body class="bg-surface">
-    <!--#include file="components/navigation.html" -->
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo - Left side -->
+                <div class="flex items-center">
+                    <a href="homepage.html" class="flex items-center">
+                        <div class="h-10 w-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                            <span class="text-white font-bold text-xl">G</span>
+                        </div>
+                        <span class="ml-2 text-xl font-bold text-primary whitespace-nowrap">GrievMitra</span>
+                    </a>
+                    <!-- Desktop Navigation Links -->
+                    <div class="hidden md:flex ml-10 space-x-8">
+                        <a href="homepage.html" class="text-text-secondary hover:text-primary">Home</a>
+                        <a href="submit_grievance.html" class="text-text-secondary hover:text-primary">Submit Grievance</a>
+                        <a href="track_grievance.html" class="text-text-secondary hover:text-primary">Track</a>
+                        <a href="transparency_dashboard.html" class="text-text-secondary hover:text-primary">Transparency</a>
+                    </div>
+                </div>
+
+                <!-- Right Side - Auth Buttons & Hamburger -->
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <!-- Auth Buttons Group - Desktop & Mobile -->
+                    <div class="flex items-center space-x-2 sm:space-x-3">
+                        <div id="register-link" class="hidden">
+                            <a href="user_registration.html" class="px-3 py-2 text-primary hover:text-primary-700 font-medium whitespace-nowrap text-sm">Register</a>
+                        </div>
+                        <div id="login-link" class="hidden">
+                            <a href="login_screen.html" class="px-3 py-2 text-primary hover:text-primary-700 font-medium whitespace-nowrap text-sm">Login</a>
+                        </div>
+                        <!-- User Menu (when logged in) -->
+                        <div id="user-menu" class="hidden relative">
+                            <button id="profile-dropdown-btn" class="flex items-center space-x-1 sm:space-x-2">
+                                <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span id="profile-initials" class="text-white text-sm font-semibold">A</span>
+                                </div>
+                                <img id="profile-photo" class="w-8 h-8 rounded-full hidden flex-shrink-0" src="" alt="Profile">
+                                <span id="profile-name" class="text-text-primary font-medium hidden sm:inline">Admin</span>
+                                <svg class="w-4 h-4 text-text-secondary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                                <div class="px-4 py-2 border-b">
+                                    <p id="dropdown-profile-name" class="font-semibold text-text-primary">Admin</p>
+                                    <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mt-2">
+                                        <span id="dropdown-profile-initials" class="text-primary font-bold">A</span>
+                                    </div>
+                                    <img id="dropdown-profile-photo" class="w-12 h-12 rounded-full mt-2 hidden" src="" alt="Profile">
+                                </div>
+                                <a href="admin_dashboard.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50">Dashboard</a>
+                                <a href="admin_grievances.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50">All Grievances</a>
+                                <a href="user_profile.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50">Profile</a>
+                                <button id="logout-link" class="w-full text-left px-4 py-2 text-error hover:bg-gray-50">Logout</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hamburger Menu - Mobile -->
+                    <button class="md:hidden p-2 text-text-secondary hover:text-primary" onclick="toggleMobileMenu()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-4 py-3 space-y-2">
+                <a href="homepage.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50 rounded">Home</a>
+                <a href="submit_grievance.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50 rounded">Submit Grievance</a>
+                <a href="track_grievance.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50 rounded">Track</a>
+                <a href="transparency_dashboard.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50 rounded">Transparency</a>
+                <a href="admin_dashboard.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50 rounded">Dashboard</a>
+                <hr class="my-2">
+                <button id="logout-link-mobile" class="w-full text-left px-4 py-2 text-error hover:bg-gray-50 rounded">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <style>
+        /* Mobile Navigation Fixes */
+        @media (max-width: 767px) {
+            nav .max-w-7xl {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+            
+            /* Ensure logo stays on left */
+            nav .flex.items-center > a {
+                flex-shrink: 0;
+            }
+            
+            /* Right section stays on right */
+            nav .flex.items-center:last-child {
+                flex-shrink: 0;
+            }
+            
+            /* Prevent button text wrapping */
+            nav a, nav button, nav span {
+                white-space: nowrap;
+            }
+            
+            /* Adjust spacing for small screens */
+            nav .space-x-2 {
+                margin-right: 4px;
+            }
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 380px) {
+            nav .ml-2 {
+                margin-left: 8px;
+            }
+            
+            nav .text-xl {
+                font-size: 1.1rem;
+            }
+            
+            nav .h-10, nav .w-10 {
+                height: 36px;
+                width: 36px;
+            }
+        }
+    </style>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Welcome Section -->
@@ -853,7 +887,7 @@ async function submitReview(status) {
                     <h1 id="welcome-message" class="text-3xl font-bold text-text-primary mb-2">Welcome back</h1>
                     <p class="text-text-secondary">District Collector • <span id="last-login">Loading...</span></p>
                 </div>
-<div class="mt-4 md:mt-0 flex space-x-3">
+                <div class="mt-4 md:mt-0 flex space-x-3">
                     <button class="btn-primary inline-flex items-center" onclick="openNewAssignmentModal()">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         New Assignment
@@ -932,11 +966,7 @@ async function submitReview(status) {
                 <div class="card">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-xl font-semibold text-text-primary">Priority Cases</h2>
-                        <div class="flex space-x-2">
-                            <button class="text-text-secondary hover:text-primary transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z"/></svg>
-                            </button>
-                        </div>
+                        <span id="pending-reviews-badge" class="hidden bg-error text-white text-xs px-2 py-1 rounded-full">0</span>
                     </div>
                     <div class="space-y-4" id="priority-cases-container">
                         <div class="text-center py-8">
@@ -945,7 +975,7 @@ async function submitReview(status) {
                         </div>
                     </div>
                     <div class="mt-6 text-center">
-<button class="text-primary font-semibold hover:text-primary-700 transition-colors inline-flex items-center" onclick="window.location.href='admin_grievances.html'">
+                        <button class="text-primary font-semibold hover:text-primary-700 transition-colors inline-flex items-center" onclick="window.location.href='admin_grievances.html'">
                             View All Cases
                             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                         </button>
@@ -988,6 +1018,19 @@ async function submitReview(status) {
                     <div class="space-y-3" id="recent-activity-container">
                         <div class="text-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div></div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Reviews Section -->
+        <div class="mt-8" id="pending-reviews-section">
+            <div class="card">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-text-primary">Pending Work Reviews</h2>
+                    <span id="pending-reviews-badge" class="bg-warning text-white text-xs px-2 py-1 rounded-full">0</span>
+                </div>
+                <div class="space-y-4" id="pending-reviews-container">
+                    <div class="text-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div></div>
                 </div>
             </div>
         </div>
@@ -1039,41 +1082,41 @@ async function submitReview(status) {
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                         <div>
                             <span class="text-text-secondary">Reference ID:</span>
-                            <span id="review-reference" class="font-semibold ml-2"></span>
+                            <span id="review-grievance-id" class="font-semibold ml-2"></span>
                         </div>
                         <div>
                             <span class="text-text-secondary">Category:</span>
-                            <span id="review-category" class="font-semibold ml-2"></span>
+                            <span id="review-grievance-category" class="font-semibold ml-2"></span>
                         </div>
                         <div>
                             <span class="text-text-secondary">Priority:</span>
-                            <span id="review-priority" class="font-semibold ml-2"></span>
+                            <span id="review-grievance-priority" class="font-semibold ml-2"></span>
                         </div>
                         <div>
                             <span class="text-text-secondary">Citizen:</span>
-                            <span id="review-assigned-to" class="font-semibold ml-2"></span>
+                            <span id="review-grievance-citizen" class="font-semibold ml-2"></span>
                         </div>
                         <div>
-                            <span class="text-text-secondary">Submitted:</span>
-                            <span id="review-submitted-at" class="font-semibold ml-2"></span>
+                            <span class="text-text-secondary">Officer:</span>
+                            <span id="review-grievance-officer" class="font-semibold ml-2"></span>
                         </div>
                         <div>
                             <span class="text-text-secondary">Status:</span>
-                            <span class="font-semibold ml-2 px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">Pending Review</span>
+                            <span id="review-grievance-status" class="font-semibold ml-2"></span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Subject and Description -->
                 <div class="mb-6">
-                    <h3 id="review-subject" class="font-semibold text-lg text-text-primary mb-2"></h3>
-                    <p id="review-description" class="text-text-secondary text-sm"></p>
+                    <h3 id="review-grievance-subject" class="font-semibold text-lg text-text-primary mb-2"></h3>
+                    <p id="review-grievance-description" class="text-text-secondary text-sm"></p>
                 </div>
 
                 <!-- Work Photos -->
                 <div class="mb-6">
                     <h4 class="font-semibold text-text-primary mb-3">Work Photos Submitted</h4>
-                    <div id="review-photos" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div id="review-work-photos" class="flex flex-wrap gap-4">
                         <!-- Photos will be populated here -->
                     </div>
                 </div>
@@ -1081,13 +1124,13 @@ async function submitReview(status) {
                 <!-- Officer Notes -->
                 <div class="mb-6">
                     <h4 class="font-semibold text-text-primary mb-2">Officer Notes</h4>
-                    <p id="review-notes" class="text-text-secondary text-sm bg-surface p-4 rounded-lg border-l-4 border-primary"></p>
+                    <p id="review-grievance-notes" class="text-text-secondary text-sm bg-surface p-4 rounded-lg border-l-4 border-primary"></p>
                 </div>
 
                 <!-- Admin Comment -->
                 <div class="mb-6">
                     <label class="block text-text-primary font-medium mb-2">Admin Comments (Optional)</label>
-                    <textarea id="admin-comment" rows="4" class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Add your review comments or feedback for the officer..."></textarea>
+                    <textarea id="review-comment" rows="4" class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Add your review comments or feedback for the officer..."></textarea>
                 </div>
 
                 <!-- Action Buttons -->
@@ -1106,39 +1149,21 @@ async function submitReview(status) {
         </div>
     </div>
 
-    <include src="components/footer.html">
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <p class="text-text-secondary text-sm">© 2024 GrievMitra. All rights reserved.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="about_griev_mitra.html" class="text-text-secondary hover:text-primary text-sm">About</a>
+                    <a href="#" class="text-text-secondary hover:text-primary text-sm">Privacy</a>
+                    <a href="#" class="text-text-secondary hover:text-primary text-sm">Terms</a>
+                    <a href="#" class="text-text-secondary hover:text-primary text-sm">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
-    <script>
-  function toggleMobileMenu() {
-    const menu = document.getElementById('mobile-menu');
-    menu.classList.toggle('hidden');
-  }
-
-  function toggleNotifications() {
-    alert('Notifications panel would open here');
-  }
-
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-      e.preventDefault();
-      const target = document.querySelector(this.getAttribute('href'));
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  });
-
-  const now = new Date();
-  const loginTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-  const lastLoginEl = document.getElementById('last-login');
-  if (lastLoginEl) lastLoginEl.textContent = `Today at ${loginTime}`;
-
-  // Auto-refresh dashboard every 60 seconds
-  setInterval(() => {
-      loadDashboardStats();
-      loadPriorityGrievances();
-  }, 60000);
-
-</script>
-
-<script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+    <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
 </body>
 </html>

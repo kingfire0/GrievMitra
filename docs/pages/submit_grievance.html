@@ -1590,8 +1590,17 @@ function validateAfterAutoFill() {
                     location: location
                 };
 
+                // Dynamic API base URL
+                const getApiBaseUrl = () => {
+                  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    return 'http://localhost:5000';
+                  }
+                  return window.location.origin;
+                };
+                const apiBaseUrl = getApiBaseUrl();
+                console.log('Submitting to:', apiBaseUrl + '/grievances/create');
                 // Send to backend API
-                const response = await fetch('http://localhost:5000/grievances/create', {
+                const response = await fetch(`${apiBaseUrl}/grievances/create`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1603,10 +1612,16 @@ function validateAfterAutoFill() {
                 const result = await response.json();
 
                 if (response.ok) {
+                    console.log('Submit success:', result);
                     // Show success with the reference ID from backend
                     document.getElementById('tracking-id').textContent = result.reference_id;
                     document.getElementById('success-modal').classList.remove('hidden');
+                    // Redirect to profile to see updated count
+                    setTimeout(() => {
+                      window.location.href = 'user_profile.html';
+                    }, 3000);
                 } else {
+                    console.error('Submit error:', result);
                     // Handle error
                     alert('Error submitting grievance: ' + (result.error || 'Unknown error'));
                 }

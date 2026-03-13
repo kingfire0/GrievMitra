@@ -425,8 +425,15 @@
                         phone: formData.get('phone').trim()
                     };
 
-                    const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-                    const response = await fetch(`${apiBaseUrl}/auth/profile`, {
+                const getApiBaseUrl = () => {
+                  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    return 'http://localhost:5000';
+                  }
+                  return window.location.origin;
+                };
+                const apiBaseUrl = getApiBaseUrl();
+                console.log('Profile: Loading from', apiBaseUrl);
+                const response = await fetch(`${apiBaseUrl}/auth/profile`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -467,7 +474,7 @@
 
             try {
                 // Get user profile data from backend
-                const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+                const apiBaseUrl = getApiBaseUrl();
                 const profileResponse = await fetch(`${apiBaseUrl}/auth/profile`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -494,6 +501,7 @@
 
                 // Get user grievances for statistics
                 const grievancesResponse = await fetch(`${apiBaseUrl}/grievances/user`, {
+                    console.log('Profile: Fetching grievances from:', apiBaseUrl + '/grievances/user');
                     headers: {
                         'Authorization': `Bearer ${token}`
                     },
@@ -502,6 +510,7 @@
 
                 if (grievancesResponse.ok) {
                     const grievances = await grievancesResponse.json();
+                    console.log('Profile grievances response:', grievances);
 
                     // Calculate statistics
                     const total = grievances.length;

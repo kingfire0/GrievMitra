@@ -516,7 +516,14 @@
             const token = localStorage.getItem('token');
 
             try {
-                const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
+                const getApiBaseUrl = () => {
+                  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    return 'http://localhost:5000';
+                  }
+                  return window.location.origin;
+                };
+                const apiBaseUrl = getApiBaseUrl();
+                console.log('Loading grievances from:', apiBaseUrl + '/grievances/user');
                 const response = await fetch(`${apiBaseUrl}/grievances/user`, {
                     headers: {
                         'Authorization': `Bearer ${token}`

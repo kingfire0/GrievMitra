@@ -4,938 +4,47 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard - GrievMitra Portal</title>
-    <meta name="description" content="Comprehensive command center for government officials to efficiently manage grievances with full accountability and transparency." />
     <link rel="stylesheet" href="../css/main.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Chart.js for interactive charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fgrievmitra7175back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
-<script>
-window.addEventListener('DOMContentLoaded', function() {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
-    if (!token || role !== 'admin') {
-        alert('Access denied. Admin login required.');
-        window.location.href = 'login_screen.html';
-        return;
-    }
-
-    // Set user info from localStorage
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user) {
-        document.getElementById('welcome-message').textContent = `Welcome, ${user.name}`;
-        document.getElementById('profile-name').textContent = user.name;
-        document.getElementById('dropdown-profile-name').textContent = user.name;
-        const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
-        document.getElementById('profile-initials').textContent = initials;
-        document.getElementById('dropdown-profile-initials').textContent = initials;
-        if (user.profilePhoto) {
-            document.getElementById('profile-photo').src = user.profilePhoto;
-            document.getElementById('profile-photo').classList.remove('hidden');
-            document.getElementById('dropdown-profile-photo').src = user.profilePhoto;
-            document.getElementById('dropdown-profile-photo').classList.remove('hidden');
-        }
-    }
-    
-    // Show/hide nav items based on auth
-    document.getElementById('user-menu').classList.remove('hidden');
-    document.getElementById('register-link').classList.add('hidden');
-    document.getElementById('login-link').classList.add('hidden');
-    document.getElementById('logout-link').classList.remove('hidden');
-    document.getElementById('logout-link-mobile').classList.remove('hidden');
-    document.getElementById('logout-link-mobile-menu').classList.remove('hidden');
-
-    // Set last login time
-    const now = new Date();
-    const loginTime = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-    const lastLoginEl = document.getElementById('last-login');
-    if (lastLoginEl) lastLoginEl.textContent = `Today at ${loginTime}`;
-    
-    // Load all dashboard data
-    loadDashboardStats();
-    loadPriorityGrievances();
-    loadTeamPerformance();
-    loadRecentActivity();
-    loadDepartmentPerformance();
-    loadOfficers();
-    loadGrievances();
-    loadPendingReviews();
-    
-    // Auto-refresh every 60 seconds
-    setInterval(function() {
-        loadDashboardStats();
-        loadPriorityGrievances();
-        loadRecentActivity();
-    }, 60000);
-});
-
-function logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('user');
-    window.location.href = 'login_screen.html';
-}
-
-// Profile dropdown toggle
-document.getElementById('profile-dropdown-btn').addEventListener('click', function() {
-    document.getElementById('profile-dropdown').classList.toggle('hidden');
-});
-
-document.addEventListener('click', function(e) {
-    if (!document.getElementById('profile-dropdown-btn').contains(e.target)) {
-        document.getElementById('profile-dropdown').classList.add('hidden');
-    }
-});
-
-document.getElementById('logout-link').addEventListener('click', logout);
-document.getElementById('logout-link-mobile').addEventListener('click', logout);
-document.getElementById('logout-link-mobile-menu').addEventListener('click', logout);
-
-// ============ Dashboard Stats ============
-async function loadDashboardStats() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-        const res = await fetch(`${apiBaseUrl}/admin/dashboard-stats`, {
-            headers: { "Authorization": "Bearer " + token }
-        });
-        
-        if (!res.ok) throw new Error("Failed to fetch stats");
-        const stats = await res.json();
-        
-        // Update dashboard with real data
-        const statCards = document.querySelectorAll('.grid > .card');
-        if (statCards[0]) {
-            statCards[0].querySelector('.text-3xl').textContent = stats.pending || 0;
-            statCards[0].querySelector('.text-text-secondary:last-child').textContent = `${stats.urgent || 0} urgent`;
-        }
-        if (statCards[1]) {
-            statCards[1].querySelector('.text-3xl').textContent = stats.resolvedToday || 0;
-            statCards[1].querySelector('.text-text-secondary:last-child').textContent = 
-                `${stats.trend > 0 ? '+' : ''}${stats.trend || 0}% from yesterday`;
-        }
-        if (statCards[2]) {
-            statCards[2].querySelector('.text-3xl').textContent = stats.avgResolutionDays || 0;
-        }
-        if (statCards[3]) {
-            statCards[3].querySelector('.text-3xl').textContent = stats.satisfaction || '0.0';
-        }
-        
-    } catch (err) {
-        console.error('Error loading dashboard stats:', err);
-        showFallbackStats();
-    }
-}
-
-function showFallbackStats() {
-    const statCards = document.querySelectorAll('.grid > .card');
-    if (statCards[0]) {
-        statCards[0].querySelector('.text-3xl').textContent = '0';
-        statCards[0].querySelector('.text-text-secondary:last-child').textContent = 'No data';
-    }
-    if (statCards[1]) {
-        statCards[1].querySelector('.text-3xl').textContent = '0';
-        statCards[1].querySelector('.text-text-secondary:last-child').textContent = 'No data';
-    }
-    if (statCards[2]) {
-        statCards[2].querySelector('.text-3xl').textContent = '0';
-    }
-    if (statCards[3]) {
-        statCards[3].querySelector('.text-3xl').textContent = '0.0';
-    }
-}
-
-// ============ Priority Grievances ============
-async function loadPriorityGrievances() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-        const res = await fetch(`${apiBaseUrl}/admin/priority-grievances`, {
-            headers: { "Authorization": "Bearer " + token }
-        });
-        
-        if (!res.ok) throw new Error("Failed to fetch priority grievances");
-        const grievances = await res.json();
-        renderPriorityGrievances(grievances);
-        
-    } catch (err) {
-        console.error('Error loading priority grievances:', err);
-    }
-}
-
-function renderPriorityGrievances(grievances) {
-    const container = document.getElementById('priority-cases-container');
-    if (!container) return;
-
-    container.innerHTML = '';
-
-    if (grievances.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-8 text-text-secondary">
-                <svg class="w-16 h-16 mx-auto mb-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <p class="text-lg font-semibold">No urgent cases!</p>
-                <p>All priority grievances have been resolved.</p>
-            </div>`;
-        return;
-    }
-
-    grievances.forEach(g => {
-        const priorityClass = g.priority === 'urgent' || g.priority === 'high' ? 'border-error-200 bg-error-50' : 'border-warning-200 bg-warning-50';
-        const badgeClass = g.priority === 'urgent' || g.priority === 'high' ? 'status-error' : 'status-warning';
-        const statusText = g.priority === 'urgent' || g.priority === 'high' ? 'URGENT' : 'HIGH';
-        
-        const userName = g.user?.name || 'Unknown';
-        const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
-
-        const html = `
-            <div class="border rounded-lg p-4 ${priorityClass}">
-                <div class="flex items-start justify-between mb-3">
-                    <div class="flex items-center space-x-3">
-                        <div class="status-badge ${badgeClass}">${statusText}</div>
-                        <span class="text-sm text-text-secondary">${g.reference_id}</span>
-                    </div>
-                </div>
-                <h3 class="font-semibold text-text-primary mb-2">${g.subject}</h3>
-                <p class="text-text-secondary text-sm mb-3">${g.description || 'No description'}</p>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center">
-                            <span class="text-primary text-xs font-semibold">${userInitials}</span>
-                        </div>
-                        <span class="text-sm text-text-secondary">${userName}</span>
-                    </div>
-                    <button class="bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary-700" onclick="viewGrievance('${g._id}')">Take Action</button>
-                </div>
-            </div>`;
-        container.innerHTML += html;
-    });
-}
-
-// ============ Team Performance ============
-async function loadTeamPerformance() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-        const res = await fetch(`${apiBaseUrl}/admin/team-performance`, {
-            headers: { "Authorization": "Bearer " + token }
-        });
-        
-        if (!res.ok) throw new Error("Failed to fetch team performance");
-        const team = await res.json();
-        renderTeamPerformance(team);
-        
-    } catch (err) {
-        console.error('Error loading team performance:', err);
-    }
-}
-
-function renderTeamPerformance(team) {
-    const container = document.getElementById('team-performance-container');
-    if (!container) return;
-
-    container.innerHTML = '';
-
-    team.forEach(member => {
-        const initials = member.name.split(' ').map(n => n[0]).join('').toUpperCase();
-        const performanceColor = member.performance >= 90 ? 'text-success' : member.performance >= 70 ? 'text-primary' : 'text-warning';
-        
-        const html = `
-           flex items-center justify-between">
-                 <div class="<div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                        <span class="text-primary font-semibold text-sm">${initials}</span>
-                    </div>
-                    <div>
-                        <div class="font-medium text-text-primary text-sm">${member.name}</div>
-                        <div class="text-text-secondary text-xs">${member.department}</div>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <div class="${performanceColor} font-semibold text-sm">${member.performance}%</div>
-                    <div class="text-text-secondary text-xs">${member.resolved} resolved</div>
-                </div>
-            </div>`;
-        container.innerHTML += html;
-    });
-}
-
-// ============ Recent Activity ============
-async function loadRecentActivity() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-        const res = await fetch(`${apiBaseUrl}/admin/recent-activity`, {
-            headers: { "Authorization": "Bearer " + token }
-        });
-        
-        if (!res.ok) throw new Error("Failed to fetch recent activity");
-        const activities = await res.json();
-        renderRecentActivity(activities);
-        
-    } catch (err) {
-        console.error('Error loading recent activity:', err);
-    }
-}
-
-function renderRecentActivity(activities) {
-    const container = document.getElementById('recent-activity-container');
-    if (!container) return;
-
-    container.innerHTML = '';
-
-    const iconColors = { 'submitted': 'bg-primary', 'progress': 'bg-warning', 'resolved': 'bg-success', 'rejected': 'bg-error' };
-
-    activities.slice(0, 10).forEach(activity => {
-        const timeAgo = getTimeAgo(new Date(activity.timestamp));
-        const colorClass = iconColors[activity.icon] || 'bg-primary';
-        
-        const html = `
-            <div class="flex items-start space-x-3">
-                <div class="w-2 h-2 ${colorClass} rounded-full mt-2"></div>
-                <div>
-                    <p class="text-sm text-text-primary">${activity.action}</p>
-                    <p class="text-xs text-text-secondary">${timeAgo}</p>
-                </div>
-            </div>`;
-        container.innerHTML += html;
-    });
-}
-
-// ============ Department Performance ============
-async function loadDepartmentPerformance() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-        const res = await fetch(`${apiBaseUrl}/admin/department-performance`, {
-            headers: { "Authorization": "Bearer " + token }
-        });
-        
-        if (!res.ok) throw new Error("Failed to fetch department performance");
-        const departments = await res.json();
-        renderDepartmentPerformance(departments);
-        
-    } catch (err) {
-        console.error('Error loading department performance:', err);
-    }
-}
-
-function renderDepartmentPerformance(departments) {
-    const container = document.getElementById('department-performance-container');
-    if (!container) return;
-
-    container.innerHTML = '';
-
-    departments.slice(0, 5).forEach(dept => {
-        const perfColor = dept.performance >= 90 ? 'text-success' : dept.performance >= 70 ? 'text-primary' : 'text-warning';
-        const barColor = dept.performance >= 90 ? 'bg-success' : dept.performance >= 70 ? 'bg-primary' : 'bg-warning';
-
-        const html = `
-            <div>
-                <div class="flex justify-between mb-2">
-                    <span class="text-sm text-text-secondary">${dept.department}</span>
-                    <span class="text-sm font-semibold ${perfColor}">${dept.performance}%</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill ${barColor}" style="width: ${dept.performance}%"></div>
-                </div>
-            </div>`;
-        container.innerHTML += html;
-    });
-}
-
-// ============ Officers List ============
-let officersList = [];
-
-async function loadOfficers() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
-        const res = await fetch(apiBaseUrl + '/admin/officers', {
-            headers: { "Authorization": "Bearer " + token }
-        });
-        
-        if (!res.ok) throw new Error("Failed to fetch officers");
-        officersList = await res.json();
-    } catch (err) {
-        console.error('Error loading officers:', err);
-    }
-}
-
-// ============ Grievances Management ============
-async function loadGrievances() {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Unauthorized! Please login as admin.");
-      window.location.href = "login_screen.html";
-      return;
-    }
-
-    try {
-      const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-      const res = await fetch(`${apiBaseUrl}/admin/grievances`, {
-        headers: { "Authorization": "Bearer " + token }
-      });
-      if (!res.ok) throw new Error("Failed to fetch grievances");
-
-      const grievances = await res.json();
-      renderGrievances(grievances);
-    } catch (err) {
-      console.error(err);
-    }
-}
-
-function renderGrievances(grievances) {
-  const tableBody = document.getElementById("grievanceTableBody");
-  if (!tableBody) return;
-  
-  tableBody.innerHTML = "";
-
-  if (grievances.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="8" class="text-center p-4">No grievances found</td></tr>`;
-    return;
-  }
-
-  // Build officer options for dropdown
-  const officerOptions = officersList.map(o => 
-    `<option value="${o._id}">${o.name}</option>`
-  ).join('');
-
-  grievances.forEach((g, index) => {
-    const row = document.createElement("tr");
-    row.className = "border-b";
-
-    const assignedOfficer = g.assignedTo?.name || 'Not Assigned';
-
-    row.innerHTML = `
-      <td class="p-2">${index + 1}</td>
-      <td class="p-2">${g.reference_id}</td>
-      <td class="p-2">${g.category}</td>
-      <td class="p-2">${g.subject}</td>
-      <td class="p-2">${g.status}</td>
-      <td class="p-2">${g.user?.name || "Unknown"}</td>
-      <td class="p-2">
-        <select id="officer-${g._id}" class="border p-1 rounded text-sm mb-1 w-full">
-          <option value="">-- Select Officer --</option>
-          ${officerOptions}
-        </select>
-        <button class="bg-green-500 text-white px-2 py-1 rounded text-xs block w-full mb-1" onclick="assignOfficer('${g._id}')">Assign</button>
-        <span class="text-xs text-gray-500">Currently: ${assignedOfficer}</span>
-      </td>
-      <td class="p-2">
-        <select id="status-${g._id}" class="border p-1 rounded">
-          <option value="submitted" ${g.status === "submitted" ? "selected" : ""}>Submitted</option>
-          <option value="in_progress" ${g.status === "in_progress" ? "selected" : ""}>In Progress</option>
-          <option value="resolved" ${g.status === "resolved" ? "selected" : ""}>Resolved</option>
-          <option value="rejected" ${g.status === "rejected" ? "selected" : ""}>Rejected</option>
-        </select>
-        <button class="bg-blue-500 text-white px-2 py-1 rounded ml-2" onclick="updateStatus('${g._id}')">Update</button>
-      </td>`;
-    tableBody.appendChild(row);
-  });
-}
-
-// Assign grievance to an officer
-async function assignOfficer(grievanceId) {
-    const token = localStorage.getItem('token');
-    const officerId = document.getElementById('officer-' + grievanceId)?.value;
-
-    if (!officerId) {
-        alert('Please select an officer first');
-        return;
-    }
-
-    try {
-        const apiBaseUrl = window.location.protocol + '//' + window.location.hostname + ':5000';
-        const res = await fetch(apiBaseUrl + '/admin/grievances/' + grievanceId + '/assign', {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
-            },
-            body: JSON.stringify({ officerId: officerId })
-        });
-        
-        const data = await res.json();
-        
-        if (res.ok) {
-            alert('Successfully assigned to ' + (data.grievance?.assignedTo?.name || 'officer') + '!');
-            loadGrievances();
-        } else {
-            alert('Error: ' + (data.error || 'Failed to assign'));
-        }
-    } catch (err) {
-        console.error('Error assigning officer:', err);
-        alert('Error assigning officer');
-    }
-}
-
-// Update grievance status
-async function updateStatus(grievanceId) {
-  const token = localStorage.getItem("token");
-  const newStatus = document.getElementById(`status-${grievanceId}`).value;
-
-  try {
-    const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-    const res = await fetch(`${apiBaseUrl}/admin/grievances/${grievanceId}/status`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + token
-      },
-      body: JSON.stringify({ status: newStatus })
-    });
-    if (res.ok) {
-      alert("Status updated successfully!");
-      loadGrievances();
-      loadDashboardStats();
-      loadRecentActivity();
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Error updating status");
-  }
-}
-
-// ============ Pending Reviews ============
-async function loadPendingReviews() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-        
-        // Try both endpoints
-        let res = await fetch(`${apiBaseUrl}/admin/grievances/pending-review`, {
-            headers: { "Authorization": "Bearer " + token }
-        });
-        
-        if (!res.ok) {
-            res = await fetch(`${apiBaseUrl}/admin/pending-reviews`, {
-                headers: { "Authorization": "Bearer " + token }
-            });
-        }
-
-        if (!res.ok) throw new Error("Failed to fetch pending reviews");
-        const grievances = await res.json();
-        renderPendingReviews(grievances);
-
-    } catch (err) {
-        console.error('Error loading pending reviews:', err);
-    }
-}
-
-function renderPendingReviews(grievances) {
-    const container = document.getElementById('pending-reviews-container');
-    if (!container) return;
-
-    // Also update badge count if exists
-    const badge = document.getElementById('pending-reviews-badge');
-    if (badge) {
-        badge.textContent = grievances.length;
-        badge.classList.toggle('hidden', grievances.length === 0);
-    }
-
-    if (grievances.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-8 text-text-secondary">
-                <svg class="w-16 h-16 mx-auto mb-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <p class="text-lg font-semibold">No pending reviews!</p>
-                <p>All work submissions have been reviewed.</p>
-            </div>`;
-        return;
-    }
-
-    container.innerHTML = '';
-    grievances.forEach(g => {
-        const userName = g.user?.name || 'Unknown';
-        const officerName = g.assignedTo?.name || 'Unassigned';
-        const submittedDate = g.workSubmittedAt ? new Date(g.workSubmittedAt).toLocaleDateString() : 'N/A';
-
-        const html = `
-            <div class="border rounded-lg p-4 bg-warning-50 border-warning-200">
-                <div class="flex items-start justify-between mb-3">
-                    <div class="flex items-center space-x-3">
-                        <div class="status-badge status-warning">PENDING REVIEW</div>
-                        <span class="text-sm text-text-secondary">${g.reference_id}</span>
-                    </div>
-                    <span class="text-xs text-text-secondary">Submitted: ${submittedDate}</span>
-                </div>
-                <h3 class="font-semibold text-text-primary mb-2">${g.subject}</h3>
-                <p class="text-text-secondary text-sm mb-3">${g.description || 'No description'}</p>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <div class="text-xs text-text-secondary">
-                            <span class="font-medium">Citizen:</span> ${userName}
-                        </div>
-                        <div class="text-xs text-text-secondary">
-                            <span class="font-medium">Officer:</span> ${officerName}
-                        </div>
-                    </div>
-                    <button class="bg-warning text-white px-3 py-1 rounded text-sm hover:bg-warning-600" onclick="openReviewModal('${g._id}')">Review Work</button>
-                </div>
-            </div>`;
-        container.innerHTML += html;
-    });
-}
-
-let currentReviewGrievance = null;
-
-function openReviewModal(grievanceId) {
-    const modal = document.getElementById('review-modal');
-    if (!modal) return;
-
-    loadGrievanceForReview(grievanceId);
-    modal.classList.remove('hidden');
-    document.body.classList.add('modal-open');
-}
-
-async function loadGrievanceForReview(grievanceId) {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-        const res = await fetch(`${apiBaseUrl}/admin/grievances`, {
-            headers: { "Authorization": "Bearer " + token }
-        });
-
-        if (!res.ok) throw new Error("Failed to fetch grievance");
-        const grievances = await res.json();
-        const grievance = grievances.find(g => g._id === grievanceId);
-
-        if (grievance) {
-            currentReviewGrievance = grievance;
-            displayGrievanceForReview(grievance);
-        }
-    } catch (err) {
-        console.error('Error loading grievance for review:', err);
-    }
-}
-
-function displayGrievanceForReview(g) {
-    document.getElementById('review-grievance-id').textContent = g.reference_id || g._id;
-    document.getElementById('review-grievance-subject').textContent = g.subject;
-    document.getElementById('review-grievance-description').textContent = g.description;
-    document.getElementById('review-grievance-category').textContent = g.category;
-    document.getElementById('review-grievance-priority').textContent = g.priority;
-    document.getElementById('review-grievance-status').textContent = g.status;
-    document.getElementById('review-grievance-officer').textContent = g.assignedTo?.name || 'Not Assigned';
-    document.getElementById('review-grievance-citizen').textContent = g.user?.name || 'Unknown';
-
-    // Work photos
-    const photosContainer = document.getElementById('review-work-photos');
-    if (photosContainer && g.workPhotos && g.workPhotos.length > 0) {
-        photosContainer.innerHTML = g.workPhotos.map(photo =>
-            `<img src="${photo}" alt="Work photo" class="w-32 h-32 object-cover rounded-lg border" />`
-        ).join('');
-    } else if (photosContainer) {
-        photosContainer.innerHTML = '<p class="text-text-secondary text-sm">No work photos submitted</p>';
-    }
-
-    // Notes
-    const notesElement = document.getElementById('review-grievance-notes');
-    if (notesElement) {
-        notesElement.textContent = g.notes || 'No notes from officer';
-    }
-}
-
-function closeReviewModal() {
-    const modal = document.getElementById('review-modal');
-    if (modal) {
-        modal.classList.add('hidden');
-    }
-    document.body.classList.remove('modal-open');
-    currentReviewGrievance = null;
-    document.getElementById('review-comment').value = '';
-}
-
-async function submitReview(status) {
-    const token = localStorage.getItem('token');
-    if (!token || !currentReviewGrievance) return;
-
-    const comment = document.getElementById('review-comment').value;
-
-    try {
-        const apiBaseUrl = `${window.location.protocol}//${window.location.hostname}:5000`;
-        const res = await fetch(`${apiBaseUrl}/admin/grievances/${currentReviewGrievance._id}/review`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
-            },
-            body: JSON.stringify({ status, comment })
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-            alert(`Work ${status} successfully!`);
-            closeReviewModal();
-            loadPendingReviews();
-            loadDashboardStats();
-            loadGrievances();
-        } else {
-            alert('Error: ' + (data.error || 'Failed to submit review'));
-        }
-    } catch (err) {
-        console.error('Error submitting review:', err);
-        alert('Error submitting review');
-    }
-}
-
-// ============ Utility Functions ============
-function getTimeAgo(date) {
-    const now = new Date();
-    const diff = now - date;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
-    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-    return 'Just now';
-}
-
-function viewGrievance(id) {
-    window.location.href = `admin_grievances.html?id=${id}`;
-}
-
-// Export to CSV
-function exportToCSV() {
-    const table = document.querySelector('table');
-    if (!table) return;
-
-    let csv = [];
-    const rows = table.querySelectorAll('tr');
-
-    rows.forEach(row => {
-        const cols = row.querySelectorAll('td, th');
-        const rowData = [];
-        cols.forEach(col => rowData.push('"' + col.textContent.trim() + '"'));
-        csv.push(rowData.join(','));
-    });
-
-    const csvFile = new Blob([csv.join('\n')], {type: "text/csv"});
-    const downloadLink = document.createElement("a");
-    downloadLink.download = "grievances_export.csv";
-    downloadLink.href = window.URL.createObjectURL(csvFile);
-    downloadLink.style.display = "none";
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-}
-
-// Mobile menu toggle
-function toggleMobileMenu() {
-    const menu = document.getElementById('mobile-menu');
-    menu.classList.toggle('hidden');
-}
-</script>
 </head>
 <body class="bg-surface">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo - Left side -->
-                <div class="flex items-center">
-                    <a href="homepage.html" class="flex items-center">
-                        <div class="h-10 w-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                            <span class="text-white font-bold text-xl">G</span>
-                        </div>
-                        <span class="ml-2 text-xl font-bold text-primary whitespace-nowrap">GrievMitra</span>
-                    </a>
-                    <!-- Desktop Navigation Links -->
-                    <div class="hidden md:flex ml-10 space-x-8">
-                        <a href="homepage.html" class="text-text-secondary hover:text-primary">Home</a>
-                        <a href="submit_grievance.html" class="text-text-secondary hover:text-primary">Submit Grievance</a>
-                        <a href="track_grievance.html" class="text-text-secondary hover:text-primary">Track</a>
-                        <a href="transparency_dashboard.html" class="text-text-secondary hover:text-primary">Transparency</a>
-                    </div>
-                </div>
-
-                <!-- Right Side - Auth Buttons & Hamburger -->
-                <div class="flex items-center space-x-2 sm:space-x-4">
-                    <!-- Auth Buttons Group - Desktop & Mobile -->
-                    <div class="flex items-center space-x-2 sm:space-x-3">
-                        <div id="register-link" class="hidden">
-                            <a href="user_registration.html" class="px-3 py-2 text-primary hover:text-primary-700 font-medium whitespace-nowrap text-sm">Register</a>
-                        </div>
-                        <div id="login-link" class="hidden">
-                            <a href="login_screen.html" class="px-3 py-2 text-primary hover:text-primary-700 font-medium whitespace-nowrap text-sm">Login</a>
-                        </div>
-                        <!-- User Menu (when logged in) -->
-                        <div id="user-menu" class="hidden relative">
-                            <button id="profile-dropdown-btn" class="flex items-center space-x-1 sm:space-x-2">
-                                <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                                    <span id="profile-initials" class="text-white text-sm font-semibold">A</span>
-                                </div>
-                                <img id="profile-photo" class="w-8 h-8 rounded-full hidden flex-shrink-0" src="" alt="Profile">
-                                <span id="profile-name" class="text-text-primary font-medium hidden sm:inline">Admin</span>
-                                <svg class="w-4 h-4 text-text-secondary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                </svg>
-                            </button>
-                            <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
-                                <div class="px-4 py-2 border-b">
-                                    <p id="dropdown-profile-name" class="font-semibold text-text-primary">Admin</p>
-                                    <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mt-2">
-                                        <span id="dropdown-profile-initials" class="text-primary font-bold">A</span>
-                                    </div>
-                                    <img id="dropdown-profile-photo" class="w-12 h-12 rounded-full mt-2 hidden" src="" alt="Profile">
-                                </div>
-                                <a href="admin_dashboard.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50">Dashboard</a>
-                                <a href="admin_grievances.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50">All Grievances</a>
-                                <a href="user_profile.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50">Profile</a>
-                                <button id="logout-link" class="w-full text-left px-4 py-2 text-error hover:bg-gray-50">Logout</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Hamburger Menu - Mobile -->
-                    <button class="md:hidden p-2 text-text-secondary hover:text-primary" onclick="toggleMobileMenu()">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
-            <div class="px-4 py-3 space-y-2">
-                <a href="homepage.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50 rounded">Home</a>
-                <a href="submit_grievance.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50 rounded">Submit Grievance</a>
-                <a href="track_grievance.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50 rounded">Track</a>
-                <a href="transparency_dashboard.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50 rounded">Transparency</a>
-                <a href="admin_dashboard.html" class="block px-4 py-2 text-text-primary hover:bg-gray-50 rounded">Dashboard</a>
-                <hr class="my-2">
-                <button id="logout-link-mobile" class="w-full text-left px-4 py-2 text-error hover:bg-gray-50 rounded">Logout</button>
-            </div>
-        </div>
-    </nav>
-
-    <style>
-        /* Mobile Navigation Fixes */
-        @media (max-width: 767px) {
-            nav .max-w-7xl {
-                padding-left: 12px;
-                padding-right: 12px;
-            }
-            
-            /* Ensure logo stays on left */
-            nav .flex.items-center > a {
-                flex-shrink: 0;
-            }
-            
-            /* Right section stays on right */
-            nav .flex.items-center:last-child {
-                flex-shrink: 0;
-            }
-            
-            /* Prevent button text wrapping */
-            nav a, nav button, nav span {
-                white-space: nowrap;
-            }
-            
-            /* Adjust spacing for small screens */
-            nav .space-x-2 {
-                margin-right: 4px;
-            }
-        }
-        
-        /* Extra small screens */
-        @media (max-width: 380px) {
-            nav .ml-2 {
-                margin-left: 8px;
-            }
-            
-            nav .text-xl {
-                font-size: 1.1rem;
-            }
-            
-            nav .h-10, nav .w-10 {
-                height: 36px;
-                width: 36px;
-            }
-        }
-    </style>
-
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Welcome Section -->
         <div class="mb-8">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 id="welcome-message" class="text-3xl font-bold text-text-primary mb-2">Welcome back</h1>
-                    <p class="text-text-secondary">District Collector • <span id="last-login">Loading...</span></p>
-                </div>
-                <div class="mt-4 md:mt-0 flex space-x-3">
-                    <button class="btn-primary inline-flex items-center" onclick="openNewAssignmentModal()">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        New Assignment
-                    </button>
-                    <button class="bg-white text-primary border-2 border-primary px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-all duration-300 inline-flex items-center" onclick="exportToCSV()">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                        Generate Report
-                    </button>
-                </div>
-            </div>
+            <h1 id="welcome-message" class="text-3xl font-bold text-text-primary mb-2">Welcome back</h1>
+            <p class="text-text-secondary">Admin Dashboard</p>
         </div>
 
-        <!-- Key Metrics Overview -->
+        <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Pending Cases -->
-            <div class="card hover:shadow-modal transition-all duration-300">
+            <div class="card">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-text-secondary text-sm font-medium">Pending Cases</p>
-                        <p class="text-3xl font-bold text-warning">...</p>
-                        <p class="text-text-secondary text-sm">loading...</p>
+                        <p id="pending-count" class="text-3xl font-bold text-warning">0</p>
+                        <p id="urgent-count" class="text-text-secondary text-sm">0 urgent</p>
                     </div>
                     <div class="w-12 h-12 bg-warning-100 rounded-full flex items-center justify-center">
                         <svg class="w-6 h-6 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
                 </div>
             </div>
-
-            <!-- Resolved Today -->
-            <div class="card hover:shadow-modal transition-all duration-300">
+            <div class="card">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-text-secondary text-sm font-medium">Resolved Today</p>
-                        <p class="text-3xl font-bold text-success">...</p>
-                        <p class="text-text-secondary text-sm">loading...</p>
+                        <p id="resolved-today" class="text-3xl font-bold text-success">0</p>
+                        <p id="trend-percent" class="text-text-secondary text-sm">+0% from yesterday</p>
                     </div>
                     <div class="w-12 h-12 bg-success-100 rounded-full flex items-center justify-center">
                         <svg class="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
                 </div>
             </div>
-
-            <!-- Average Resolution Time -->
-            <div class="card hover:shadow-modal transition-all duration-300">
+            <div class="card">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-text-secondary text-sm font-medium">Avg Resolution</p>
-                        <p class="text-3xl font-bold text-primary">...</p>
+                        <p id="avg-resolution" class="text-3xl font-bold text-primary">0</p>
                         <p class="text-text-secondary text-sm">days</p>
                     </div>
                     <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
@@ -943,13 +52,11 @@ function toggleMobileMenu() {
                     </div>
                 </div>
             </div>
-
-            <!-- Satisfaction Score -->
-            <div class="card hover:shadow-modal transition-all duration-300">
+            <div class="card">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-text-secondary text-sm font-medium">Satisfaction</p>
-                        <p class="text-3xl font-bold text-accent">...</p>
+                        <p id="satisfaction" class="text-3xl font-bold text-accent">0.0</p>
                         <p class="text-text-secondary text-sm">out of 5.0</p>
                     </div>
                     <div class="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center">
@@ -959,211 +66,250 @@ function toggleMobileMenu() {
             </div>
         </div>
 
-        <!-- Main Dashboard Grid -->
-        <div class="grid lg:grid-cols-3 gap-8">
-            <!-- Priority Cases -->
-            <div class="lg:col-span-2">
-                <div class="card">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-semibold text-text-primary">Priority Cases</h2>
-                        <span id="pending-reviews-badge" class="hidden bg-error text-white text-xs px-2 py-1 rounded-full">0</span>
-                    </div>
-                    <div class="space-y-4" id="priority-cases-container">
-                        <div class="text-center py-8">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                            <p class="text-text-secondary mt-2">Loading priority cases...</p>
-                        </div>
-                    </div>
-                    <div class="mt-6 text-center">
-                        <button class="text-primary font-semibold hover:text-primary-700 transition-colors inline-flex items-center" onclick="window.location.href='admin_grievances.html'">
-                            View All Cases
-                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Sidebar -->
-            <div class="space-y-6">
-                <!-- Quick Actions -->
-                <div class="card">
-                    <h3 class="text-lg font-semibold text-text-primary mb-4">Quick Actions</h3>
-                    <div class="space-y-3">
-                        <button class="w-full bg-primary-50 text-primary p-3 rounded-lg hover:bg-primary-100 transition-colors text-left flex items-center">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                            Bulk Assignment
-                        </button>
-                        <button class="w-full bg-success-50 text-success p-3 rounded-lg hover:bg-success-100 transition-colors text-left flex items-center" onclick="exportToCSV()">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            Export Data
-                        </button>
-                        <button class="w-full bg-warning-50 text-warning p-3 rounded-lg hover:bg-warning-100 transition-colors text-left flex items-center">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM10.07 2.82l3.93 3.93-3.93 3.93-3.93-3.93 3.93-3.93z"/></svg>
-                            Escalate Cases
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Team Performance -->
-                <div class="card">
-                    <h3 class="text-lg font-semibold text-text-primary mb-4">Team Performance</h3>
-                    <div class="space-y-4" id="team-performance-container">
-                        <div class="text-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div></div>
-                    </div>
-                </div>
-
-                <!-- Recent Activity -->
-                <div class="card">
-                    <h3 class="text-lg font-semibold text-text-primary mb-4">Recent Activity</h3>
-                    <div class="space-y-3" id="recent-activity-container">
-                        <div class="text-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pending Reviews Section -->
-        <div class="mt-8" id="pending-reviews-section">
-            <div class="card">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-semibold text-text-primary">Pending Work Reviews</h2>
-                    <span id="pending-reviews-badge" class="bg-warning text-white text-xs px-2 py-1 rounded-full">0</span>
-                </div>
-                <div class="space-y-4" id="pending-reviews-container">
-                    <div class="text-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Performance Analytics -->
+        <!-- Grievance Table -->
         <div class="mt-8">
             <div class="card">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-semibold text-text-primary">Performance Analytics</h2>
-                    <div class="flex space-x-2">
-                        <button class="text-text-secondary hover:text-primary transition-colors px-3 py-1 rounded border border-border">This Week</button>
-                        <button class="bg-primary text-white px-3 py-1 rounded">This Month</button>
-                        <button class="text-text-secondary hover:text-primary transition-colors px-3 py-1 rounded border border-border">This Year</button>
-                    </div>
-                </div>
-                <div class="grid md:grid-cols-2 gap-8">
-                    <div>
-                        <h3 class="font-semibold text-text-primary mb-4">Resolution Trend</h3>
-                        <div class="h-64 bg-gradient-to-br from-primary-50 to-success-50 rounded-lg flex items-center justify-center">
-                            <p class="text-text-secondary">Chart visualization</p>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-text-primary mb-4">Department Performance</h3>
-                        <div class="space-y-4" id="department-performance-container">
-                            <div class="text-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div></div>
-                        </div>
-                    </div>
+                <h2 class="text-xl font-semibold text-text-primary mb-6">Grievance Management</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-surface border-b">
+                            <tr>
+                                <th class="p-3 text-left text-text-secondary font-medium">#</th>
+                                <th class="p-3 text-left text-text-secondary font-medium">Ref ID</th>
+                                <th class="p-3 text-left text-text-secondary font-medium">Category</th>
+                                <th class="p-3 text-left text-text-secondary font-medium">Subject</th>
+                                <th class="p-3 text-left text-text-secondary font-medium">Status</th>
+                                <th class="p-3 text-left text-text-secondary font-medium">Citizen</th>
+                                <th class="p-3 text-left text-text-secondary font-medium">Assign Officer</th>
+                                <th class="p-3 text-left text-text-secondary font-medium">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grievanceTableBody" class="divide-y">
+                            <tr>
+                                <td colspan="8" class="p-8 text-center text-text-secondary">Loading grievances...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Admin Review Modal -->
-    <div id="review-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <!-- Assign Officer Modal -->
+    <div id="assign-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-md w-full">
             <div class="p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-bold text-text-primary">Review Work Completion</h2>
-                    <button onclick="closeReviewModal()" class="text-text-secondary hover:text-text-primary">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Grievance Details -->
-                <div class="mb-6 p-4 bg-surface rounded-lg">
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                        <div>
-                            <span class="text-text-secondary">Reference ID:</span>
-                            <span id="review-grievance-id" class="font-semibold ml-2"></span>
-                        </div>
-                        <div>
-                            <span class="text-text-secondary">Category:</span>
-                            <span id="review-grievance-category" class="font-semibold ml-2"></span>
-                        </div>
-                        <div>
-                            <span class="text-text-secondary">Priority:</span>
-                            <span id="review-grievance-priority" class="font-semibold ml-2"></span>
-                        </div>
-                        <div>
-                            <span class="text-text-secondary">Citizen:</span>
-                            <span id="review-grievance-citizen" class="font-semibold ml-2"></span>
-                        </div>
-                        <div>
-                            <span class="text-text-secondary">Officer:</span>
-                            <span id="review-grievance-officer" class="font-semibold ml-2"></span>
-                        </div>
-                        <div>
-                            <span class="text-text-secondary">Status:</span>
-                            <span id="review-grievance-status" class="font-semibold ml-2"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Subject and Description -->
-                <div class="mb-6">
-                    <h3 id="review-grievance-subject" class="font-semibold text-lg text-text-primary mb-2"></h3>
-                    <p id="review-grievance-description" class="text-text-secondary text-sm"></p>
-                </div>
-
-                <!-- Work Photos -->
-                <div class="mb-6">
-                    <h4 class="font-semibold text-text-primary mb-3">Work Photos Submitted</h4>
-                    <div id="review-work-photos" class="flex flex-wrap gap-4">
-                        <!-- Photos will be populated here -->
-                    </div>
-                </div>
-
-                <!-- Officer Notes -->
-                <div class="mb-6">
-                    <h4 class="font-semibold text-text-primary mb-2">Officer Notes</h4>
-                    <p id="review-grievance-notes" class="text-text-secondary text-sm bg-surface p-4 rounded-lg border-l-4 border-primary"></p>
-                </div>
-
-                <!-- Admin Comment -->
-                <div class="mb-6">
-                    <label class="block text-text-primary font-medium mb-2">Admin Comments (Optional)</label>
-                    <textarea id="review-comment" rows="4" class="w-full border rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Add your review comments or feedback for the officer..."></textarea>
-                </div>
-
-                <!-- Action Buttons -->
+                <h2 class="text-xl font-bold text-text-primary mb-6">Assign Officer</h2>
+                <p class="text-text-secondary text-sm mb-4">Grievance: <span id="assign-grievance-info" class="font-semibold text-text-primary"></span></p>
+                <select id="officer-select" class="w-full border rounded-lg p-3 mb-6">
+                    <option value="">-- Select Officer --</option>
+                </select>
                 <div class="flex justify-end space-x-3">
-                    <button onclick="closeReviewModal()" class="px-6 py-2 border border-gray-300 rounded-lg text-text-secondary hover:bg-gray-50">
-                        Cancel
-                    </button>
-                    <button onclick="submitReview('rejected')" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
-                        Reject & Request Changes
-                    </button>
-                    <button onclick="submitReview('approved')" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
-                        Approve & Complete
-                    </button>
+                    <button onclick="closeAssignModal()" class="px-6 py-2 border border-gray-300 rounded-lg text-text-secondary hover:bg-gray-50">Cancel</button>
+                    <button onclick="confirmAssignOfficer()" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-700">Assign Officer</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <p class="text-text-secondary text-sm">© 2024 GrievMitra. All rights reserved.</p>
-                <div class="flex space-x-6 mt-4 md:mt-0">
-                    <a href="about_griev_mitra.html" class="text-text-secondary hover:text-primary text-sm">About</a>
-                    <a href="#" class="text-text-secondary hover:text-primary text-sm">Privacy</a>
-                    <a href="#" class="text-text-secondary hover:text-primary text-sm">Terms</a>
-                    <a href="#" class="text-text-secondary hover:text-primary text-sm">Contact</a>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <script>
+    window.addEventListener('DOMContentLoaded', function() {
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        if (!token || role !== 'admin') {
+            alert('Access denied. Admin login required.');
+            window.location.href = 'login_screen.html';
+            return;
+        }
 
-    <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user) {
+            document.getElementById('welcome-message').textContent = 'Welcome, ' + user.name;
+        }
+        
+        // Load dashboard stats
+        loadDashboardStats();
+        
+        loadOfficers().then(function() {
+            loadGrievances();
+        });
+        
+        // Auto-refresh stats every 30 seconds
+        setInterval(loadDashboardStats, 30000);
+    });
+
+    function loadDashboardStats() {
+        var token = localStorage.getItem('token');
+        if (!token) return;
+        
+        fetch(window.location.protocol + '//' + window.location.hostname + ':5000/admin/dashboard-stats', {
+            headers: { "Authorization": "Bearer " + token }
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(stats) {
+            document.getElementById('pending-count').textContent = stats.pending || 0;
+            document.getElementById('urgent-count').textContent = (stats.urgent || 0) + ' urgent';
+            document.getElementById('resolved-today').textContent = stats.resolvedToday || 0;
+            document.getElementById('trend-percent').textContent = (stats.trend > 0 ? '+' : '') + (stats.trend || 0) + '% from yesterday';
+            document.getElementById('avg-resolution').textContent = stats.avgResolutionDays || 0;
+            document.getElementById('satisfaction').textContent = stats.satisfaction || '0.0';
+        })
+        .catch(function(err) {
+            console.error('Error loading dashboard stats:', err);
+        });
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('user');
+        window.location.href = 'login_screen.html';
+    }
+
+    var officersList = [];
+
+    function loadOfficers() {
+        var token = localStorage.getItem('token');
+        if (!token) return Promise.resolve();
+        
+        return fetch(window.location.protocol + '//' + window.location.hostname + ':5000/admin/officers', {
+            headers: { "Authorization": "Bearer " + token }
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) { officersList = data; })
+        .catch(function(err) { console.error('Error loading officers:', err); });
+    }
+
+    function loadGrievances() {
+        var token = localStorage.getItem("token");
+        if (!token) return;
+        
+        fetch(window.location.protocol + '//' + window.location.hostname + ':5000/admin/grievances', {
+            headers: { "Authorization": "Bearer " + token }
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(grievances) { renderGrievances(grievances); })
+        .catch(function(err) { console.error(err); });
+    }
+
+    function renderGrievances(grievances) {
+        var tableBody = document.getElementById("grievanceTableBody");
+        if (!tableBody) return;
+        
+        tableBody.innerHTML = "";
+        
+        if (grievances.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="8" class="text-center p-8 text-text-secondary">No grievances found</td></tr>';
+            return;
+        }
+
+        grievances.forEach(function(g, index) {
+            var row = document.createElement("tr");
+            row.className = "border-b";
+            
+            var assignedOfficer = g.assignedTo ? g.assignedTo.name : 'Not Assigned';
+            var assignedOfficerId = g.assignedTo ? g.assignedTo._id : '';
+            var statusClass = getStatusClass(g.status);
+
+            row.innerHTML = 
+                '<td class="p-3">' + (index + 1) + '</td>' +
+                '<td class="p-3">' + (g.reference_id || 'N/A') + '</td>' +
+                '<td class="p-3">' + (g.category || 'General') + '</td>' +
+                '<td class="p-3">' + (g.subject || 'No subject') + '</td>' +
+                '<td class="p-3"><span class="px-2 py-1 rounded text-xs ' + statusClass + '">' + (g.status || 'submitted') + '</span></td>' +
+                '<td class="p-3">' + (g.user ? g.user.name : 'Unknown') + '</td>' +
+                '<td class="p-3">' +
+                    '<div class="text-sm mb-2">' + assignedOfficer + '</div>' +
+                    '<button class="bg-primary text-white px-3 py-1 rounded text-xs hover:bg-primary-700 w-full" onclick="openAssignModal(\'' + g._id + '\', \'' + (g.reference_id || g._id) + '\', \'' + assignedOfficerId + '\')">Assign Officer</button>' +
+                '</td>' +
+                '<td class="p-3">' +
+                    '<select id="status-' + g._id + '" class="border rounded p-1 text-sm mb-1 w-full">' +
+                        '<option value="submitted" ' + (g.status === "submitted" ? "selected" : "") + '>Submitted</option>' +
+                        '<option value="in_progress" ' + (g.status === "in_progress" ? "selected" : "") + '>In Progress</option>' +
+                        '<option value="resolved" ' + (g.status === "resolved" ? "selected" : "") + '>Resolved</option>' +
+                        '<option value="rejected" ' + (g.status === "rejected" ? "selected" : "") + '>Rejected</option>' +
+                    '</select>' +
+                    '<button class="bg-blue-500 text-white px-3 py-1 rounded text-xs w-full" onclick="updateStatus(\'' + g._id + '\')">Update Status</button>' +
+                '</td>';
+            tableBody.appendChild(row);
+        });
+    }
+
+    function getStatusClass(status) {
+        switch(status) {
+            case 'submitted': return 'bg-gray-100 text-gray-800';
+            case 'in_progress': return 'bg-yellow-100 text-yellow-800';
+            case 'resolved': return 'bg-green-100 text-green-800';
+            case 'rejected': return 'bg-red-100 text-red-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    }
+
+    var currentAssignGrievanceId = null;
+
+    function openAssignModal(grievanceId, refId, currentOfficerId) {
+        currentAssignGrievanceId = grievanceId;
+        var modal = document.getElementById('assign-modal');
+        var info = document.getElementById('assign-grievance-info');
+        
+        if (modal && info) {
+            info.textContent = 'Reference: ' + (refId || grievanceId);
+            var select = document.getElementById('officer-select');
+            if (select) {
+                select.innerHTML = '<option value="">-- Select Officer --</option>';
+                officersList.forEach(function(o) {
+                    var selected = o._id === currentOfficerId ? 'selected' : '';
+                    select.innerHTML += '<option value="' + o._id + '" ' + selected + '>' + o.name + '</option>';
+                });
+            }
+            modal.classList.remove('hidden');
+            document.body.classList.add('modal-open');
+        }
+    }
+
+    function closeAssignModal() {
+        var modal = document.getElementById('assign-modal');
+        if (modal) modal.classList.add('hidden');
+        document.body.classList.remove('modal-open');
+        currentAssignGrievanceId = null;
+    }
+
+    function confirmAssignOfficer() {
+        var token = localStorage.getItem('token');
+        var select = document.getElementById('officer-select');
+        var officerId = select ? select.value : '';
+        
+        if (!currentAssignGrievanceId) { alert('No grievance selected'); return; }
+        if (!officerId) { alert('Please select an officer'); return; }
+
+        fetch(window.location.protocol + '//' + window.location.hostname + ':5000/admin/grievances/' + currentAssignGrievanceId + '/assign', {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            body: JSON.stringify({ officerId: officerId })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.error) { alert('Error: ' + data.error); }
+            else { alert('Officer assigned successfully!'); closeAssignModal(); loadGrievances(); }
+        })
+        .catch(function(err) { console.error('Error assigning officer:', err); alert('Error assigning officer'); });
+    }
+
+    function updateStatus(grievanceId) {
+        var token = localStorage.getItem("token");
+        var statusSelect = document.getElementById('status-' + grievanceId);
+        var newStatus = statusSelect ? statusSelect.value : 'submitted';
+
+        fetch(window.location.protocol + '//' + window.location.hostname + ':5000/admin/grievances/' + grievanceId + '/status', {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function() { alert("Status updated successfully!"); loadGrievances(); })
+        .catch(function(err) { console.error(err); alert("Error updating status"); });
+    }
+    </script>
 </body>
 </html>
+

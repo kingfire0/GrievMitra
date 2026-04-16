@@ -320,6 +320,22 @@
             box-shadow: var(--tw-shadow);
         }
         
+        /* Map specific styles */
+        .state-path {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .state-path:hover {
+            filter: brightness(1.1) drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+            stroke-width: 2 !important;
+            stroke: #1e40af;
+            r: 1.05;
+        }
+        #state-tooltip {
+            background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+            border: 1px solid #333;
+            backdrop-filter: blur(10px);
+        }
+        
         /* Text gradient */
         .bg-clip-text {
             -webkit-background-clip: text;
@@ -550,9 +566,105 @@
         </div>
     </nav>
 
-    <!-- Navigation JavaScript -->
+    <!-- India Map JavaScript (Fake Data Demo) -->
     <script>
+    // Fake grievance data per state (demo data)
+    const fakeStateData = {
+        "Jammu & Kashmir": { registered: 156, resolved: 124, percent: 79.5 },
+        "Himachal Pradesh": { registered: 89, resolved: 72, percent: 80.9 },
+        "Punjab": { registered: 234, resolved: 189, percent: 80.8 },
+        "Haryana": { registered: 178, resolved: 142, percent: 79.8 },
+        "Delhi": { registered: 456, resolved: 378, percent: 82.9 },
+        "Uttar Pradesh": { registered: 789, resolved: 456, percent: 57.8 },
+        "Rajasthan": { registered: 345, resolved: 289, percent: 83.8 },
+        "Madhya Pradesh": { registered: 423, resolved: 356, percent: 84.2 },
+        "Gujarat": { registered: 267, resolved: 234, percent: 87.6 },
+        "Maharashtra": { registered: 567, resolved: 523, percent: 92.2 },
+        "Goa": { registered: 45, resolved: 41, percent: 91.1 },
+        "Karnataka": { registered: 389, resolved: 347, percent: 89.2 },
+        "Telangana": { registered: 278, resolved: 234, percent: 84.2 },
+        "Andhra Pradesh": { registered: 312, resolved: 267, percent: 85.6 },
+        "Tamil Nadu": { registered: 456, resolved: 423, percent: 92.8 },
+        "Kerala": { registered: 198, resolved: 167, percent: 84.3 }
+    };
+
+    // Color function based on resolution percentage
+    function getStateColor(percent) {
+        if (percent >= 80) return '#10b981'; // green
+        if (percent >= 60) return '#f59e0b'; // yellow-orange
+        return '#ef4444'; // red
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize map with fake data
+        const paths = document.querySelectorAll('.state-path');
+        let nationalTotalReg = 0, nationalTotalRes = 0;
+
+        paths.forEach(path => {
+            const stateName = path.dataset.state;
+            const data = fakeStateData[stateName];
+            if (data) {
+                const color = getStateColor(data.percent);
+path.style.fill = 'none';
+                path.style.stroke = '#333';
+                path.style.strokeWidth = '1.5';
+                path.style.transition = 'all 0.3s ease';
+
+                nationalTotalReg += data.registered;
+                nationalTotalRes += data.resolved;
+
+                // Hover events
+                path.addEventListener('mouseenter', (e) => {
+                    const tooltip = document.getElementById('state-tooltip');
+                    tooltip.innerHTML = `
+                        <strong>${stateName}</strong><br>
+                        Registered: ${data.registered.toLocaleString()}<br>
+                        Resolved: ${data.resolved.toLocaleString()}<br>
+                        <span class="font-bold text-success">${data.percent.toFixed(1)}%</span>
+                    `;
+                    tooltip.classList.remove('hidden');
+                });
+
+                path.addEventListener('mousemove', (e) => {
+                    const tooltip = document.getElementById('state-tooltip');
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    tooltip.style.left = (e.clientX + 10) + 'px';
+                    tooltip.style.top = (e.clientY - 10) + 'px';
+                });
+
+                path.addEventListener('mouseleave', () => {
+                    document.getElementById('state-tooltip').classList.add('hidden');
+                });
+
+                // Click for modal (simple alert for demo)
+                path.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    alert(`📊 ${stateName} Details\n\nRegistered: ${data.registered}\nResolved: ${data.resolved} (${data.percent.toFixed(1)}%)\n\n*Demo data - connect to real API for production*`);
+                });
+            }
+        });
+
+        // Update national stats
+        const nationalPercent = nationalTotalReg > 0 ? (nationalTotalRes / nationalTotalReg * 100).toFixed(1) : 0;
+        document.getElementById('national-res').textContent = nationalPercent + '%';
+        document.getElementById('total-states').textContent = Object.keys(fakeStateData).length;
+
+        // Responsive map scaling
+        function resizeMap() {
+            const svg = document.getElementById('india-map');
+            const container = svg.parentElement;
+            const aspect = 400 / 500;
+            const containerWidth = container.clientWidth;
+            const containerHeight = containerWidth / aspect;
+            svg.style.height = Math.min(containerHeight, '450px');
+        }
+        window.addEventListener('resize', resizeMap);
+        resizeMap();
+    });
+
+    // Navigation JavaScript (existing code continues below)
+    document.addEventListener('DOMContentLoaded', function() {
+
         // Check authentication status
         const token = localStorage.getItem('token');
         const role = localStorage.getItem('role');
@@ -684,94 +796,9 @@
             </div>
         </div>
     </section>
-
-    <!-- Interactive India Map Section -->
-    <section class="py-16 bg-white" aria-labelledby="map-heading">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 id="map-heading" class="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-                    Grievance Activity Across India
-                </h2>
-                <p class="text-lg text-text-secondary max-w-2xl mx-auto">
-                    Real-time insights into grievance resolution across all states and union territories
-                </p>
-            </div>
-
-            <div class="bg-gradient-to-br from-primary-50 to-success-50 rounded-2xl p-8">
-                <div class="grid lg:grid-cols-2 gap-12 items-center">
-                    <!-- Map Placeholder -->
-                    <div class="relative">
-                        <div class="aspect-square bg-white rounded-xl shadow-card p-6 flex items-center justify-center">
-                            <img src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3"
-                                alt="Map of India showing grievance distribution across states"
-                                class="w-full h-full object-cover rounded-lg opacity-80"
-                                loading="lazy"
-                                onerror="this.src='https://images.pexels.com/photos/1098365/pexels-photo-1098365.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'; this.onerror=null;" />
-                            <div class="absolute inset-0 bg-primary/10 rounded-lg flex items-center justify-center">
-                                <div class="text-center">
-                                    <svg class="w-16 h-16 text-primary mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                                    </svg>
-                                    <p class="text-primary font-semibold">Interactive Map</p>
-                                    <p class="text-text-secondary text-sm">Hover to view state data</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- State Statistics -->
-                    <div class="space-y-6">
-                        <div class="bg-white rounded-xl p-6 shadow-card">
-                            <h3 class="font-semibold text-text-primary mb-4">Top Performing States</h3>
-                            <div class="space-y-4">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-text-secondary">Maharashtra</span>
-                                    <div class="flex items-center">
-                                        <div class="w-24 bg-gray-200 rounded-full h-2 mr-3" role="progressbar" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100">
-                                            <div class="bg-success h-2 rounded-full" style="width: 92%"></div>
-                                        </div>
-                                        <span class="text-success font-semibold text-sm">92%</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-text-secondary">Karnataka</span>
-                                    <div class="flex items-center">
-                                        <div class="w-24 bg-gray-200 rounded-full h-2 mr-3" role="progressbar" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100">
-                                            <div class="bg-success h-2 rounded-full" style="width: 89%"></div>
-                                        </div>
-                                        <span class="text-success font-semibold text-sm">89%</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-text-secondary">Tamil Nadu</span>
-                                    <div class="flex items-center">
-                                        <div class="w-24 bg-gray-200 rounded-full h-2 mr-3" role="progressbar" aria-valuenow="87" aria-valuemin="0" aria-valuemax="100">
-                                            <div class="bg-success h-2 rounded-full" style="width: 87%"></div>
-                                        </div>
-                                        <span class="text-success font-semibold text-sm">87%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-white rounded-xl p-4 shadow-card text-center">
-                                <div class="text-2xl font-bold text-primary">28</div>
-                                <div class="text-text-secondary text-sm">States Active</div>
-                            </div>
-                            <div class="bg-white rounded-xl p-4 shadow-card text-center">
-                                <div class="text-2xl font-bold text-success">4.2 days</div>
-                                <div class="text-text-secondary text-sm">Avg Resolution</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- How It Works Section -->
     <section class="py-16 bg-surface" aria-labelledby="how-it-works-heading">
+
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
                 <h2 id="how-it-works-heading" class="text-3xl md:text-4xl font-bold text-text-primary mb-4">

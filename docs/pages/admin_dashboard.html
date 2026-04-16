@@ -80,16 +80,45 @@
                                 <th class="p-3 text-left text-text-secondary font-medium">Subject</th>
                                 <th class="p-3 text-left text-text-secondary font-medium">Status</th>
                                 <th class="p-3 text-left text-text-secondary font-medium">Citizen</th>
+                                <th class="p-3 text-left text-text-secondary font-medium">User Photos</th>
                                 <th class="p-3 text-left text-text-secondary font-medium">Assign Officer</th>
                                 <th class="p-3 text-left text-text-secondary font-medium">Actions</th>
+                                <th class="p-3 text-left text-text-secondary font-medium">View Details</th>
                             </tr>
                         </thead>
                         <tbody id="grievanceTableBody" class="divide-y">
                             <tr>
-                                <td colspan="8" class="p-8 text-center text-text-secondary">Loading grievances...</td>
+                                <td colspan="9" class="p-8 text-center text-text-secondary">Loading grievances...</td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grievance Detail Modal -->
+        <div id="grievance-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-text-primary">Grievance Details</h2>
+                        <button onclick="closeGrievanceModal()" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="grievance-detail-content">
+                        Loading...
+                    </div>
+                    <div class="flex gap-3 mt-8 pt-6 border-t">
+                        <button onclick="rejectGrievanceReview()" class="flex-1 bg-error text-white py-3 px-6 rounded-xl font-medium hover:bg-error-700">
+                            Reject Work
+                        </button>
+                        <button onclick="approveGrievanceReview()" class="flex-1 bg-success text-white py-3 px-6 rounded-xl font-medium hover:bg-success-700">
+                            Approve & Resolve
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -113,203 +142,234 @@
     </div>
 
     <script>
-    window.addEventListener('DOMContentLoaded', function() {
-        const token = localStorage.getItem('token');
-        const role = localStorage.getItem('role');
-        if (!token || role !== 'admin') {
-            alert('Access denied. Admin login required.');
-            window.location.href = 'login_screen.html';
+window.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+
+    if (!token || role !== 'admin') {
+        alert('Access denied. Admin login required.');
+        window.location.href = 'login_screen.html';
+        return;
+    }
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user) {
+        document.getElementById('welcome-message').textContent = 'Welcome, ' + user.name;
+    }
+
+    loadDashboardStats();
+    loadOfficers().then(loadGrievances);
+});
+
+// ================= DASHBOARD =================
+function loadDashboardStats() {
+    var token = localStorage.getItem('token');
+
+    fetch(`http://${window.location.hostname}:5000/admin/dashboard-stats`, {
+        headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => {
+        if (!res.ok) {
+            console.warn('Stats API error:', res.status, res.statusText);
             return;
         }
-
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (user) {
-            document.getElementById('welcome-message').textContent = 'Welcome, ' + user.name;
-        }
-        
-        // Load dashboard stats
-        loadDashboardStats();
-        
-        loadOfficers().then(function() {
-            loadGrievances();
-        });
-        
-        // Auto-refresh stats every 30 seconds
-        setInterval(loadDashboardStats, 30000);
-    });
-
-    function loadDashboardStats() {
-        var token = localStorage.getItem('token');
-        if (!token) return;
-        
-        fetch(window.location.protocol + '//' + window.location.hostname + ':5000/admin/dashboard-stats', {
-            headers: { "Authorization": "Bearer " + token }
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(stats) {
+        return res.json();
+    })
+    .then(stats => {
+        if (stats && !stats.error) {
             document.getElementById('pending-count').textContent = stats.pending || 0;
             document.getElementById('urgent-count').textContent = (stats.urgent || 0) + ' urgent';
             document.getElementById('resolved-today').textContent = stats.resolvedToday || 0;
-            document.getElementById('trend-percent').textContent = (stats.trend > 0 ? '+' : '') + (stats.trend || 0) + '% from yesterday';
+            document.getElementById('trend-percent').textContent = (stats.trend || 0) + '% from yesterday';
             document.getElementById('avg-resolution').textContent = stats.avgResolutionDays || 0;
             document.getElementById('satisfaction').textContent = stats.satisfaction || '0.0';
-        })
-        .catch(function(err) {
-            console.error('Error loading dashboard stats:', err);
-        });
+        }
+    })
+    .catch(err => console.error('Stats load error:', err));
+}
+
+// ================= LOAD OFFICERS =================
+var officersList = [];
+
+function loadOfficers() {
+    var token = localStorage.getItem('token');
+
+    return fetch(`http://${window.location.hostname}:5000/admin/officers`, {
+        headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => {
+        if (!res.ok) {
+            console.warn('Officers API error:', res.status);
+            return [];
+        }
+        return res.json();
+    })
+    .then(data => {
+        officersList = Array.isArray(data) ? data : [];
+        return officersList;
+    })
+    .catch(err => {
+        console.error('Officers load error:', err);
+        officersList = [];
+    });
+}
+
+// ================= LOAD GRIEVANCES =================
+function loadGrievances() {
+    var token = localStorage.getItem("token");
+
+    fetch(`http://${window.location.hostname}:5000/admin/grievances`, {
+        headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${res.statusText} - Check admin login`);
+        }
+        return res.json();
+    })
+    .then(data => {
+        const grievances = Array.isArray(data) ? data : [];
+        renderGrievances(grievances);
+    })
+    .catch(err => {
+        console.error('Grievances load error:', err);
+        document.getElementById('grievanceTableBody').innerHTML = 
+            '<tr><td colspan="10" class="p-8 text-center text-red-500">' +
+            '❌ Error: ' + err.message + '<br><small>Re-login as admin or contact support</small>' +
+            '</td></tr>';
+    });
+}
+
+// ================= RENDER TABLE =================
+function renderGrievances(grievances) {
+    var tableBody = document.getElementById("grievanceTableBody");
+    tableBody.innerHTML = "";
+
+    if (grievances.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="10" class="text-center p-8">No grievances found</td></tr>';
+        return;
     }
 
-    function logout() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
-        localStorage.removeItem('user');
-        window.location.href = 'login_screen.html';
-    }
+    grievances.forEach(function(g, index) {
 
-    var officersList = [];
+        var statusClass = getStatusClass(g.status);
+        var assignedOfficer = g.assignedTo ? g.assignedTo.name : 'Not Assigned';
 
-    function loadOfficers() {
-        var token = localStorage.getItem('token');
-        if (!token) return Promise.resolve();
-        
-        return fetch(window.location.protocol + '//' + window.location.hostname + ':5000/admin/officers', {
-            headers: { "Authorization": "Bearer " + token }
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(data) { officersList = data; })
-        .catch(function(err) { console.error('Error loading officers:', err); });
-    }
-
-    function loadGrievances() {
-        var token = localStorage.getItem("token");
-        if (!token) return;
-        
-        fetch(window.location.protocol + '//' + window.location.hostname + ':5000/admin/grievances', {
-            headers: { "Authorization": "Bearer " + token }
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(grievances) { renderGrievances(grievances); })
-        .catch(function(err) { console.error(err); });
-    }
-
-    function renderGrievances(grievances) {
-        var tableBody = document.getElementById("grievanceTableBody");
-        if (!tableBody) return;
-        
-        tableBody.innerHTML = "";
-        
-        if (grievances.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="8" class="text-center p-8 text-text-secondary">No grievances found</td></tr>';
-            return;
+        // ✅ PHOTO FIX
+        var photoPreview = '';
+        if (g.locationPhotos && g.locationPhotos.length > 0) {
+            photoPreview =
+                `<div class="flex justify-center items-center gap-1">
+                    <img src="${g.locationPhotos[0]}" 
+                         class="w-10 h-10 rounded object-cover border cursor-pointer"
+                         onclick="openGrievanceModal('${g._id}')">
+                    <span class="text-xs bg-blue-100 px-1 rounded">${g.locationPhotos.length}</span>
+                </div>`;
+        } else {
+            photoPreview = `<span class="text-gray-400 text-xs">No Photo</span>`;
         }
 
-        grievances.forEach(function(g, index) {
-            var row = document.createElement("tr");
-            row.className = "border-b";
-            
-            var assignedOfficer = g.assignedTo ? g.assignedTo.name : 'Not Assigned';
-            var assignedOfficerId = g.assignedTo ? g.assignedTo._id : '';
-            var statusClass = getStatusClass(g.status);
+        var row = document.createElement("tr");
 
-            row.innerHTML = 
-                '<td class="p-3">' + (index + 1) + '</td>' +
-                '<td class="p-3">' + (g.reference_id || 'N/A') + '</td>' +
-                '<td class="p-3">' + (g.category || 'General') + '</td>' +
-                '<td class="p-3">' + (g.subject || 'No subject') + '</td>' +
-                '<td class="p-3"><span class="px-2 py-1 rounded text-xs ' + statusClass + '">' + (g.status || 'submitted') + '</span></td>' +
-                '<td class="p-3">' + (g.user ? g.user.name : 'Unknown') + '</td>' +
-                '<td class="p-3">' +
-                    '<div class="text-sm mb-2">' + assignedOfficer + '</div>' +
-                    '<button class="bg-primary text-white px-3 py-1 rounded text-xs hover:bg-primary-700 w-full" onclick="openAssignModal(\'' + g._id + '\', \'' + (g.reference_id || g._id) + '\', \'' + assignedOfficerId + '\')">Assign Officer</button>' +
-                '</td>' +
-                '<td class="p-3">' +
-                    '<select id="status-' + g._id + '" class="border rounded p-1 text-sm mb-1 w-full">' +
-                        '<option value="submitted" ' + (g.status === "submitted" ? "selected" : "") + '>Submitted</option>' +
-                        '<option value="in_progress" ' + (g.status === "in_progress" ? "selected" : "") + '>In Progress</option>' +
-                        '<option value="resolved" ' + (g.status === "resolved" ? "selected" : "") + '>Resolved</option>' +
-                        '<option value="rejected" ' + (g.status === "rejected" ? "selected" : "") + '>Rejected</option>' +
-                    '</select>' +
-                    '<button class="bg-blue-500 text-white px-3 py-1 rounded text-xs w-full" onclick="updateStatus(\'' + g._id + '\')">Update Status</button>' +
-                '</td>';
-            tableBody.appendChild(row);
-        });
-    }
+        row.innerHTML = `
+            <td class="p-3">${index + 1}</td>
+            <td class="p-3 font-mono">${g.reference_id || 'N/A'}</td>
+            <td class="p-3">${g.category || 'General'}</td>
+            <td class="p-3">${(g.subject || '').substring(0,40)}...</td>
+            <td class="p-3">
+                <span class="px-2 py-1 rounded text-xs ${statusClass}">
+                    ${g.status}
+                </span>
+            </td>
+            <td class="p-3">${g.user?.name || 'Unknown'}</td>
 
-    function getStatusClass(status) {
-        switch(status) {
-            case 'submitted': return 'bg-gray-100 text-gray-800';
-            case 'in_progress': return 'bg-yellow-100 text-yellow-800';
-            case 'resolved': return 'bg-green-100 text-green-800';
-            case 'rejected': return 'bg-red-100 text-red-800';
-            default: return 'bg-gray-100 text-gray-800';
-        }
-    }
+            <!-- ✅ PHOTO COLUMN -->
+            <td class="p-3 text-center">${photoPreview}</td>
 
-    var currentAssignGrievanceId = null;
+            <td class="p-3">${assignedOfficer}</td>
 
-    function openAssignModal(grievanceId, refId, currentOfficerId) {
-        currentAssignGrievanceId = grievanceId;
-        var modal = document.getElementById('assign-modal');
-        var info = document.getElementById('assign-grievance-info');
-        
-        if (modal && info) {
-            info.textContent = 'Reference: ' + (refId || grievanceId);
-            var select = document.getElementById('officer-select');
-            if (select) {
-                select.innerHTML = '<option value="">-- Select Officer --</option>';
-                officersList.forEach(function(o) {
-                    var selected = o._id === currentOfficerId ? 'selected' : '';
-                    select.innerHTML += '<option value="' + o._id + '" ' + selected + '>' + o.name + '</option>';
-                });
-            }
-            modal.classList.remove('hidden');
-            document.body.classList.add('modal-open');
-        }
-    }
+            <td class="p-3">
+                <select id="status-${g._id}" class="border text-xs p-1 w-full mb-1">
+                    <option ${g.status==='submitted'?'selected':''}>submitted</option>
+                    <option ${g.status==='in_progress'?'selected':''}>in_progress</option>
+                    <option ${g.status==='resolved'?'selected':''}>resolved</option>
+                    <option ${g.status==='rejected'?'selected':''}>rejected</option>
+                </select>
+                <button onclick="updateStatus('${g._id}')" 
+                        class="bg-blue-500 text-white w-full text-xs py-1 rounded">
+                        Update
+                </button>
+            </td>
 
-    function closeAssignModal() {
-        var modal = document.getElementById('assign-modal');
-        if (modal) modal.classList.add('hidden');
-        document.body.classList.remove('modal-open');
-        currentAssignGrievanceId = null;
-    }
+            <td class="p-3">
+             <button onclick="openGrievanceModal('${g._id}')" 
+        class="bg-blue-500 text-white px-2 py-1 text-xs rounded w-full">
+        View
+</button>
+            </td>
+        `;
 
-    function confirmAssignOfficer() {
-        var token = localStorage.getItem('token');
-        var select = document.getElementById('officer-select');
-        var officerId = select ? select.value : '';
-        
-        if (!currentAssignGrievanceId) { alert('No grievance selected'); return; }
-        if (!officerId) { alert('Please select an officer'); return; }
+        tableBody.appendChild(row);
+    });
+}
 
-        fetch(window.location.protocol + '//' + window.location.hostname + ':5000/admin/grievances/' + currentAssignGrievanceId + '/assign', {
-            method: "PUT",
-            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-            body: JSON.stringify({ officerId: officerId })
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-            if (data.error) { alert('Error: ' + data.error); }
-            else { alert('Officer assigned successfully!'); closeAssignModal(); loadGrievances(); }
-        })
-        .catch(function(err) { console.error('Error assigning officer:', err); alert('Error assigning officer'); });
-    }
+// ================= MODAL =================
+function openGrievanceModal(id) {
+    var token = localStorage.getItem('token');
+    var modal = document.getElementById('grievance-modal');
+    var content = document.getElementById('grievance-detail-content');
 
-    function updateStatus(grievanceId) {
-        var token = localStorage.getItem("token");
-        var statusSelect = document.getElementById('status-' + grievanceId);
-        var newStatus = statusSelect ? statusSelect.value : 'submitted';
+    modal.classList.remove('hidden');
 
-        fetch(window.location.protocol + '//' + window.location.hostname + ':5000/admin/grievances/' + grievanceId + '/status', {
-            method: "PUT",
-            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-            body: JSON.stringify({ status: newStatus })
-        })
-        .then(function(res) { return res.json(); })
-        .then(function() { alert("Status updated successfully!"); loadGrievances(); })
-        .catch(function(err) { console.error(err); alert("Error updating status"); });
-    }
-    </script>
+    fetch(`http://${window.location.hostname}:5000/admin/grievances/${id}`, {
+        headers: { "Authorization": "Bearer " + token }
+    })
+    .then(res => res.json())
+    .then(g => {
+
+        let images = (g.locationPhotos || []).map(p =>
+            `<img src="${p}" class="w-full h-40 object-cover rounded cursor-pointer">`
+        ).join('');
+
+        content.innerHTML = `
+            <h3 class="text-xl font-bold mb-4">${g.subject}</h3>
+            <p class="mb-4">${g.description}</p>
+            <div class="grid grid-cols-2 gap-4">${images}</div>
+        `;
+    });
+}
+
+function closeGrievanceModal() {
+    document.getElementById('grievance-modal').classList.add('hidden');
+}
+
+// ================= STATUS =================
+function updateStatus(id) {
+    var token = localStorage.getItem("token");
+    var status = document.getElementById('status-' + id).value;
+
+    fetch(`http://${window.location.hostname}:5000/admin/grievances/${id}/status`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({ status })
+    })
+    .then(() => {
+        alert("Updated!");
+        loadGrievances();
+    });
+}
+
+// ================= STYLE =================
+function getStatusClass(status) {
+    if (status === 'resolved') return 'bg-green-100 text-green-700';
+    if (status === 'in_progress') return 'bg-yellow-100 text-yellow-700';
+    if (status === 'rejected') return 'bg-red-100 text-red-700';
+    return 'bg-gray-100 text-gray-700';
+}
+</script>
 </body>
 </html>
 

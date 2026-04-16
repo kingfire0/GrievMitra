@@ -524,18 +524,25 @@
                 };
                 const apiBaseUrl = getApiBaseUrl();
                 console.log('Loading grievances from:', apiBaseUrl + '/grievances/user');
+
+                console.log('Grievances API call to:', `${apiBaseUrl}/grievances/user`);
                 const response = await fetch(`${apiBaseUrl}/grievances/user`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
 
+                console.log('Grievances response status:', response.status);
+
                 if (response.ok) {
                     const grievances = await response.json();
+                    console.log('Grievances loaded:', grievances.length);
                     displayGrievances(grievances);
                 } else {
+                    console.error('Grievances API failed:', response.status, response.statusText);
                     showNoGrievances();
                 }
+
             } catch (error) {
                 console.error('Error loading grievances:', error);
                 showNoGrievances();

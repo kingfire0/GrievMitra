@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="../css/main.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fgrievmitra7175back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+
 </head>
 <body class="bg-background">
     <!-- Reusable Navigation Component -->
@@ -304,19 +306,23 @@
             <!-- Key Metrics Overview -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <div class="bg-white rounded-xl p-4 shadow-card text-center">
-                    <div class="text-2xl md:text-3xl font-bold text-primary mb-1">2.4L+</div>
+                <div id="totalResolved" class="text-2xl md:text-3xl font-bold text-primary mb-1">2.4L+</div>
+
                     <div class="text-text-secondary text-sm">Total Resolved</div>
                 </div>
                 <div class="bg-white rounded-xl p-4 shadow-card text-center">
-                    <div class="text-2xl md:text-3xl font-bold text-success mb-1">4.2</div>
+                <div id="avgDays" class="text-2xl md:text-3xl font-bold text-success mb-1">4.2</div>
+
                     <div class="text-text-secondary text-sm">Avg Days</div>
                 </div>
                 <div class="bg-white rounded-xl p-4 shadow-card text-center">
-                    <div class="text-2xl md:text-3xl font-bold text-accent mb-1">94%</div>
+                <div id="satisfaction" class="text-2xl md:text-3xl font-bold text-accent mb-1">94%</div>
+
                     <div class="text-text-secondary text-sm">Satisfaction</div>
                 </div>
                 <div class="bg-white rounded-xl p-4 shadow-card text-center">
-                    <div class="text-2xl md:text-3xl font-bold text-secondary mb-1">156+</div>
+                <div id="departments" class="text-2xl md:text-3xl font-bold text-secondary mb-1">156+</div>
+
                     <div class="text-text-secondary text-sm">Departments</div>
                 </div>
             </div>
@@ -330,35 +336,35 @@
             <div class="bg-surface rounded-xl p-6 mb-8">
                 <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
                     <div class="flex flex-wrap gap-4">
-                        <select class="form-input min-w-0 w-auto">
-                            <option>All States</option>
-                            <option>Maharashtra</option>
-                            <option>Karnataka</option>
-                            <option>Tamil Nadu</option>
-                            <option>Delhi</option>
+<select id="stateFilter" class="form-input min-w-0 w-auto">
+                            <option value="">All States</option>
+                            <option value="Maharashtra">Maharashtra</option>
+                            <option value="Karnataka">Karnataka</option>
+                            <option value="Tamil Nadu">Tamil Nadu</option>
+                            <option value="Delhi">Delhi</option>
                         </select>
-                        <select class="form-input min-w-0 w-auto">
-                            <option>All Categories</option>
-                            <option>Infrastructure</option>
-                            <option>Public Services</option>
-                            <option>Healthcare</option>
-                            <option>Education</option>
+<select id="categoryFilter" class="form-input min-w-0 w-auto">
+                            <option value="">All Categories</option>
+                            <option value="Infrastructure">Infrastructure</option>
+                            <option value="Public Services">Public Services</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Education">Education</option>
                         </select>
-                        <select class="form-input min-w-0 w-auto">
-                            <option>Last 30 Days</option>
-                            <option>Last 3 Months</option>
-                            <option>Last 6 Months</option>
-                            <option>Last Year</option>
+<select id="timeFilter" class="form-input min-w-0 w-auto">
+                            <option value="30">Last 30 Days</option>
+                            <option value="90">Last 3 Months</option>
+                            <option value="180">Last 6 Months</option>
+                            <option value="365">Last Year</option>
                         </select>
                     </div>
                     <div class="flex gap-2">
-                        <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors">
+                        <button id="exportBtn" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors">
                             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                             </svg>
                             Export Data
                         </button>
-                        <button class="bg-white text-primary border border-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-50 transition-colors">
+                        <button id="resetBtn" class="bg-white text-primary border border-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-50 transition-colors">
                             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                             </svg>
@@ -371,107 +377,84 @@
             <!-- Main Analytics Grid -->
             <div class="grid lg:grid-cols-2 gap-8 mb-12">
                 <!-- Grievance Categories Chart -->
-                <div class="card">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xl font-semibold text-text-primary">Grievances by Category</h3>
-                        <div class="text-text-secondary text-sm">Last 30 days</div>
-                    </div>
-                    <div class="relative h-64 bg-gradient-to-br from-primary-50 to-success-50 rounded-lg p-6 flex items-center justify-center">
-                        <div class="text-center">
-                            <svg class="w-32 h-32 mx-auto mb-4" viewBox="0 0 200 200">
-                                <!-- Pie Chart Segments -->
-                                <circle cx="100" cy="100" r="80" fill="none" stroke="#0b63ce" stroke-width="20" stroke-dasharray="125.6 376.8" stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
-                                <circle cx="100" cy="100" r="80" fill="none" stroke="#00a86b" stroke-width="20" stroke-dasharray="94.2 376.8" stroke-dashoffset="-125.6" transform="rotate(-90 100 100)"/>
-                                <circle cx="100" cy="100" r="80" fill="none" stroke="#f59e0b" stroke-width="20" stroke-dasharray="62.8 376.8" stroke-dashoffset="-219.8" transform="rotate(-90 100 100)"/>
-                                <circle cx="100" cy="100" r="80" fill="none" stroke="#1e40af" stroke-width="20" stroke-dasharray="94.2 376.8" stroke-dashoffset="-282.6" transform="rotate(-90 100 100)"/>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 mt-6">
-                        <div class="flex items-center">
-                            <div class="w-4 h-4 bg-primary rounded mr-3"></div>
-                            <div>
-                                <div class="font-semibold text-text-primary">Infrastructure</div>
-                                <div class="text-text-secondary text-sm">25% (12,450)</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center">
-                            <div class="w-4 h-4 bg-success rounded mr-3"></div>
-                            <div>
-                                <div class="font-semibold text-text-primary">Public Services</div>
-                                <div class="text-text-secondary text-sm">19% (9,430)</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center">
-                            <div class="w-4 h-4 bg-accent rounded mr-3"></div>
-                            <div>
-                                <div class="font-semibold text-text-primary">Healthcare</div>
-                                <div class="text-text-secondary text-sm">12% (5,960)</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center">
-                            <div class="w-4 h-4 bg-secondary rounded mr-3"></div>
-                            <div>
-                                <div class="font-semibold text-text-primary">Education</div>
-                                <div class="text-text-secondary text-sm">19% (9,430)</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<div class="card">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold text-text-primary">Grievances by Category</h3>
+        <div class="text-text-secondary text-sm">Last 30 days</div>
+    </div>
 
-                <!-- Resolution Trends Chart -->
-                <div class="card">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xl font-semibold text-text-primary">Resolution Trends</h3>
-                        <div class="text-text-secondary text-sm">Monthly comparison</div>
-                    </div>
-                    <div class="relative h-64 bg-gradient-to-br from-success-50 to-primary-50 rounded-lg p-6">
-                        <svg class="w-full h-full" viewBox="0 0 400 200">
-                            <!-- Grid lines -->
-                            <defs>
-                                <pattern id="grid" width="40" height="20" patternUnits="userSpaceOnUse">
-                                    <path d="M 40 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" stroke-width="1"/>
-                                </pattern>
-                            </defs>
-                            <rect width="100%" height="100%" fill="url(#grid)"/>
-                            
-                            <!-- Trend line -->
-                            <polyline fill="none" stroke="#0b63ce" stroke-width="3" points="20,160 60,140 100,120 140,100 180,90 220,85 260,80 300,75 340,70 380,65"/>
-                            
-                            <!-- Data points -->
-                            <circle cx="20" cy="160" r="4" fill="#0b63ce"/>
-                            <circle cx="60" cy="140" r="4" fill="#0b63ce"/>
-                            <circle cx="100" cy="120" r="4" fill="#0b63ce"/>
-                            <circle cx="140" cy="100" r="4" fill="#0b63ce"/>
-                            <circle cx="180" cy="90" r="4" fill="#0b63ce"/>
-                            <circle cx="220" cy="85" r="4" fill="#0b63ce"/>
-                            <circle cx="260" cy="80" r="4" fill="#0b63ce"/>
-                            <circle cx="300" cy="75" r="4" fill="#0b63ce"/>
-                            <circle cx="340" cy="70" r="4" fill="#0b63ce"/>
-                            <circle cx="380" cy="65" r="4" fill="#0b63ce"/>
-                        </svg>
-                    </div>
-                    <div class="flex justify-between text-sm text-text-secondary mt-4">
-                        <span>Jan</span>
-                        <span>Mar</span>
-                        <span>May</span>
-                        <span>Jul</span>
-                        <span>Sep</span>
-                        <span>Nov</span>
-                    </div>
-                    <div class="mt-4 p-4 bg-success-50 rounded-lg">
-                        <div class="flex items-center text-success-700">
-                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                            <span class="font-semibold">23% improvement</span>
-                            <span class="ml-2">in average resolution time this quarter</span>
-                        </div>
-                    </div>
-                </div>
+    <!-- FIXED HEIGHT WRAPPER -->
+    <div style="height:300px;">
+        <canvas id="categoriesChart"></canvas>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mt-6">
+        <div class="flex items-center">
+            <div class="w-4 h-4 bg-primary rounded mr-3"></div>
+            <div>
+                <div class="font-semibold text-text-primary">Infrastructure</div>
+                <div class="text-text-secondary text-sm">25% (12,450)</div>
+            </div>
+        </div>
+        <div class="flex items-center">
+            <div class="w-4 h-4 bg-success rounded mr-3"></div>
+            <div>
+                <div class="font-semibold text-text-primary">Public Services</div>
+                <div class="text-text-secondary text-sm">19% (9,430)</div>
+            </div>
+        </div>
+        <div class="flex items-center">
+            <div class="w-4 h-4 bg-accent rounded mr-3"></div>
+            <div>
+                <div class="font-semibold text-text-primary">Healthcare</div>
+                <div class="text-text-secondary text-sm">12% (5,960)</div>
+            </div>
+        </div>
+        <div class="flex items-center">
+            <div class="w-4 h-4 bg-secondary rounded mr-3"></div>
+            <div>
+                <div class="font-semibold text-text-primary">Education</div>
+                <div class="text-text-secondary text-sm">19% (9,430)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Resolution Trends Chart -->
+<div class="card">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold text-text-primary">Resolution Trends</h3>
+        <div class="text-text-secondary text-sm">Monthly comparison</div>
+    </div>
+
+    <!-- FIXED HEIGHT WRAPPER -->
+    <div style="height:300px;">
+        <canvas id="trendsChart"></canvas>
+    </div>
+
+    <div class="flex justify-between text-sm text-text-secondary mt-4">
+        <span>Jan</span>
+        <span>Mar</span>
+        <span>May</span>
+        <span>Jul</span>
+        <span>Sep</span>
+        <span>Nov</span>
+    </div>
+
+    <div class="mt-4 p-4 bg-success-50 rounded-lg">
+        <div class="flex items-center text-success-700">
+            <span class="font-semibold">23% improvement</span>
+            <span class="ml-2">in average resolution time this quarter</span>
+        </div>
+    </div>
+</div>
             </div>
         </div>
     </section>
+    <br>
+    <br>
+    <br>
 
     <!-- Department Performance Scorecards -->
     <section class="py-12 bg-surface">
@@ -487,168 +470,168 @@
 
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Top Performer -->
-                <div class="card relative overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-success text-white px-3 py-1 rounded-bl-lg text-sm font-medium">
+                <div class="card relative overflow-hidden p-6 hover:shadow-lg transition-all duration-300">
+                    <div class="absolute top-4 right-4 bg-success text-white px-3 py-1 rounded-bl-lg text-sm font-medium">
                         #1 Rank
                     </div>
-                    <div class="flex items-center mb-4">
-                        <div class="w-12 h-12 bg-success-100 rounded-full flex items-center justify-center mr-4">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-success-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                             <svg class="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                             </svg>
                         </div>
                         <div>
-                            <h3 class="font-semibold text-text-primary">Municipal Corporation</h3>
-                            <p class="text-text-secondary text-sm">Mumbai, Maharashtra</p>
+                            <h3 class="font-semibold text-xl text-text-primary">Municipal Corporation</h3>
+                            <p class="text-text-secondary text-sm font-medium">Mumbai, Maharashtra</p>
                         </div>
                     </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-text-secondary">Resolution Rate</span>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-text-secondary font-medium">Resolution Rate</span>
                             <div class="flex items-center">
-                                <div class="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="w-20 bg-gray-200 rounded-full h-2 mr-3">
                                     <div class="bg-success h-2 rounded-full" style="width: 96%"></div>
                                 </div>
                                 <span class="text-success font-semibold text-sm">96%</span>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-text-secondary">Avg Response</span>
-                            <span class="font-semibold text-text-primary">2.1 days</span>
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-text-secondary font-medium">Avg Response</span>
+                            <span class="font-semibold text-success text-lg">2.1 days</span>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-text-secondary">Satisfaction</span>
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-text-secondary font-medium">Satisfaction</span>
                             <div class="flex items-center">
-                                <div class="flex text-accent mr-2">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <div class="flex text-accent mr-3">
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 fill-current text-gray-400" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
                                 </div>
-                                <span class="font-semibold text-text-primary">4.8</span>
+                                <span class="font-semibold text-accent text-lg">4.8</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Second Place -->
-                <div class="card">
-                    <div class="absolute top-0 right-0 bg-primary text-white px-3 py-1 rounded-bl-lg text-sm font-medium">
+                <div class="card p-6 hover:shadow-lg transition-all duration-300">
+                    <div class="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-bl-lg text-sm font-medium">
                         #2 Rank
                     </div>
-                    <div class="flex items-center mb-4">
-                        <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mr-4">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                             <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                         </div>
                         <div>
-                            <h3 class="font-semibold text-text-primary">Public Works Dept</h3>
-                            <p class="text-text-secondary text-sm">Bangalore, Karnataka</p>
+                            <h3 class="font-semibold text-xl text-text-primary">Public Works Dept</h3>
+                            <p class="text-text-secondary text-sm font-medium">Bangalore, Karnataka</p>
                         </div>
                     </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-text-secondary">Resolution Rate</span>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-text-secondary font-medium">Resolution Rate</span>
                             <div class="flex items-center">
-                                <div class="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="w-20 bg-gray-200 rounded-full h-2 mr-3">
                                     <div class="bg-primary h-2 rounded-full" style="width: 92%"></div>
                                 </div>
                                 <span class="text-primary font-semibold text-sm">92%</span>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-text-secondary">Avg Response</span>
-                            <span class="font-semibold text-text-primary">2.8 days</span>
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-text-secondary font-medium">Avg Response</span>
+                            <span class="font-semibold text-primary text-lg">2.8 days</span>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-text-secondary">Satisfaction</span>
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-text-secondary font-medium">Satisfaction</span>
                             <div class="flex items-center">
-                                <div class="flex text-accent mr-2">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <div class="flex text-accent mr-3">
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 fill-current text-gray-400" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
                                 </div>
-                                <span class="font-semibold text-text-primary">4.6</span>
+                                <span class="font-semibold text-accent text-lg">4.6</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Third Place -->
-                <div class="card">
-                    <div class="absolute top-0 right-0 bg-accent text-white px-3 py-1 rounded-bl-lg text-sm font-medium">
+                <div class="card p-6 hover:shadow-lg transition-all duration-300">
+                    <div class="absolute top-4 right-4 bg-accent text-white px-3 py-1 rounded-bl-lg text-sm font-medium">
                         #3 Rank
                     </div>
-                    <div class="flex items-center mb-4">
-                        <div class="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center mr-4">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
                             <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                             </svg>
                         </div>
                         <div>
-                            <h3 class="font-semibold text-text-primary">Education Department</h3>
-                            <p class="text-text-secondary text-sm">Chennai, Tamil Nadu</p>
+                            <h3 class="font-semibold text-xl text-text-primary">Education Department</h3>
+                            <p class="text-text-secondary text-sm font-medium">Chennai, Tamil Nadu</p>
                         </div>
                     </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-text-secondary">Resolution Rate</span>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-text-secondary font-medium">Resolution Rate</span>
                             <div class="flex items-center">
-                                <div class="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="w-20 bg-gray-200 rounded-full h-2 mr-3">
                                     <div class="bg-accent h-2 rounded-full" style="width: 89%"></div>
                                 </div>
                                 <span class="text-accent font-semibold text-sm">89%</span>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-text-secondary">Avg Response</span>
-                            <span class="font-semibold text-text-primary">3.2 days</span>
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-text-secondary font-medium">Avg Response</span>
+                            <span class="font-semibold text-accent text-lg">3.2 days</span>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-text-secondary">Satisfaction</span>
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-text-secondary font-medium">Satisfaction</span>
                             <div class="flex items-center">
-                                <div class="flex text-accent mr-2">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <div class="flex text-accent mr-3">
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
-                                    <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg class="w-5 h-5 fill-current text-gray-400" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
                                 </div>
-                                <span class="font-semibold text-text-primary">4.3</span>
+                                <span class="font-semibold text-accent text-lg">4.3</span>
                             </div>
                         </div>
                     </div>
@@ -683,11 +666,9 @@
                             <img src="https://images.pexels.com/photos/1098365/pexels-photo-1098365.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="India Heat Map" class="w-full h-full object-cover rounded-lg opacity-70" onerror="this.src='https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3'; this.onerror=null;" />
                             <div class="absolute inset-0 flex items-center justify-center">
                                 <div class="text-center">
-                                    <svg class="w-16 h-16 text-primary mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                                    </svg>
-                                    <p class="text-primary font-semibold">Interactive Heat Map</p>
-                                    <p class="text-text-secondary text-sm">Click regions for detailed insights</p>
+                                    <h3 class="text-2xl font-bold text-white mb-2">Mumbai Metropolitan</h3>
+                                    <p class="text-lg text-white">8,432 Active Issues</p>
+
                                 </div>
                             </div>
                         </div>
@@ -1184,51 +1165,180 @@
     </footer>
 
     <script>
-        // Mobile menu toggle
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
+        // === FULL DASHBOARD INTERACTIVITY (Steps 3-8) ===
+        // Mock data (expanded for filters)
+        const mockData = {
+            states: ['All', 'Maharashtra', 'Karnataka', 'Tamil Nadu', 'Delhi'],
+            categories: ['All', 'Infrastructure', 'Public Services', 'Healthcare', 'Education'],
+            timeRanges: ['30', '90', '180', '365'],
+            filteredDepartments: [],
+            currentFilters: { state: 'All', category: 'All', time: '30' }
+        };
+
+        // Initialize filtered data
+        function initData() {
+            mockData.departments = [
+                { id: 1, rank: 1, name: 'Municipal Corporation', state: 'Maharashtra', category: 'Infrastructure', location: 'Mumbai', resolution: 96, response: 2.1, satisfaction: 4.8 },
+                { id: 2, rank: 2, name: 'Public Works Dept', state: 'Karnataka', category: 'Infrastructure', location: 'Bangalore', resolution: 92, response: 2.8, satisfaction: 4.6 },
+                { id: 3, rank: 3, name: 'Education Dept', state: 'Tamil Nadu', category: 'Education', location: 'Chennai', resolution: 89, response: 3.2, satisfaction: 4.3 },
+                { id: 4, rank: 4, name: 'Health Services', state: 'Delhi', category: 'Healthcare', location: 'Delhi', resolution: 87, response: 3.5, satisfaction: 4.2 },
+                { id: 5, rank: 5, name: 'PWD Roads', state: 'Telangana', category: 'Infrastructure', location: 'Hyderabad', resolution: 85, response: 4.0, satisfaction: 4.1 },
+                { id: 6, rank: 6, name: 'Water Board', state: 'Maharashtra', category: 'Public Services', location: 'Pune', resolution: 82, response: 4.5, satisfaction: 4.0 },
+                { id: 7, rank: 7, name: 'Hospitals Dept', state: 'Karnataka', category: 'Healthcare', location: 'Mysore', resolution: 80, response: 5.1, satisfaction: 3.9 }
+            ];
+            applyFilters();
         }
 
-        // Filter functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            // Simulate real-time data updates
-            setInterval(function() {
-                // Update live statistics with small random variations
-                const elements = document.querySelectorAll('[data-live-update]');
-                elements.forEach(element => {
-                    const currentValue = parseInt(element.textContent.replace(/[^\d]/g, ''));
-                    const variation = Math.floor(Math.random() * 10) - 5; // -5 to +5
-                    const newValue = Math.max(0, currentValue + variation);
-                    element.textContent = element.textContent.replace(/\d+/, newValue.toLocaleString());
-                });
-            }, 30000); // Update every 30 seconds
+        // Filter logic (Step 6)
+        function applyFilters() {
+            let filtered = mockData.departments.filter(dept => {
+                return (mockData.currentFilters.state === 'All' || dept.state === mockData.currentFilters.state) &&
+                       (mockData.currentFilters.category === 'All' || dept.category === mockData.currentFilters.category);
+            });
+            mockData.filteredDepartments = filtered.slice(0, 10); // Top 10
+            renderDepartmentTable();
+            updateCharts();
+        }
 
-            // Smooth scrolling for anchor links
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
+        // Dynamic table (Step 7)
+        function renderDepartmentTable() {
+            const tableContainer = document.getElementById('department-table-container') || createTableContainer();
+            let html = `
+                <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('rank')">Rank</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('name')">Department</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('location')">Location</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('resolution')">Resolution</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('response')">Response</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('satisfaction')">Satisfaction</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+            
+            mockData.filteredDepartments.forEach(dept => {
+                html += `
+                    <tr class="border-t hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${dept.rank}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">${dept.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${dept.location}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="w-20 bg-gray-200 rounded-full h-2">
+                                <div class="bg-success h-2 rounded-full" style="width: ${dept.resolution}%"></div>
+                            </div>
+                            <span class="text-sm font-semibold">${dept.resolution}%</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${dept.response} days</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-accent">${dept.satisfaction}</td>
+                    </tr>`;
+            });
+            html += '</tbody></table></div>';
+            tableContainer.innerHTML = html;
+        }
+
+        function createTableContainer() {
+            const scorecardSection = document.querySelector('section.py-12.bg-surface');
+            const newTableSection = document.createElement('div');
+            newTableSection.id = 'department-table-container';
+            newTableSection.className = 'mt-12';
+            newTableSection.innerHTML = '<h3 class="text-2xl font-bold text-text-primary mb-6">Full Department Rankings</h3><div id="table-inner"></div>';
+            scorecardSection.parentNode.insertBefore(newTableSection, scorecardSection.nextSibling);
+            return document.getElementById('table-inner');
+        }
+
+        // Table sorting (Step 7)
+        let sortColumn = 'rank', sortDirection = 'asc';
+        function sortTable(column) {
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+            mockData.filteredDepartments.sort((a, b) => {
+                let aVal = a[column], bVal = b[column];
+                if (column === 'name') { aVal = aVal.toLowerCase(); bVal = bVal.toLowerCase(); }
+                return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+            });
+            renderDepartmentTable();
+        }
+
+        // Update charts based on filters (Step 3-4)
+        function updateCharts() {
+            if (categoriesChart) {
+                const filteredCats = mockData.filteredDepartments.reduce((acc, dept) => {
+                    acc[dept.category] = (acc[dept.category] || 0) + 1;
+                    return acc;
+                }, {});
+                categoriesChart.data.datasets[0].data = Object.values(filteredCats);
+                categoriesChart.update('none');
+            }
+            if (trendsChart) trendsChart.update('none');
+        }
+
+        // Filter event listeners (Step 6)
+        function setupFilters() {
+            ['stateFilter', 'categoryFilter', 'timeFilter'].forEach(id => {
+                document.getElementById(id).addEventListener('change', (e) => {
+                    mockData.currentFilters[id.replace('Filter', '')] = e.target.value;
+                    applyFilters();
                 });
             });
+        }
 
-            // Interactive chart hover effects
-            const chartElements = document.querySelectorAll('[data-chart-element]');
-            chartElements.forEach(element => {
-                element.addEventListener('mouseenter', function() {
-                    this.style.transform = 'scale(1.05)';
-                    this.style.transition = 'transform 0.2s ease';
-                });
-                
-                element.addEventListener('mouseleave', function() {
-                    this.style.transform = 'scale(1)';
-                });
+        // CSV Export (Step 8)
+        document.querySelector('.bg-primary[onclick*="Export"]').onclick = () => {
+            let csv = 'Rank,Department,State,Category,Location,Resolution,Avg Response,Satisfaction\n';
+            mockData.filteredDepartments.forEach(d => csv += `"${d.rank}","${d.name}","${d.state}","${d.category}","${d.location}",${d.resolution}%,${d.response},${d.satisfaction}\n`);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `grievmitra-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        };
+
+        // Hero stats connection (Step 5)
+        function updateHeroStats() {
+            document.getElementById('totalResolved').textContent = mockData.filteredDepartments.length.toLocaleString() + '+';
+            const avgResponse = mockData.filteredDepartments.reduce((sum, d) => sum + d.response, 0) / mockData.filteredDepartments.length || 0;
+            document.getElementById('avgDays').textContent = avgResponse.toFixed(1);
+            const avgSatisfaction = mockData.filteredDepartments.reduce((sum, d) => sum + d.satisfaction, 0) / mockData.filteredDepartments.length || 0;
+            document.getElementById('satisfaction').textContent = Math.round(avgSatisfaction) + '%';
+            document.getElementById('departments').textContent = mockData.filteredDepartments.length + '+';
+        }
+
+        // Auto-refresh (Step 8)
+        setInterval(() => {
+            mockData.departments.forEach(d => d.resolution += (Math.random() - 0.5) * 2);
+            applyFilters();
+        }, 30000);
+
+        // Init everything
+        document.addEventListener('DOMContentLoaded', () => {
+            initData();
+            setupFilters();
+            applyFilters();
+            updateHeroStats();
+            // Export/Reset buttons
+            const exportBtn = document.getElementById('exportBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            if (exportBtn) exportBtn.addEventListener('click', () => {
+                let csv = 'Rank,Department,State,Category,Location,Resolution,Response,Satisfaction\n';
+                mockData.filteredDepartments.forEach(d => csv += `"${d.rank}","${d.name}","${d.state}","${d.category}","${d.location}",${d.resolution}%,${d.response},${d.satisfaction}\n`);
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `grievmitra-${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+            });
+            if (resetBtn) resetBtn.addEventListener('click', () => {
+                document.getElementById('stateFilter').value = '';
+                document.getElementById('categoryFilter').value = '';
+                document.getElementById('timeFilter').value = '30';
+                mockData.currentFilters = { state: 'All', category: 'All', time: '30' };
+                applyFilters();
             });
         });
 
@@ -1254,6 +1364,61 @@
             alert(`Your API Key: ${key}\n\nPlease save this key securely. You can use it to access our public API endpoints.`);
         }
     </script>
+    <!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Wait until page loads
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ---------------- PIE CHART ----------------
+    const ctx1 = document.getElementById('categoriesChart');
+
+    new Chart(ctx1, {
+        type: 'pie',
+        data: {
+            labels: ['Infrastructure', 'Public Services', 'Healthcare', 'Education'],
+            datasets: [{
+                data: [25, 19, 12, 19],
+                backgroundColor: [
+                    '#0b63ce',
+                    '#00a86b',
+                    '#f59e0b',
+                    '#1e40af'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+
+    // ---------------- LINE CHART ----------------
+    const ctx2 = document.getElementById('trendsChart');
+
+    new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov'],
+            datasets: [{
+                label: 'Resolved Cases',
+                data: [100, 140, 180, 220, 260, 300],
+                borderColor: '#0b63ce',
+                backgroundColor: 'rgba(11,99,206,0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+});
+</script>
 <script id="dhws-dataInjector" src="../public/dhws-data-injector.js"></script>
 </body>
 </html>

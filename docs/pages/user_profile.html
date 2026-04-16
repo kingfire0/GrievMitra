@@ -379,6 +379,14 @@
             document.getElementById('profile-email').textContent = userEmail;
             document.getElementById('email').value = userEmail;
 
+            // API base URL helper function (missing!)
+            const getApiBaseUrl = () => {
+              if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                return 'http://localhost:5000';
+              }
+              return window.location.origin;
+            };
+
             // Load user profile data
             loadUserProfile();
 
@@ -500,8 +508,9 @@
                 }
 
                 // Get user grievances for statistics
+                console.log('Profile: Fetching grievances from:', `${apiBaseUrl}/grievances/user`);
+
                 const grievancesResponse = await fetch(`${apiBaseUrl}/grievances/user`, {
-                    console.log('Profile: Fetching grievances from:', apiBaseUrl + '/grievances/user');
                     headers: {
                         'Authorization': `Bearer ${token}`
                     },
@@ -510,17 +519,23 @@
 
                 if (grievancesResponse.ok) {
                     const grievances = await grievancesResponse.json();
-                    console.log('Profile grievances response:', grievances);
+                    console.log('Profile grievances response:', grievances.length, grievances);
 
                     // Calculate statistics
-                    const total = grievances.length;
-                    const resolved = grievances.filter(g => g.status === 'resolved').length;
+                    const total = grievances.length || 0;
+                    const resolved = grievances.filter(g => g.status === 'resolved').length || 0;
                     const pending = total - resolved;
 
                     document.getElementById('total-grievances').textContent = total;
                     document.getElementById('resolved-grievances').textContent = resolved;
                     document.getElementById('pending-grievances').textContent = pending;
+                } else {
+                    console.log('Grievances API failed, showing zeros');
+                    document.getElementById('total-grievances').textContent = '0';
+                    document.getElementById('resolved-grievances').textContent = '0';
+                    document.getElementById('pending-grievances').textContent = '0';
                 }
+
 
                 // Update profile information
                 document.getElementById('profile-name').textContent = userData.name;

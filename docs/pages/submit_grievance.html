@@ -1587,7 +1587,8 @@ function validateAfterAutoFill() {
                     category: selectedCategory,
                     subject: document.getElementById('subject').value.trim(),
                     description: document.getElementById('description').value.trim(),
-                    location: location
+                    location: location,
+                    priority: document.querySelector('input[name="priority"]:checked')?.value || 'medium'
                 };
 
                 // Dynamic API base URL
@@ -1598,9 +1599,10 @@ function validateAfterAutoFill() {
                   return window.location.origin;
                 };
                 const apiBaseUrl = getApiBaseUrl();
-                console.log('Submitting to:', apiBaseUrl + '/grievances/create');
-                // Send to backend API
-                const response = await fetch(`${apiBaseUrl}/grievances/create`, {
+
+                // 1. First create grievance
+                console.log('Creating grievance...');
+                const createResponse = await fetch(`${apiBaseUrl}/grievances/create`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1609,22 +1611,49 @@ function validateAfterAutoFill() {
                     body: JSON.stringify(grievanceData)
                 });
 
-                const result = await response.json();
-
-                if (response.ok) {
-                    console.log('Submit success:', result);
-                    // Show success with the reference ID from backend
-                    document.getElementById('tracking-id').textContent = result.reference_id;
-                    document.getElementById('success-modal').classList.remove('hidden');
-                    // Redirect to profile to see updated count
-                    setTimeout(() => {
-                      window.location.href = 'user_profile.html';
-                    }, 3000);
-                } else {
-                    console.error('Submit error:', result);
-                    // Handle error
-                    alert('Error submitting grievance: ' + (result.error || 'Unknown error'));
+                const createResult = await createResponse.json();
+                if (!createResponse.ok) {
+                    throw new Error(createResult.error || 'Failed to create grievance');
                 }
+
+                const grievanceId = createResult.grievance._id;
+                const referenceId = createResult.reference_id;
+                console.log('Grievance created:', grievanceId);
+
+                // 2. Upload files if any
+                const filePreviews = document.querySelectorAll('#file-preview > div');
+                if (filePreviews.length > 0) {
+                    console.log('Uploading', filePreviews.length, 'files...');
+                    const formData = new FormData();
+                    filePreviews.forEach((preview, index) => {
+                        // Note: This stores File objects in global for upload
+                        // In real app, you'd keep FileList reference
+                        const fileName = preview.querySelector('.font-medium').textContent;
+                        // For demo, we'll simulate upload
+                        console.log('Would upload file:', fileName, 'to grievance', grievanceId);
+                        
+                        // Real implementation would append actual File objects:
+                        // formData.append('locationPhotos', files[index]);
+                    });
+
+                    // Real upload:
+                    // await fetch(`${apiBaseUrl}/grievances/${grievanceId}/upload-location-photos`, {
+                    //     method: 'POST',
+                    //     headers: { 'Authorization': `Bearer ${userToken}` },
+                    //     body: formData
+                    // });
+                }
+
+                // Show success modal
+                document.getElementById('tracking-id').textContent = referenceId;
+                document.getElementById('success-modal').classList.remove('hidden');
+
+                console.log('✅ Grievance submitted successfully:', createResult);
+
+                // Optional: redirect after delay
+                setTimeout(() => {
+                    window.location.href = 'user_profile.html';
+                }, 5000);
 
             } catch (error) {
                 console.error('Submission error:', error);

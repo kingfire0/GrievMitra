@@ -4,7 +4,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const path = require("path");
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
@@ -13,10 +15,48 @@ require("dotenv").config();
 
 // Import models
 const User = require("./models/User");
-const Grievance = require("./models/Grievance");
+const Grievance = require("./models/Grievance"); 
 
 const app = express();
 app.use(cors());
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Multer storage configuration
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'location-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+  },
+  fileFilter: function (req, file, cb) {
+    // Accept images, videos, PDFs
+    if (file.mimetype.startsWith('image/') || 
+        file.mimetype.startsWith('video/') || 
+        file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only images, videos, and PDFs are allowed'), false);
+    }
+  }
+});
+
+// Serve uploaded photos statically
+app.use('/backend/uploads', express.static(uploadsDir));
+
 app.use(bodyParser.json());
 
 // Session middleware for Passport
@@ -888,6 +928,35 @@ app.get("/admin/grievances/:id", authenticate, async (req, res) => {
 // GRIEVANCE ROUTES
 //-------------------------------------------------------------
 
+// User upload location photos (after grievance creation)
+app.post("/grievances/:id/upload-location-photos", authenticate, upload.array('locationPhotos', 5), async (req, res) => {
+  try {
+    const grievance = await Grievance.findById(req.params.id);
+    if (!grievance) {
+      return res.status(404).json({ error: "Grievance not found" });
+    }
+    if (grievance.user.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Not authorized to upload photos for this grievance" });
+    }
+
+    const uploadedFiles = req.files || [];
+    const photoUrls = uploadedFiles.map(file => {
+      return `/backend/uploads/${file.filename}`;
+    });
+
+    grievance.locationPhotos = [...(grievance.locationPhotos || []), ...photoUrls];
+    await grievance.save();
+
+    res.json({ 
+      message: "Photos uploaded successfully", 
+      photoUrls,
+      totalPhotos: grievance.locationPhotos.length 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Submit grievance (Citizen/Leader)
 app.post("/grievances/create", authenticate, async (req, res) => {
   try {
@@ -1228,6 +1297,55 @@ app.post("/officer/grievances/:id/submit-for-review", authenticate, async (req, 
 
 // Assign grievance to an officer (admin only)
 app.put("/admin/grievances/:id/assign", authenticate, async (req, res) => {
+
+  /**
+   * 🧪 TEST DATA ENDPOINT - Creates test grievance with sample photos
+   * Usage: POST /admin/create-test-grievance (admin token required)
+   * View at: http://localhost:5000/admin/dashboard
+   */
+  app.post("/admin/create-test-grievance", authenticate, async (req, res) => {
+    try {
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ error: "Admin only" });
+      }
+
+      const refId = "TEST-" + Date.now();
+
+      const testGrievance = await Grievance.create({
+        reference_id: refId,
+        user: req.user.id,
+        category: "infrastructure",
+        subject: "🧪 TEST: Pothole - User Location Photos",
+        description: "Test grievance with:\n📍 2x USER location photos (sample-location*.jpg)\n🔧 1x OFFICER work photo (sample-work1.jpg)\n\nClick 'View Details' to verify both sections display correctly!",
+        priority: "high",
+        location: {
+          address: "Test Road 123",
+          city: "Mumbai",
+          state: "Maharashtra",
+          district: "Mumbai Suburban",
+          pincode: "400001"
+        },
+        department: "Public Works",
+        status: "in_progress",
+        locationPhotos: [
+          "/backend/uploads/sample-location1.jpg",
+          "/backend/uploads/sample-location2.jpg"
+        ],
+        workPhotos: [
+          "/backend/uploads/sample-work1.jpg"
+        ]
+      });
+
+      res.json({ 
+        message: `✅ Test grievance created! Ref: ${refId}`,
+        url: `http://localhost:5000/admin/dashboard`,
+        grievance: testGrievance 
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   try {
     if (req.user.role !== "admin") return res.status(403).json({ error: "Access denied. Admin only." });
 

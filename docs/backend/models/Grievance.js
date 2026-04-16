@@ -78,6 +78,11 @@ const GrievanceSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  // Location photos uploaded by user
+  locationPhotos: [{
+    type: String,
+    default: []
+  }],
   // Work photos uploaded by officer
   workPhotos: [{
     type: String,
